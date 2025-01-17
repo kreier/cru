@@ -6,7 +6,13 @@
 
 This is just a fork of the work [ToastyX](https://www.monitortests.com/forum/User-ToastyX) has been done to fix several problems with graphic cards, monitors, drivers and their communication since 2012. Please download the latest version directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
 
-<a href="https://www.patreon.com/ToastyX"><img src="https://github.com/user-attachments/assets/ecefa998-2b13-4a6b-acae-fc805eb97570" width=20%></a>
+[![Patreon support](docs/patreon.png)](https://www.patreon.com/ToastyX)
+
+## Example
+
+This is how this Windows program looks like:
+
+![sample image](docs/example.png)
 
 ### Requirements:
 
