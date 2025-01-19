@@ -4,7 +4,7 @@
 ![GitHub License](https://img.shields.io/github/license/kreier/cru)
 [![pages-build-deployment](https://github.com/kreier/cru/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/kreier/cru/actions/workflows/pages/pages-build-deployment)
 
-This is just a fork of the work [ToastyX](https://www.monitortests.com/forum/User-ToastyX) has been done to fix several problems with graphic cards, monitors, drivers and their communication since 2012. Please download the latest version directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
+This is just a fork of the work [ToastyX](https://www.monitortests.com/forum/User-ToastyX) has been done to fix several problems with graphic cards, monitors, drivers and their communication since 2012. Please download the latest version 1.5.2 from 2022-09-01 directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
 
 [![Patreon support](docs/patreon.png)](https://www.patreon.com/ToastyX)
 
@@ -59,7 +59,7 @@ If you have an older Intel GPU, use the "Export..." button and choose "EXE file"
 * Monitors with NVIDIA's G-SYNC processor only support a limited set of resolutions with display scaling. To add non-native resolutions, make sure GPU scaling is enabled in the NVIDIA control panel, or use [Scaled Resolution Editor](https://www.monitortests.com/forum/Thread-Scaled-Resolution-Editor-SRE).
 * EDID detailed resolutions are limited to 4095x4095 and 655.35 MHz pixel clock. If a value turns <span style="color:red">**red**</span>, that means it's invalid or out of limits. Use a DisplayID extension block to add resolutions with higher limits.
 * Use the timing options to help fill in the values:
-    * Manual - Allows the timing parameters to be set manually. The dialog will always open in this mode. See also: Timing parameters explained
+    * Manual - Allows the timing parameters to be set manually. The dialog will always open in this mode. See also: [Timing parameters explained](https://www.monitortests.com/blog/timing-parameters-explained/)
     * Automatic PC - Uses standards common with PC monitors. Uses CTA-861 for 4:3/16:9 resolutions up to 1920x1080 @ 60 Hz, VESA DMT for 1360/1366x768 and 1600x900, CVT-RB otherwise.
     * Automatic HDTV - Uses standards common with HDTVs. Uses CTA-861 for all TV resolutions if possible, VESA DMT for 1360/1366x768 and 1600x900, CVT-RB otherwise.
     * Automatic CRT - Uses standards compatible with CRT monitors. Uses VESA DMT for 4:3/5:4 resolutions, CVT otherwise.
@@ -72,11 +72,11 @@ If you have an older Intel GPU, use the "Export..." button and choose "EXE file"
         * CVT-RB standard - Standard intended for LCD monitors. Reduces the blanking compared with CVT.
         * CVT-RB2 standard - Newer standard intended for LCD monitors. Reduces the horizontal blanking compared with CVT-RB.
         * GTF standard - Old standard commonly used with CRT monitors.
-    * Vertical total calculator - Calculates the vertical total required for the specified refresh rate and pixel clock. This can be used to implement Quick Frame Transport (QFT), which can help reduce crosstalk with backlight strobing at lower refresh rates.
+    * Vertical total calculator - Calculates the vertical total required for the specified refresh rate and pixel clock. This can be used to implement [Quick Frame Transport (QFT)](https://forums.blurbusters.com/viewtopic.php?t=8946), which can help reduce crosstalk with backlight strobing at lower refresh rates.
 * __Pay attention to pixel clock limits:__
     * Single-link DVI is limited to 165 MHz and dual-link DVI is limited to 330 MHz unless the graphics driver is patched:
-        * AMD/ATI Pixel Clock Patcher
-        * NVIDIA Pixel Clock Patcher
+        * [AMD/ATI Pixel Clock Patcher](https://www.monitortests.com/forum/Thread-AMD-ATI-Pixel-Clock-Patcher)
+        * [NVIDIA Pixel Clock Patcher](https://www.monitortests.com/forum/Thread-NVIDIA-Pixel-Clock-Patcher)
     * HDMI is treated as single-link DVI unless an "HDMI support" data block is defined in a CTA-861 extension block.
     * HDMI 2.0 requires both an "HDMI support" data block and an "HDMI 2.0 support" data block.
     * HDMI limits depend on the GPU:
@@ -84,12 +84,12 @@ If you have an older Intel GPU, use the "Export..." button and choose "EXE file"
         * AMD HD 7000-series and newer GPUs without HDMI 2.0 support up to 297 MHz. Older GPUs are limited to 165 MHz unless the driver is patched.
         * Intel GPUs without HDMI 2.0 support up to 300.99 MHz.
         * AMD/ATI and Intel also listen to the maximum TMDS clock in the "HDMI support" data block. Make sure it's enabled and set to 340 MHz.
-    * DisplayPort limits are listed here: Common pixel clock limits
+    * DisplayPort limits are listed here: [Common pixel clock limits](https://www.monitortests.com/blog/common-pixel-clock-limits/)
     * Passive DisplayPort to HDMI adapters are limited to 165 MHz unless the driver is patched.
     * These DisplayPort to HDMI 2.0 active adapters support up to 600 MHz pixel clock (Amazon affiliate links):
-        * Plugable DisplayPort 1.2 to HDMI 2.0 Active Adapter
-        * Club 3D CAC-1080 DisplayPort 1.4 to HDMI 2.0b HDR Active Adapter
-        * Club 3D CAC-1180 Mini DisplayPort 1.4 to HDMI 2.0b HDR Active Adapter
+        * [Plugable DisplayPort 1.2 to HDMI 2.0 Active Adapter](https://www.amazon.com/dp/B00S0C7QO8/?tag=mtests-20#ad)
+        * [Club 3D CAC-1080 DisplayPort 1.4 to HDMI 2.0b HDR Active Adapter](https://www.amazon.com/dp/B077JB28KM/?tag=mtests-20#ad)
+        * [Club 3D CAC-1180 Mini DisplayPort 1.4 to HDMI 2.0b HDR Active Adapter](https://www.amazon.com/dp/B077J8655R/?tag=mtests-20#ad)
 
 ### Standard resolutions:
 
@@ -106,3 +106,71 @@ If you have an older Intel GPU, use the "Export..." button and choose "EXE file"
     * CRU can read extension blocks from displays connected to AMD and NVIDIA GPUs.
     * CRU can't read extension blocks with Intel GPUs or switchable graphics.
     * Older drivers or GPUs may only support up to 3 extension blocks.
+* Extension block types:
+    * CTA-861 extension blocks can contain additional detailed resolutions and data blocks such as TV resolutions, audio formats, and HDMI support. Note: NVIDIA requires at least 2 bytes left for data blocks or the driver will ignore all changes.
+    * Use VTB-EXT to add more standard resolutions. Note: AMD/ATI only supports one VTB-EXT block, and it must be the last block in the list.
+    * Use DisplayID to add resolutions greater than 4095x4095 or 655.35 MHz pixel clock. DisplayID 2.0 supports pixel clocks with three decimal places, but the driver or hardware might not support such precision.
+    * Default extension blocks are placeholders for the monitor's original extension blocks. Extension blocks that can't be read will appear as default extension blocks. Note: NVIDIA does not support default extension blocks and will ignore all changes if a default extension block exists.
+* If you need to add an extension block manually, importing one of these files will provide a starting point:
+    * hdmi.dat - HDMI support only
+    * hdmi-audio.dat - HDMI support with audio
+    * hdmi-bitstream.dat - HDMI support with bitstreaming audio formats
+    * hdmi2.dat - HDMI 2.0 support only
+    * hdmi2-audio.dat - HDMI 2.0 support with audio
+    * hdmi2-bitstream.dat - HDMI 2.0 support with bitstreaming audio formats
+    * displayport-audio.dat - DisplayPort audio
+ 
+### Editing FreeSync/VRR ranges:
+
+* For DisplayPort, use the "Edit..." button at the top to edit the "V rate" under range limits, and make sure "Include if slot available" is enabled. Note: NVIDIA has ranges hard-coded for some monitors. To get around this, change the device ID at the top to anything else, such as ABC1234 (3 letters, 4 hex digits).
+* For HDMI FreeSync, edit the "FreeSync range" data block in the CTA-861 extension block.
+* For HDMI 2.1 VRR, edit the "HDMI 2.1 support" data block in the CTA-861 extension block.
+
+### Export formats:
+
+* .bin - Raw binary EDID compatible with most EDID tools
+* .dat - Data file compatible with Phoenix EDID Designer and Advantiv EEditZ/EEditGold
+* .inf - Unsigned monitor driver compatible with Windows Vista and later
+* .txt - Text file containing whitespace-separated hexadecimal values (16 per line)
+* .csv - Text file containing comma-separated hexadecimal values (one block per line)
+* .exe - Self-contained EDID override installer (includes alternative method for Intel GPUs)
+
+CRU can import all of the above formats and any reasonably formatted text file with hexadecimal values.
+
+### Command-line options:
+
+* Exported .exe files:
+    * /i - Install EDID without prompting
+    * /r - Reset EDID without prompting
+* reset-all.exe:
+    * /q - Reset without prompting
+* restart.exe/restart64.exe:
+    * /q - Restart without prompting (or rename the file to restart-only.exe)
+    * /r - Activate recovery mode without prompting
+
+### Memory clock issues:
+
+* The GPU will not reduce the memory clock when idle if the vertical blanking is too low because there won't be enough time between refreshes to retrain the memory without screen corruption. Horizontal values can still be reduced if necessary.
+    * Older AMD/ATI GPUs require the "Automatic PC/HDTV" or "CVT-RB standard" vertical blanking to reduce the memory clock when idle.
+    * NVIDIA and newer AMD cards can handle some lower values depending on the resolution and refresh rate.
+* Older AMD/ATI GPUs have a design limitation that causes video acceleration to scramble the screen if the vertical blanking is below standard with the GPU's memory overclocked or with multiple monitors connected. Skype is known to trigger this problem. Either don't overclock the GPU's memory, or use the "Automatic PC/HDTV" or "CVT-RB standard" vertical blanking.
+
+## Changelog
+
+### 2022-09-01 Changes in 1.5.2:
+
+* Support up to 7 extension blocks
+* NVIDIA can now read all extension blocks
+* Detailed resolutions:
+    * Added 480p/480i/525p/525i to "Automatic CRT"
+    * Fixed "Exact" and "Exact reduced" for interlaced resolutions
+    * Added "Exact CRT" timing option
+    * Added "Vertical total calculator" timing option
+* Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
+* Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
+
+### 2013-08-24 Changes in 1.0.1:
+
+* Fixed .inf export
+* Added support for non-PnP monitors
+* Changed monitor list sorting
