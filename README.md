@@ -169,6 +169,12 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
 
+### 2013-10-01 Changes in 1.1:
+
+* Import extension block from files (editing coming later)
+* Automatically fill in likely native resolution when adding a detailed resolution
+* Disable controls when deleting a monitor
+
 ### 2013-08-24 Changes in 1.0.1:
 
 * Fixed .inf export
