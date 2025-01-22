@@ -169,6 +169,13 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
 
+### 2014-02-14 Changes in 1.1.1:
+
+* Fixed monitors with invalid signal type information not working with AMD/ATI GPUs
+* Added "LCD standard" timing parameters for 3840x2160 @ 30 Hz and 1366x768 @ 60 Hz (use "LCD reduced" for old values)
+* Automatically enable extension block when importing extension block files
+* Show number of slots left
+
 ### 2013-10-01 Changes in 1.1:
 
 * Import extension block from files (editing coming later)
