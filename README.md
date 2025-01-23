@@ -169,6 +169,10 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
 
+### 2014-04-05 Changes in 1.1.2:
+
+* Fixed HDMI audio not working with older ATI GPUs
+
 ### 2014-02-14 Changes in 1.1.1:
 
 * Fixed monitors with invalid signal type information not working with AMD/ATI GPUs
