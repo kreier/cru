@@ -169,13 +169,22 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
 
+### 2015-07-28 Changes in 1.2.1:
+
+* Detailed resolutions: added "LCD native" option
+* TV resolutions: added support for 4:2:0 resolutions
+* HDMI support: added support for HDMI resolutions, latency information, and supported content types
+* Fixed access violation in `comctl32.dll` message with higher DPI settings
+* Fixed layout issues with higher DPI settings and enabled DPI awareness
+* `restart.exe`/`restart64.exe`: implemented a better recovery mode
+
 ### 2015-02-14 Changes in 1.2:
 
 * Added custom extension block editing
 * Added support for more than 8 standard resolutions (AMD/ATI only)
 * Added support for other standard resolutions (NVIDIA only)
-* Updated reset-all.exe to reset Windows resolution settings
-* Include new version of restart.exe/restart64.exe
+* Updated `reset-all.exe` to reset Windows resolution settings
+* Include new version of `restart.exe`/`restart64.exe`
 
 ### 2014-04-05 Changes in 1.1.2:
 
@@ -196,6 +205,6 @@ CRU can import all of the above formats and any reasonably formatted text file w
 
 ### 2013-08-24 Changes in 1.0.1:
 
-* Fixed .inf export
+* Fixed `.inf` export
 * Added support for non-PnP monitors
 * Changed monitor list sorting
