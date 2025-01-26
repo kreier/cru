@@ -169,11 +169,15 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
 
----
-Complete v1.2.99p1 to v1.5.2 history
----
 
 
+### 2016-09-28 Patch 2 for v1.2 in v1.2.99-p2
+
+* Final patch for the old v1.2 a month before the new v1.3 is ready for release with many more features and extended support
+
+### 2016-04-23 Patch 1 for v1.2 in v1.2.99-p1
+
+* No major update yet, small patches for the 2015 version of `cru` until the release of v1.3 later the year
 
 ### 2015-12-22 Changes in 1.2.6:
 
