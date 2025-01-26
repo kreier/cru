@@ -169,6 +169,38 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
 
+---
+Complete v1.2.99p1 to v1.5.2 history
+---
+
+
+
+### 2015-12-22 Changes in 1.2.6:
+
+* Fixed a bug affecting non-PnP monitors since 1.2.3 (invalid EDID version with new overrides)
+
+### 2015-12-04 Changes in 1.2.5:
+
+* Include range limits by default if min/max horizontal values match and certain conditions are met (for * * * FreeSync monitors)
+* `restart.exe`/`restart64.exe`: restart Radeon Settings (`cnext.exe`)
+
+### 2015-11-20 Changes in 1.2.4:
+
+* Made range limits compatible with FreeSync monitors
+
+### 2015-11-17 Changes in 1.2.3:
+
+* Added basic support for range limits and serial number descriptors (use the "Edit..." button at the top)
+* Show included descriptors in the detailed resolution list
+* Added "Import complete EDID" option
+
+### 2015-09-05 Changes in 1.2.2:
+
+* Detailed resolutions: added "LCD reduced" timing parameters for 2560x1440 @ 144 Hz and higher resolutions
+* Extension block: added support for colorimetry and video capability data blocks
+* Redesigned icon to scale better with Windows 10's broken taskbar scaling
+* Fixed how disabled buttons appear with Windows 10
+
 ### 2015-07-28 Changes in 1.2.1:
 
 * Detailed resolutions: added "LCD native" option
