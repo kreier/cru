@@ -171,6 +171,25 @@ CRU can import all of the above formats and any reasonably formatted text file w
 
 
 
+
+
+
+
+### 2016-10-30 Changes in 1.3:
+
+* Added support for reading extension blocks from connected monitors with AMD/ATI and NVIDIA
+* Automatically add blank extension block in registry and exported .inf files to work around NVIDIA driver issues
+* Added support for multiple extension blocks
+* Added support for importing other types of extension blocks
+* Added support for VTB-EXT extension blocks (detailed/standard resolutions only)
+* Changed default TMDS clock to 340 MHz for new HDMI data blocks
+* Added support for HDMI 2.0 data blocks
+* Added support for HDMI FreeSync data blocks
+* Added BT.2020 formats in colorimetry data blocks
+* Added text file export (outputs hex values)
+* Improved UI scaling with higher DPI settings
+* `restart.exe`/`restart64.exe`: fix Start menu, search box, and Radeon Settings not responding after restarting
+
 ### 2016-09-28 Patch 2 for v1.2 in v1.2.99-p2
 
 * Final patch for the old v1.2 a month before the new v1.3 is ready for release with many more features and extended support
