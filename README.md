@@ -173,7 +173,16 @@ CRU can import all of the above formats and any reasonably formatted text file w
 
 
 
+### 2017-08-24 Changes in 1.3.1:
 
+- Fixed .inf export for Windows 10 Creators Update
+- Detailed resolutions: use CEA-861 timing parameters for `3840x2160 @ 60 Hz` with "LCD standard" (use "LCD reduced" for old values)
+- Detailed resolutions: allow 0 back porch
+- TV resolutions: disable "Native format" for resolutions that don't support this option
+- Do not add blank extension block if no extension blocks exist by default
+- Allow invalid but possible product IDs when editing display properties
+- Fixed '`&`' character in monitor name and serial number not displaying correctly in detailed resolutions list box
+- Improved row spacing between UI elements with higher DPI settings
 
 ### 2016-10-30 Changes in 1.3:
 
