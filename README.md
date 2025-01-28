@@ -171,7 +171,9 @@ CRU can import all of the above formats and any reasonably formatted text file w
 
 
 
+### 2018-01-24 Patch 1 v1.3.99-p1
 
+Version v1.4 will be released later the year. Release notes for this patch version are later mostly transferred to v1.4. The source code for this version code is published. It can be found at https://github.com/radamar/Custom-Resolution-Utility-ToastyX where it was uploaded 2018-04-11.
 
 ### 2017-08-24 Changes in 1.3.1:
 
@@ -272,3 +274,7 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Fixed `.inf` export
 * Added support for non-PnP monitors
 * Changed monitor list sorting
+
+## Software environment for this C++ project
+
+As posted 2020-12-20 in this forum https://www.monitortests.com/forum/Thread-What-is-the-development-enviroment-of-open-source-software-CRU this software is written with Borland Turbo C++ Builder 2006.
