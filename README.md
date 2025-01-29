@@ -167,9 +167,22 @@ CRU can import all of the above formats and any reasonably formatted text file w
     * Added "Exact CRT" timing option
     * Added "Vertical total calculator" timing option
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
-* Colorimetry: added "sRGB" and "Default RGB" from CTA-861.6
+* Colorimetry: added "sRGB" and "Default RGB" from [CTA-861.6](https://shop.cta.tech/products/cta-861-6)
 
 
+
+
+### 2018-07-14 Changes in 1.4:
+
+- Added support for DisplayID extension blocks:
+    - Added support for "Type I" detailed resolutions.
+    - Added support for tiled display topology data blocks.
+- Display properties: added support for ID serial number in EDID header
+- Detailed resolutions: added "Automatic - Old standard" timing option for GTF
+- TV resolutions: added new resolutions from [CTA-861-G](https://web.archive.org/web/20171201033424/https://standards.cta.tech/kwspub/published_docs/CTA-861-G_FINAL_revised_2017.pdf) (requires driver support)
+- Colorimetry: added DCI-P3 standard from [CTA-861-G](https://archive.org/details/CTA-861-G/mode/2up)
+
+More about Display Technology Information at [https://glenwing.github.io/](https://glenwing.github.io/) with [Display Industry Standards](https://glenwing.github.io/docs/) like DP, HDMI, DVI, CTA-861, DCI and VESA
 
 ### 2018-01-24 Patch 1 v1.3.99-p1
 
