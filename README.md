@@ -172,6 +172,15 @@ CRU can import all of the above formats and any reasonably formatted text file w
 
 
 
+
+### 2018-09-17 Changes in 1.4.1:
+
+- Speaker setup: added new speakers from CTA-861-G
+- HDMI support: fixed undefined latency data saving as 2 ms (since 1.3.99-p1)
+- HDMI 2.0 support: preserve additional fields for HDMI 2.1
+- FreeSync range: added support for editing FreeSync 2 ranges
+- Added support for HDR static metadata blocks
+
 ### 2018-07-14 Changes in 1.4:
 
 - Added support for DisplayID extension blocks:
