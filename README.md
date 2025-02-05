@@ -173,6 +173,18 @@ CRU can import all of the above formats and any reasonably formatted text file w
 
 
 
+### 2019-10-30 Changes in 1.4.2:
+
+- List inactive displays with overrides installed
+- Display properties: interpret "0" ID serial number as blank
+- Detailed resolutions: "LCD reduced" will no longer go below 56 horizontal blanking
+- DisplayID detailed resolutions: fixed interlaced calculations to match DisplayID standard
+- HDMI 2.0 support: enable "SCDC present" by default when adding new data blocks
+- Added `.csv` file export: outputs comma-separated hexadecimal values (one block per line)
+- Added `.exe` file export: outputs self-contained EDID override installers (includes alternative method for Intel GPUs)
+- `reset-all.exe`: Reset alternative method for Intel GPUs, added /q option
+- `restart.exe`/`restart64.exe`: Faster restarts, recovery mode includes alternative method for Intel GPUs, added /r option
+
 ### 2018-09-17 Changes in 1.4.1:
 
 - Speaker setup: added new speakers from CTA-861-G
