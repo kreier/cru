@@ -1,18 +1,33 @@
-/* Includes *****************************************************************/
+/* Includes ***************************************************************/
 
-#include "stdafx.h"
+#include "common.h"
+#include "resource.h"
+#include "process.h"
+#include "registry.h"
+#include "winpos.h"
 
-/* Defines ******************************************************************/
+/* Defines ****************************************************************/
 
-#define MAX_WINDOWS 10000
+#define ENUM_DISPLAY			_T("SYSTEM\\CurrentControlSet\\Enum\\DISPLAY")
+#define CONTROL_CLASS			_T("SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}")
+#define CONTROL_GRAPHICS		_T("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers")
 
-/* Globals ******************************************************************/
+/* Constants **************************************************************/
 
-DWORD window_count;
-HWND window_list[MAX_WINDOWS];
-WINDOWPLACEMENT window_placement[MAX_WINDOWS];
+// Default FakeEDID_14_0_af0d_1723
+const unsigned char intel_data[] =
+{
+	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x0D, 0xAF, 0x23, 0x17, 0x00, 0x00, 0x00, 0x00,
+	0x02, 0x15, 0x01, 0x04, 0x95, 0x26, 0x15, 0x78, 0x02, 0xD1, 0xF5, 0x93, 0x5D, 0x59, 0x90, 0x26,
+	0x1D, 0x50, 0x54, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x1D, 0x36, 0x80, 0xA0, 0x70, 0x38, 0x1E, 0x40, 0x2E, 0x1E,
+	0x24, 0x00, 0x7E, 0xD7, 0x10, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00, 0x05, 0x00, 0x74, 0x8B, 0x80,
+	0x50, 0x70, 0x38, 0x97, 0x41, 0x08, 0x40, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFE, 0x00, 0x43,
+	0x4D, 0x49, 0x0A, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x00, 0x00, 0x00, 0xFE,
+	0x00, 0x4E, 0x31, 0x37, 0x33, 0x48, 0x48, 0x46, 0x2D, 0x45, 0x32, 0x31, 0x20, 0x20, 0x00, 0x39
+};
 
-/* Functions ****************************************************************/
+/* Functions **************************************************************/
 
 int ErrorMessage(LPCTSTR text)
 {
@@ -20,389 +35,239 @@ int ErrorMessage(LPCTSTR text)
 	return 1;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
-int ResetSubconfiguration(LPCTSTR display_id, LPCTSTR configuration_id)
+int ResetConfiguration()
 {
+	TCHAR text[TEXTSIZE];
 	HKEY key;
-	TCHAR subkey[256];
-	TCHAR subconfiguration_id[256];
-	DWORD i;
-	DWORD size;
-	int result = 0;
+	DWORD index;
 
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\Configuration\\%s\\%s"), display_id, configuration_id) >= 256)
-		return -2;
+	if (_sntprintf(text, TEXTSIZE, _T("%s\\Configuration"), CONTROL_GRAPHICS) >= TEXTSIZE)
+		return RegistrySetStatus(REGISTRY_ERROR);
 
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_ENUMERATE_SUB_KEYS, &key) != ERROR_SUCCESS)
-		return -2;
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, text, KEY_ENUMERATE_SUB_KEYS, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
 
-	for (i = 0; size = 256, RegEnumKeyEx(key, i, subconfiguration_id, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; )
-	{
-		switch (RegDeleteKey(key, subconfiguration_id))
-		{
-			case ERROR_SUCCESS:
-				result |= 1;
-				break;
+	for (index = 0; RegistryEnumKey(key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
+		if (RegistryDeleteTree(key, text) == REGISTRY_SUCCESS)
+			index--;
 
-			case ERROR_FILE_NOT_FOUND:
-			case ERROR_PATH_NOT_FOUND:
-				break;
-
-			default:
-				i++;
-				result |= -2;
-				break;
-		}
-	}
-
-	RegCloseKey(key);
-	return result;
+	return RegistryCloseKey(key);
 }
 
-/****************************************************************************/
-
-int ResetConfiguration(LPCTSTR display_id)
-{
-	HKEY key;
-	TCHAR subkey[256];
-	TCHAR configuration_id[256];
-	DWORD i;
-	DWORD size;
-	int result = 0;
-
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\Configuration\\%s"), display_id) >= 256)
-		return -2;
-
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_ENUMERATE_SUB_KEYS, &key) != ERROR_SUCCESS)
-		return -2;
-
-	for (i = 0; size = 256, RegEnumKeyEx(key, i, configuration_id, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; )
-	{
-		result |= ResetSubconfiguration(display_id, configuration_id);
-
-		switch (RegDeleteKey(key, configuration_id))
-		{
-			case ERROR_SUCCESS:
-				result |= 1;
-				break;
-
-			case ERROR_FILE_NOT_FOUND:
-			case ERROR_PATH_NOT_FOUND:
-				break;
-
-			default:
-				i++;
-				result |= -2;
-				break;
-		}
-	}
-
-	RegCloseKey(key);
-	return result;
-}
-
-/****************************************************************************/
-
-int ResetConfigurations()
-{
-	HKEY key;
-	TCHAR subkey[256];
-	TCHAR display_id[256];
-	DWORD i;
-	DWORD size;
-	int result = 0;
-
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\Configuration")) >= 256)
-		return -3;
-
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_ENUMERATE_SUB_KEYS, &key) != ERROR_SUCCESS)
-		return -3;
-
-	for (i = 0; size = 256, RegEnumKeyEx(key, i, display_id, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; )
-	{
-		result |= ResetConfiguration(display_id);
-
-		switch (RegDeleteKey(key, display_id))
-		{
-			case ERROR_SUCCESS:
-				result |= 1;
-				break;
-
-			case ERROR_FILE_NOT_FOUND:
-			case ERROR_PATH_NOT_FOUND:
-				break;
-
-			default:
-				i++;
-				result |= -2;
-				break;
-		}
-	}
-
-	RegCloseKey(key);
-	return result;
-}
-
-/****************************************************************************/
+/**************************************************************************/
 
 int ResetConnectivity()
 {
+	TCHAR text[TEXTSIZE];
 	HKEY key;
-	TCHAR subkey[256];
-	TCHAR display_id[256];
-	DWORD i;
-	DWORD size;
-	int result = 0;
+	DWORD index;
 
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\\Connectivity")) >= 256)
-		return -3;
+	if (_sntprintf(text, TEXTSIZE, _T("%s\\Connectivity"), CONTROL_GRAPHICS) >= TEXTSIZE)
+		return RegistrySetStatus(REGISTRY_ERROR);
 
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_ENUMERATE_SUB_KEYS, &key) != ERROR_SUCCESS)
-		return -3;
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, text, KEY_ENUMERATE_SUB_KEYS, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
 
-	for (i = 0; size = 256, RegEnumKeyEx(key, i, display_id, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; )
+	for (index = 0; RegistryEnumKey(key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
+		if (RegistryDeleteTree(key, text) == REGISTRY_SUCCESS)
+			index--;
+
+	return RegistryCloseKey(key);
+}
+
+/**************************************************************************/
+
+int RecoverDisplayInstance(BOOL recover, LPCTSTR display, LPCTSTR instance)
+{
+	TCHAR text[TEXTSIZE];
+	HKEY key;
+
+	if (_sntprintf(text, TEXTSIZE, _T("%s\\%s\\%s\\Device Parameters"), ENUM_DISPLAY, display, instance) >= TEXTSIZE)
+		return RegistrySetStatus(REGISTRY_ERROR);
+
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, text, KEY_SET_VALUE, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
+
+	if (recover)
 	{
-		switch (RegDeleteKey(key, display_id))
-		{
-			case ERROR_SUCCESS:
-				result |= 1;
-				break;
+		if (RegistryDeleteTree(key, _T("EDID_RECOVERY")) == REGISTRY_ERROR)
+			return RegistryCloseKey(key);
 
-			case ERROR_FILE_NOT_FOUND:
-			case ERROR_PATH_NOT_FOUND:
-				break;
+		if (RegistryRenameKey(key, L"EDID_OVERRIDE", L"EDID_RECOVERY") == REGISTRY_ERROR)
+			return RegistryCloseKey(key);
+	}
+	else
+	{
+		if (RegistryDeleteTree(key, _T("EDID_OVERRIDE")) == REGISTRY_ERROR)
+			return RegistryCloseKey(key);
 
-			default:
-				i++;
-				result |= -2;
-				break;
-		}
+		if (RegistryRenameKey(key, L"EDID_RECOVERY", L"EDID_OVERRIDE") == REGISTRY_ERROR)
+			return RegistryCloseKey(key);
 	}
 
-	RegCloseKey(key);
-	return result;
+	return RegistryCloseKey(key);
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
-int RecoverDevice(LPCTSTR display_id, LPCTSTR device_id, BOOL recover)
+int RecoverDisplay(BOOL recover, LPCTSTR display)
 {
+	TCHAR text[TEXTSIZE];
 	HKEY key;
-	TCHAR subkey[256];
-	int result = 0;
+	DWORD index;
 
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Enum\\DISPLAY\\%s\\%s\\Device Parameters"), display_id, device_id) >= 256)
-		return -2;
+	if (_sntprintf(text, TEXTSIZE, _T("%s\\%s"), ENUM_DISPLAY, display) >= TEXTSIZE)
+		return RegistrySetStatus(REGISTRY_ERROR);
 
-	switch (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_SET_VALUE, &key))
-	{
-		case ERROR_SUCCESS:
-			if (recover)
-			{
-				RegDeleteTree(key, _T("EDID_RECOVERY"));
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, text, KEY_ENUMERATE_SUB_KEYS, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
 
-				switch (RegRenameKey(key, L"EDID_OVERRIDE", L"EDID_RECOVERY"))
-				{
-					case ERROR_SUCCESS:
-						result |= 1;
-						break;
+	for (index = 0; RegistryEnumKey(key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
+		RecoverDisplayInstance(recover, display, text);
 
-					case ERROR_FILE_NOT_FOUND:
-					case ERROR_PATH_NOT_FOUND:
-						break;
-
-					default:
-						result |= -2;
-						break;
-				}
-			}
-			else
-			{
-				RegDeleteTree(key, _T("EDID_OVERRIDE"));
-
-				switch (RegRenameKey(key, L"EDID_RECOVERY", L"EDID_OVERRIDE"))
-				{
-					case ERROR_SUCCESS:
-						result |= 1;
-						break;
-
-					case ERROR_FILE_NOT_FOUND:
-					case ERROR_PATH_NOT_FOUND:
-						break;
-
-					default:
-						result |= -2;
-						break;
-				}
-			}
-
-			RegCloseKey(key);
-			break;
-
-		case ERROR_FILE_NOT_FOUND:
-		case ERROR_PATH_NOT_FOUND:
-			break;
-
-		default:
-			result |= -2;
-			break;
-	}
-
-	return result;
+	return RegistryCloseKey(key);
 }
 
-/****************************************************************************/
-
-int RecoverDisplay(LPCTSTR display_id, BOOL recover)
-{
-	HKEY key;
-	TCHAR subkey[256];
-	TCHAR device_id[256];
-	DWORD i;
-	DWORD size;
-	int result = 0;
-
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Enum\\DISPLAY\\%s"), display_id) >= 256)
-		return -2;
-
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_ENUMERATE_SUB_KEYS, &key) != ERROR_SUCCESS)
-		return -2;
-
-	for (i = 0; size = 256, RegEnumKeyEx(key, i, device_id, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; i++)
-		result |= RecoverDevice(display_id, device_id, recover);
-
-	RegCloseKey(key);
-	return result;
-}
-
-/****************************************************************************/
+/**************************************************************************/
 
 int RecoverDisplays(BOOL recover)
 {
 	HKEY key;
-	TCHAR subkey[256];
-	TCHAR display_id[256];
-	DWORD i;
+	DWORD index;
+	TCHAR text[TEXTSIZE];
+
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, ENUM_DISPLAY, KEY_ENUMERATE_SUB_KEYS, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
+
+	for (index = 0; RegistryEnumKey(key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
+		RecoverDisplay(recover, text);
+
+	return RegistryCloseKey(key);
+}
+
+/**************************************************************************/
+
+int RecoverIntelInstance(BOOL recover, LPCTSTR instance)
+{
+	TCHAR text[TEXTSIZE];
+	HKEY key;
 	DWORD size;
-	int result = 0;
+	HKEY recovery_key;
+	DWORD index;
 
-	if (_sntprintf(subkey, 256, _T("SYSTEM\\CurrentControlSet\\Enum\\DISPLAY")) >= 256)
-		return -3;
+	if (_tcslen(instance) != 4)
+		return RegistryGetStatus();
 
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, KEY_ENUMERATE_SUB_KEYS, &key) != ERROR_SUCCESS)
-		return -3;
+	if (_sntprintf(text, TEXTSIZE, _T("%s\\%s"), CONTROL_CLASS, instance) >= TEXTSIZE)
+		return RegistrySetStatus(REGISTRY_ERROR);
 
-	for (i = 0; size = 256, RegEnumKeyEx(key, i, display_id, &size, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; i++)
-		result |= RecoverDisplay(display_id, recover);
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, text, KEY_QUERY_VALUE | KEY_SET_VALUE, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
 
-	RegCloseKey(key);
-	return result;
-}
+	size = sizeof text;
 
-/****************************************************************************/
+	if (RegistryQueryValue(key, _T("ProviderName"), NULL, (LPBYTE)text, &size) != REGISTRY_SUCCESS)
+		return RegistryCloseKey(key);
 
-BOOL CALLBACK EnumWindowsProc(HWND window, LPARAM lParam)
-{
-	if (window_count >= MAX_WINDOWS)
-		return FALSE;
+	if (size < 5 || _tcsnicmp(text, _T("Intel"), 5) != 0)
+		return RegistryCloseKey(key);
 
-	if (IsWindowVisible(window))
+	if (recover)
 	{
-		window_list[window_count] = window;
-		window_placement[window_count].length = sizeof window_placement[window_count];
-		GetWindowPlacement(window, &window_placement[window_count]);
+		if (RegistryDeleteTree(key, _T("EDID_RECOVERY")) == REGISTRY_ERROR)
+			return RegistryCloseKey(key);
 
-		switch (window_placement[window_count].showCmd)
+		if (RegistryCreateKey(key, _T("EDID_RECOVERY"), KEY_SET_VALUE, &recovery_key) != REGISTRY_SUCCESS)
+			return RegistryCloseKey(key);
+
+		for (index = 0; RegistryEnumValue(key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
 		{
-			case SW_SHOWNORMAL:
-				GetWindowRect(window, &window_placement[window_count].rcNormalPosition);
-				break;
+			if (_tcsnicmp(text, _T("FakeEDID_"), 9) != 0)
+				continue;
 
-			case SW_SHOWMAXIMIZED:
-				ShowWindow(window, SW_SHOWNORMAL);
-				break;
-		}
-
-		window_placement[window_count].flags |= WPF_ASYNCWINDOWPLACEMENT;
-		window_count++;
-	}
-
-	return TRUE;
-}
-
-/****************************************************************************/
-
-void SaveWindows()
-{
-	window_count = 0;
-	EnumWindows(EnumWindowsProc, 0);
-}
-
-/****************************************************************************/
-
-BOOL SetWindowRect(HWND window, RECT rect, UINT flags)
-{
-	return SetWindowPos(window, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flags);
-}
-
-/****************************************************************************/
-
-BOOL RestoreWindows()
-{
-	DWORD i;
-
-	for (i = 0; i < window_count; i++)
-	{
-		if (window_placement[i].showCmd == SW_SHOWNORMAL)
-			SetWindowRect(window_list[i], window_placement[i].rcNormalPosition, SWP_ASYNCWINDOWPOS);
-		else
-			SetWindowPlacement(window_list[i], &window_placement[i]);
-	}
-
-	return TRUE;
-}
-
-/****************************************************************************/
-
-DWORD KillProcess(LPCTSTR name)
-{
-	HANDLE processes;
-	PROCESSENTRY32 process_entry;
-	HANDLE process;
-	DWORD result = 0;
-
-	processes = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-	if (processes == INVALID_HANDLE_VALUE)
-		return 0;
-
-	process_entry.dwSize = sizeof process_entry;
-
-	if (Process32First(processes, &process_entry))
-	{
-		do
-		{
-			if (_tcsicmp(process_entry.szExeFile, name) == 0)
+			switch (RegistryCopyValue(key, recovery_key, text))
 			{
-				process = OpenProcess(PROCESS_TERMINATE, FALSE, process_entry.th32ProcessID);
+				case REGISTRY_NOT_FOUND:
+					continue;
 
-				if (process)
-				{
-					TerminateProcess(process, 0);
-					CloseHandle(process);
-					result++;
-				}
+				case REGISTRY_ERROR:
+					return RegistryCloseKeys(recovery_key, key);
+			}
+
+			switch (RegistryDeleteValue(key, text))
+			{
+				case REGISTRY_SUCCESS:
+					index--;
+					break;
+
+				case REGISTRY_ERROR:
+					return RegistryCloseKeys(recovery_key, key);
 			}
 		}
-		while (Process32Next(processes, &process_entry));
+
+		if (RegistryCopyValue(key, recovery_key, _T("ReadEDIDFromRegistry")) == REGISTRY_ERROR)
+			return RegistryCloseKeys(recovery_key, key);
+
+		RegistryCloseKey(recovery_key);
+
+		if (RegistrySetValue(key, _T("FakeEDID_14_0_af0d_1723"), REG_BINARY, intel_data, sizeof intel_data) != REGISTRY_SUCCESS)
+			return RegistryCloseKey(key);
+
+		if (RegistrySetDWORD(key, _T("ReadEDIDFromRegistry"), 1) != REGISTRY_SUCCESS)
+			return RegistryCloseKey(key);
+	}
+	else
+	{
+		if (RegistryOpenKey(key, _T("EDID_RECOVERY"), KEY_QUERY_VALUE, &recovery_key) != REGISTRY_SUCCESS)
+			return RegistryCloseKey(key);
+
+		if (RegistryDeleteValue(key, _T("FakeEDID_14_0_af0d_1723")) == REGISTRY_ERROR)
+			return RegistryCloseKeys(recovery_key, key);
+
+		if (RegistryDeleteValue(key, _T("ReadEDIDFromRegistry")) == REGISTRY_ERROR)
+			return RegistryCloseKeys(recovery_key, key);
+
+		for (index = 0; RegistryEnumValue(recovery_key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
+		{
+			if (_tcsnicmp(text, _T("FakeEDID_"), 9) != 0)
+				continue;
+
+			if (RegistryCopyValue(recovery_key, key, text) == REGISTRY_ERROR)
+				return RegistryCloseKeys(recovery_key, key);
+		}
+
+		if (RegistryCopyValue(recovery_key, key, _T("ReadEDIDFromRegistry")) == REGISTRY_ERROR)
+			return RegistryCloseKeys(recovery_key, key);
+
+		RegistryCloseKey(recovery_key);
+
+		if (RegistryDeleteTree(key, _T("EDID_RECOVERY")) == REGISTRY_ERROR)
+			return RegistryCloseKey(key);
 	}
 
-	CloseHandle(processes);
-	return result;
+	return RegistryCloseKey(key);
 }
 
-/****************************************************************************/
+/**************************************************************************/
+
+int RecoverIntel(BOOL recover)
+{
+	HKEY key;
+	DWORD index;
+	TCHAR text[TEXTSIZE];
+
+	if (RegistryOpenKey(HKEY_LOCAL_MACHINE, CONTROL_CLASS, KEY_ENUMERATE_SUB_KEYS, &key) != REGISTRY_SUCCESS)
+		return RegistryGetStatus();
+
+	for (index = 0; RegistryEnumKey(key, index, text, TEXTSIZE) == REGISTRY_SUCCESS; index++)
+		RecoverIntelInstance(recover, text);
+
+	return RegistryCloseKey(key);
+}
+
+/**************************************************************************/
 
 BOOL RefreshNotifyWindow(HWND window)
 {
@@ -418,7 +283,7 @@ BOOL RefreshNotifyWindow(HWND window)
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL RefreshNotifyIcons()
 {
@@ -463,102 +328,7 @@ BOOL RefreshNotifyIcons()
 	return TRUE;
 }
 
-/****************************************************************************/
-
-BOOL SetProcessTokenPrivilege(LPCTSTR name, DWORD attributes)
-{
-	TOKEN_PRIVILEGES token_privileges;
-	HANDLE process_token;
-
-	token_privileges.PrivilegeCount = 1;
-	token_privileges.Privileges[0].Attributes = attributes;
-
-	if (!LookupPrivilegeValue(NULL, name, &token_privileges.Privileges[0].Luid))
-		return FALSE;
-
-	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &process_token))
-		return FALSE;
-
-	if (!AdjustTokenPrivileges(process_token, FALSE, &token_privileges, 0, NULL, NULL))
-	{
-		CloseHandle(process_token);
-		return FALSE;
-	}
-
-	CloseHandle(process_token);
-	return TRUE;
-}
-
-/****************************************************************************/
-
-HANDLE GetUserToken()
-{
-	HWND shell_window;
-	DWORD process_id;
-	HANDLE process_handle;
-	HANDLE process_token;
-	HANDLE user_token;
-
-	if (!SetProcessTokenPrivilege(SE_INCREASE_QUOTA_NAME, SE_PRIVILEGE_ENABLED))
-		return NULL;
-
-	shell_window = GetShellWindow();
-
-	if (!shell_window)
-		return NULL;
-
-	GetWindowThreadProcessId(shell_window, &process_id);
-
-	if (!process_id)
-		return NULL;
-
-	process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process_id);
-
-	if (!process_handle)
-		return NULL;
-
-	if (!OpenProcessToken(process_handle, TOKEN_DUPLICATE, &process_token))
-	{
-		CloseHandle(process_handle);
-		return NULL;
-	}
-
-	if (!DuplicateTokenEx(process_token, TOKEN_QUERY | TOKEN_DUPLICATE | TOKEN_ASSIGN_PRIMARY | TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID, NULL, SecurityImpersonation, TokenPrimary, &user_token))
-		user_token = NULL;
-
-	CloseHandle(process_handle);
-	CloseHandle(process_token);
-	return user_token;
-}
-
-/****************************************************************************/
-
-BOOL RunAsUser(LPWSTR command)
-{
-	HANDLE user_token;
-	STARTUPINFO startup_info;
-	PROCESS_INFORMATION process_info;
-
-	user_token = GetUserToken();
-
-	if (!user_token)
-		return FALSE;
-
-	GetStartupInfo(&startup_info);
-
-	if (!CreateProcessWithTokenW(user_token, 0, NULL, command, 0, NULL, NULL, &startup_info, &process_info))
-	{
-		CloseHandle(user_token);
-		return FALSE;
-	}
-
-	CloseHandle(user_token);
-	CloseHandle(process_info.hProcess);
-	CloseHandle(process_info.hThread);
-	return TRUE;
-}
-
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL StopCCC()
 {
@@ -567,7 +337,7 @@ BOOL StopCCC()
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL StartCCC()
 {
@@ -597,16 +367,17 @@ BOOL StartCCC()
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL StopRadeonSettings()
 {
+	KillProcess(_T("RadeonSoftware.exe"));
 	KillProcess(_T("RadeonSettings.exe"));
 	KillProcess(_T("cnext.exe"));
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL StartRadeonSettings()
 {
@@ -630,7 +401,7 @@ BOOL StartRadeonSettings()
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL FixTaskbar()
 {
@@ -639,22 +410,22 @@ BOOL FixTaskbar()
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
-DWORD SetDriverState(DWORD state)
+int SetDriverState(DWORD state)
 {
 	HDEVINFO devices;
-	DWORD i;
+	DWORD index;
 	SP_DEVINFO_DATA device;
 	SP_PROPCHANGE_PARAMS params;
-	DWORD result = 0;
+	int result = 0;
 
 	devices = SetupDiGetClassDevs(&GUID_DEVCLASS_DISPLAY, NULL, NULL, DIGCF_PRESENT);
 
 	if (devices == INVALID_HANDLE_VALUE)
 		return 0;
 
-	for (i = 0; device.cbSize = sizeof device, SetupDiEnumDeviceInfo(devices, i, &device); i++)
+	for (index = 0; device.cbSize = sizeof device, SetupDiEnumDeviceInfo(devices, index, &device); index++)
 	{
 		params.ClassInstallHeader.cbSize = sizeof params.ClassInstallHeader;
 		params.ClassInstallHeader.InstallFunction = DIF_PROPERTYCHANGE;
@@ -671,7 +442,7 @@ DWORD SetDriverState(DWORD state)
 	return result;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL StopDriver()
 {
@@ -684,11 +455,10 @@ BOOL StopDriver()
 	StopRadeonSettings();
 	Sleep(100);
 	RefreshNotifyIcons();
-	Sleep(2500);
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL StartDriver()
 {
@@ -696,22 +466,14 @@ BOOL StartDriver()
 		return FALSE;
 
 	FixTaskbar();
-	Sleep(3000);
+	Sleep(3500);
 	RestoreWindows();
 	StartRadeonSettings();
 	Sleep(100);
 	return TRUE;
 }
 
-/****************************************************************************/
-
-int FinishRestart()
-{
-	StartCCC();
-	return 0;
-}
-
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL RestartDriver()
 {
@@ -724,7 +486,33 @@ BOOL RestartDriver()
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
+
+int FinishRestart()
+{
+	StartCCC();
+	return 0;
+}
+
+/**************************************************************************/
+
+BOOL RecoveryMode()
+{
+	RegistryResetStatus();
+	ResetConfiguration();
+	ResetConnectivity();
+	RecoverDisplays(TRUE);
+	RecoverIntel(TRUE);
+
+	if (!RestartDriver())
+		return FALSE;
+
+	RecoverDisplays(FALSE);
+	RecoverIntel(FALSE);
+	return TRUE;
+}
+
+/**************************************************************************/
 
 BOOL IsWow64()
 {
@@ -736,56 +524,7 @@ BOOL IsWow64()
 	return result;
 }
 
-/****************************************************************************/
-
-BOOL RestartOnly(LPTSTR options)
-{
-	TCHAR path[32768];
-	LPTSTR file;
-
-	if (_tcscmp(options, _T("-q")) == 0)
-		return TRUE;
-
-	if (!GetModuleFileName(NULL, path, 32768))
-		return FALSE;
-
-	file = _tcsrchr(path, _T('\\'));
-
-	if (!file)
-		file = path;
-
-	_tcslwr(file);
-
-	if (_tcsstr(file, _T("-only.")))
-		return TRUE;
-
-	return FALSE;
-}
-
-/****************************************************************************/
-
-BOOL Restart64(LPTSTR options)
-{
-	TCHAR command[256];
-	STARTUPINFO startup_info;
-	PROCESS_INFORMATION process_info;
-
-	if (RestartOnly(options))
-		_tcscpy(command, _T("restart64.exe -q"));
-	else
-		_tcscpy(command, _T("restart64.exe"));
-
-	GetStartupInfo(&startup_info);
-
-	if (!CreateProcess(NULL, command, NULL, NULL, FALSE, 0, NULL, NULL, &startup_info, &process_info))
-		return FALSE;
-
-	CloseHandle(process_info.hProcess);
-	CloseHandle(process_info.hThread);
-	return TRUE;
-}
-
-/****************************************************************************/
+/**************************************************************************/
 
 BOOL WaitForDesktop()
 {
@@ -811,7 +550,90 @@ BOOL WaitForDesktop()
 	return TRUE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
+
+BOOL RestartOnly()
+{
+	TCHAR path[32768];
+	LPTSTR file;
+
+	if (!GetModuleFileName(NULL, path, 32768))
+		return FALSE;
+
+	file = _tcsrchr(path, _T('\\'));
+
+	if (!file)
+		file = path;
+
+	_tcslwr(file);
+
+	if (_tcsstr(file, _T("-only.")))
+		return TRUE;
+
+	return FALSE;
+}
+
+/**************************************************************************/
+
+int ProcessCommand(LPCTSTR cmdLine)
+{
+	if (cmdLine[0] == _T('-') || cmdLine[0] == _T('/'))
+	{
+		if (cmdLine[2] == 0)
+		{
+			switch (cmdLine[1])
+			{
+				case _T('Q'):
+				case _T('q'):
+					return IDC_RESTART;
+
+				case _T('R'):
+				case _T('r'):
+					return IDC_RECOVERY;
+			}
+		}
+	}
+
+	if (RestartOnly())
+		return IDC_RESTART;
+
+	return 0;
+}
+
+/**************************************************************************/
+
+BOOL Restart64(LPCTSTR cmdLine)
+{
+	TCHAR command[TEXTSIZE];
+	STARTUPINFO startup_info;
+	PROCESS_INFORMATION process_info;
+
+	switch (ProcessCommand(cmdLine))
+	{
+		case IDC_RESTART:
+			_tcscpy(command, _T("restart64.exe /q"));
+			break;
+
+		case IDC_RECOVERY:
+			_tcscpy(command, _T("restart64.exe /r"));
+			break;
+
+		default:
+			_tcscpy(command, _T("restart64.exe"));
+			break;
+	}
+
+	GetStartupInfo(&startup_info);
+
+	if (!CreateProcess(NULL, command, NULL, NULL, FALSE, 0, NULL, NULL, &startup_info, &process_info))
+		return FALSE;
+
+	CloseHandle(process_info.hProcess);
+	CloseHandle(process_info.hThread);
+	return TRUE;
+}
+
+/**************************************************************************/
 
 INT_PTR CALLBACK RestartProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -840,7 +662,7 @@ INT_PTR CALLBACK RestartProc(HWND window, UINT message, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
-/****************************************************************************/
+/**************************************************************************/
 
 INT_PTR CALLBACK RecoveryProc(HWND window, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -865,13 +687,15 @@ INT_PTR CALLBACK RecoveryProc(HWND window, UINT message, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-/* Main *********************************************************************/
+/* Main *******************************************************************/
 
-int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
+int WINAPI _tWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPTSTR cmdLine, int cmdShow)
 {
+	const TCHAR error[] = _T("Failed to restart graphics driver.");
+
 	if (IsWow64())
 	{
-		if (!Restart64(lpCmdLine))
+		if (!Restart64(cmdLine))
 			return ErrorMessage(_T("Failed to load restart64.exe."));
 
 		return 0;
@@ -879,39 +703,43 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 
 	WaitForDesktop();
 
-	if (!RestartDriver())
-		return ErrorMessage(_T("Failed to restart graphics driver."));
+	switch (ProcessCommand(cmdLine))
+	{
+		case IDC_RESTART:
+			if (!RestartDriver())
+				return ErrorMessage(error);
 
-	if (RestartOnly(lpCmdLine))
-		return FinishRestart();
+			return FinishRestart();
+
+		case IDC_RECOVERY:
+			if (!RecoveryMode())
+				return ErrorMessage(error);
+
+			return FinishRestart();
+	}
+
+	if (!RestartDriver())
+		return ErrorMessage(error);
 
 	for (;;)
 	{
-		switch (DialogBox(hInstance, _T("IDD_RESTART"), NULL, RestartProc))
+		switch (DialogBox(instance, _T("IDD_RESTART"), NULL, RestartProc))
 		{
 			case IDC_RESTART:
 				if (!RestartDriver())
-					return ErrorMessage(_T("Failed to restart graphics driver."));
+					return ErrorMessage(error);
 
 				break;
 
 			case IDC_RECOVERY:
-				ResetConfigurations();
-				ResetConnectivity();
-				RecoverDisplays(TRUE);
+				if (!RecoveryMode())
+					return ErrorMessage(error);
 
-				if (!RestartDriver())
-					return ErrorMessage(_T("Failed to restart graphics driver."));
-
-				ResetConfigurations();
-				ResetConnectivity();
-				RecoverDisplays(FALSE);
-
-				if (DialogBox(hInstance, _T("IDD_RECOVERY"), NULL, RecoveryProc) == IDC_EXIT)
+				if (DialogBox(instance, _T("IDD_RECOVERY"), NULL, RecoveryProc) == IDC_EXIT)
 					return FinishRestart();
 
 				if (!RestartDriver())
-					return ErrorMessage(_T("Failed to restart graphics driver."));
+					return ErrorMessage(error);
 
 				break;
 
@@ -920,3 +748,5 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdL
 		}
 	}
 }
+
+/**************************************************************************/
