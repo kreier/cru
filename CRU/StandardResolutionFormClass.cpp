@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "StandardResolutionFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TStandardResolutionForm *StandardResolutionForm;
@@ -17,14 +16,6 @@ bool TStandardResolutionForm::Connect(StandardResolutionClass &NewStandardResolu
 {
 	StandardResolution = &NewStandardResolution;
 	return true;
-}
-//---------------------------------------------------------------------------
-TColor TStandardResolutionForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
 }
 //---------------------------------------------------------------------------
 bool TStandardResolutionForm::Refresh(void *Value)
@@ -68,17 +59,17 @@ bool TStandardResolutionForm::Refresh(void *Value)
 	if (Value != ModeComboBox)
 		ModeComboBox->ItemIndex = StandardResolution->GetMode();
 
-	if (Value != Width && Common::IntegerToText(StandardResolution->GetWidth(), Text, TEXTSIZE))
+	if (Value != Width && IntegerToText(StandardResolution->GetWidth(), Text, TEXTSIZE))
 		Width->Text = Text;
 
 	Width->Font->Color = GetTextColor(StandardResolution->IsValidWidth());
 
-	if (Value != Height && Common::IntegerToText(StandardResolution->GetHeight(), Text, TEXTSIZE))
+	if (Value != Height && IntegerToText(StandardResolution->GetHeight(), Text, TEXTSIZE))
 		Height->Text = Text;
 
 	Height->Font->Color = GetTextColor(StandardResolution->IsValidHeight());
 
-	if (Value != Rate && Common::IntegerToText(StandardResolution->GetRate(), Text, TEXTSIZE))
+	if (Value != Rate && IntegerToText(StandardResolution->GetRate(), Text, TEXTSIZE))
 		Rate->Text = Text;
 
 	Rate->Font->Color = GetTextColor(StandardResolution->IsValidRate());
@@ -97,8 +88,8 @@ bool TStandardResolutionForm::InitModeComboBox()
 	char Text[TEXTSIZE];
 
 	ItemIndex = ModeComboBox->ItemIndex;
-	ModeComboBox->Clear();
 	ModeComboBox->Items->BeginUpdate();
+	ModeComboBox->Clear();
 
 	for (Index = 0; StandardResolution->GetModeText(Index, Text, TEXTSIZE); Index++)
 		ModeComboBox->Items->Add(Text);
@@ -143,12 +134,12 @@ bool TStandardResolutionForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = ResolutionGroupBox->Top + ResolutionGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = ResolutionGroupBox->Left + ResolutionGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -183,7 +174,7 @@ void __fastcall TStandardResolutionForm::WidthChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	StandardResolution->SetWidth(Common::TextToInteger(Width->Text.c_str()));
+	StandardResolution->SetWidth(TextToInteger(Width->Text.c_str()));
 	Refresh(Width);
 }
 //---------------------------------------------------------------------------
@@ -197,7 +188,7 @@ void __fastcall TStandardResolutionForm::HeightChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	StandardResolution->SetHeight(Common::TextToInteger(Height->Text.c_str()));
+	StandardResolution->SetHeight(TextToInteger(Height->Text.c_str()));
 	Refresh(Height);
 }
 //---------------------------------------------------------------------------
@@ -211,7 +202,7 @@ void __fastcall TStandardResolutionForm::RateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	StandardResolution->SetRate(Common::TextToInteger(Rate->Text.c_str()));
+	StandardResolution->SetRate(TextToInteger(Rate->Text.c_str()));
 	Refresh(Rate);
 }
 //---------------------------------------------------------------------------

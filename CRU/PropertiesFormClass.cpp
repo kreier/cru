@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "PropertiesFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TPropertiesForm *PropertiesForm;
@@ -19,33 +18,53 @@ bool TPropertiesForm::Connect(PropertiesClass &NewProperties)
 	return true;
 }
 //---------------------------------------------------------------------------
-TColor TPropertiesForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
-}
-//---------------------------------------------------------------------------
 bool TPropertiesForm::Refresh(void *Value)
 {
 	char Text[TEXTSIZE];
 
 	Refreshing = true;
 
-	if (Value == NULL || Value == ProductIDGroupBox)
+	if (Value == NULL)
 	{
-		ProductID->Font->Color = GetTextColor(Properties->IsValidProductID());
+		if (Properties->ColorFormatsSupported())
+		{
+			ColorFormatsGroupBox->Visible = true;
+			NameGroupBox->Top = ColorFormatsGroupBox->Top + ColorFormatsGroupBox->Height + GroupBoxBottom + GroupBoxTop;
+		}
+		else
+		{
+			ColorFormatsGroupBox->Visible = false;
+			NameGroupBox->Top = DeviceIDGroupBox->Top + DeviceIDGroupBox->Height + GroupBoxBottom + GroupBoxTop;
+		}
 
-		if (!ProductID->Focused() && Properties->GetProductID(Text, TEXTSIZE))
-			ProductID->Text = Text;
+		SerialNumberGroupBox->Top = NameGroupBox->Top + NameGroupBox->Height + GroupBoxBottom + GroupBoxTop;
+		RangeLimitsGroupBox->Top = SerialNumberGroupBox->Top + SerialNumberGroupBox->Height + GroupBoxBottom + GroupBoxTop;
+		FormOKButton->Top = RangeLimitsGroupBox->Top + RangeLimitsGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
+		FormCancelButton->Top = FormOKButton->Top;
+		ClientHeight = FormCancelButton->Top + FormCancelButton->Height + ButtonBottom + Scale;
+	}
+
+	if (Value == NULL || Value == DeviceIDGroupBox)
+	{
+		DeviceID->Font->Color = GetTextColor(Properties->IsValidDeviceID());
+
+		if (!DeviceID->Focused() && Properties->GetDeviceID(Text, TEXTSIZE))
+			DeviceID->Text = Text;
 
 		SerialID->Font->Color = GetTextColor(Properties->IsValidSerialID());
 
-		if (!SerialID->Focused() && Common::DecimalToText(Properties->GetSerialID(), SerialID->MaxLength, 0, Text, TEXTSIZE))
+		if (!SerialID->Focused() && DecimalToText(Properties->GetSerialID(), SerialID->MaxLength, 0, Text, TEXTSIZE))
 			SerialID->Text = Text;
 
-		ProductIDResetButton->Enabled = Properties->ResetProductIDPossible();
+		DeviceIDResetButton->Enabled = Properties->ResetDeviceIDPossible();
+	}
+
+	if (Value == NULL || Value == ColorFormatsGroupBox)
+	{
+		YCbCr422->Checked = Properties->GetYCbCr422();
+		YCbCr444->Checked = Properties->GetYCbCr444();
+
+		ColorDepthComboBox->ItemIndex = Properties->GetColorDepth();
 	}
 
 	if (Value == NULL || Value == NameGroupBox)
@@ -72,27 +91,27 @@ bool TPropertiesForm::Refresh(void *Value)
 	{
 		MinVRate->Font->Color = GetTextColor(Properties->IsValidMinVRate());
 
-		if (!MinVRate->Focused() && Common::IntegerToText(Properties->GetMinVRate(), Text, TEXTSIZE))
+		if (!MinVRate->Focused() && IntegerToText(Properties->GetMinVRate(), Text, TEXTSIZE))
 			MinVRate->Text = Text;
 
 		MaxVRate->Font->Color = GetTextColor(Properties->IsValidMaxVRate());
 
-		if (!MaxVRate->Focused() && Common::IntegerToText(Properties->GetMaxVRate(), Text, TEXTSIZE))
+		if (!MaxVRate->Focused() && IntegerToText(Properties->GetMaxVRate(), Text, TEXTSIZE))
 			MaxVRate->Text = Text;
 
 		MinHRate->Font->Color = GetTextColor(Properties->IsValidMinHRate());
 
-		if (!MinHRate->Focused() && Common::IntegerToText(Properties->GetMinHRate(), Text, TEXTSIZE))
+		if (!MinHRate->Focused() && IntegerToText(Properties->GetMinHRate(), Text, TEXTSIZE))
 			MinHRate->Text = Text;
 
 		MaxHRate->Font->Color = GetTextColor(Properties->IsValidMaxHRate());
 
-		if (!MaxHRate->Focused() && Common::IntegerToText(Properties->GetMaxHRate(), Text, TEXTSIZE))
+		if (!MaxHRate->Focused() && IntegerToText(Properties->GetMaxHRate(), Text, TEXTSIZE))
 			MaxHRate->Text = Text;
 
 		MaxPClock->Font->Color = GetTextColor(Properties->IsValidMaxPClock());
 
-		if (!MaxPClock->Focused() && Common::IntegerToText(Properties->GetMaxPClock(), Text, TEXTSIZE))
+		if (!MaxPClock->Focused() && IntegerToText(Properties->GetMaxPClock(), Text, TEXTSIZE))
 			MaxPClock->Text = Text;
 
 		IncludeRangeLimits->Checked = Properties->GetIncludeRangeLimits();
@@ -105,38 +124,81 @@ bool TPropertiesForm::Refresh(void *Value)
 	return true;
 }
 //---------------------------------------------------------------------------
+bool TPropertiesForm::InitColorDepthComboBox()
+{
+	int ItemIndex;
+	int Index;
+	char Text[TEXTSIZE];
+
+	ItemIndex = ColorDepthComboBox->ItemIndex;
+	ColorDepthComboBox->Items->BeginUpdate();
+	ColorDepthComboBox->Clear();
+
+	for (Index = 0; Properties->GetColorDepthText(Index, Text, TEXTSIZE); Index++)
+		ColorDepthComboBox->Items->Add(Text);
+
+	ColorDepthComboBox->ItemIndex = ItemIndex;
+	ColorDepthComboBox->Items->EndUpdate();
+	return true;
+}
+//---------------------------------------------------------------------------
 bool TPropertiesForm::ScaleControls()
 {
-	ProductIDResetButton->Width = ButtonWidth;
-	ProductIDResetButton->Height = ButtonHeight;
-	Common::FixButtonCaption(ProductIDResetButton, Canvas->TextWidth(ProductIDResetButton->Caption));
+	DeviceIDResetButton->Width = ButtonWidth;
+	DeviceIDResetButton->Height = ButtonHeight;
+	FixButtonCaption(DeviceIDResetButton, Canvas->TextWidth(DeviceIDResetButton->Caption));
 
-	ProductID->AutoSize = false;
-	ProductID->Width = FormButtonsWidth - PaddingWidth - ProductIDLabel->Width - LabelSpacing - Scale - ButtonLeft - ProductIDResetButton->Width - ButtonRight - PaddingWidth;
-	ProductID->Height = TextBoxHeight;
+	DeviceID->AutoSize = false;
+	DeviceID->Width = FormButtonsWidth - PaddingWidth - DeviceIDLabel->Width - LabelSpacing - Scale - ButtonLeft - DeviceIDResetButton->Width - ButtonRight - PaddingWidth;
+	DeviceID->Height = TextBoxHeight;
 
 	SerialID->AutoSize = false;
 	SerialID->Width = FormButtonsWidth - PaddingWidth - SerialIDLabel->Width - LabelSpacing - PaddingWidth;
 	SerialID->Height = TextBoxHeight;
 
-	ProductID->Top = PaddingTop;
-	ProductIDLabel->Top = ProductID->Top + 3;
-	ProductIDResetButton->Top = ProductID->Top;
+	DeviceID->Top = PaddingTop;
+	DeviceIDLabel->Top = DeviceID->Top + 3;
+	DeviceIDResetButton->Top = DeviceID->Top;
 
-	SerialID->Top = ProductID->Top + ProductID->Height + TextBoxSpacing;
+	SerialID->Top = DeviceID->Top + DeviceID->Height + TextBoxSpacing;
 	SerialIDLabel->Top = SerialID->Top + 3;
 
-	ProductIDLabel->Left = PaddingWidth;
-	ProductID->Left = ProductIDLabel->Left + ProductIDLabel->Width + LabelSpacing;
-	ProductIDResetButton->Left = ProductID->Left + ProductID->Width + Scale + ButtonLeft;
+	DeviceIDLabel->Left = PaddingWidth;
+	DeviceID->Left = DeviceIDLabel->Left + DeviceIDLabel->Width + LabelSpacing;
+	DeviceIDResetButton->Left = DeviceID->Left + DeviceID->Width + Scale + ButtonLeft;
 
-	SerialIDLabel->Left = ProductIDLabel->Left;
+	SerialIDLabel->Left = DeviceIDLabel->Left;
 	SerialID->Left = SerialIDLabel->Left + SerialIDLabel->Width + LabelSpacing;
 
-	ProductIDGroupBox->Width = FormButtonsWidth;
-	ProductIDGroupBox->Height = SerialID->Top + SerialID->Height + PaddingBottom;
-	ProductIDGroupBox->Left = Scale;
-	ProductIDGroupBox->Top = GroupBoxTop;
+	DeviceIDGroupBox->Width = FormButtonsWidth;
+	DeviceIDGroupBox->Height = SerialID->Top + SerialID->Height + PaddingBottom;
+	DeviceIDGroupBox->Left = Scale;
+	DeviceIDGroupBox->Top = GroupBoxTop;
+
+	YCbCr422->Width = CheckBoxWidth + Canvas->TextWidth(YCbCr422->Caption);
+	YCbCr422->Height = CheckBoxHeight;
+	YCbCr422->Left = PaddingWidth;
+	YCbCr422->Top = PaddingTop + CheckBoxTop;
+
+	YCbCr444->Width = CheckBoxWidth + Canvas->TextWidth(YCbCr444->Caption);
+	YCbCr444->Height = CheckBoxHeight;
+	YCbCr444->Left = YCbCr422->Left;
+	YCbCr444->Top = YCbCr422->Top + YCbCr422->Height + CheckBoxSpacing;
+
+	int Spacing = (GroupBoxTop + PaddingTop + PaddingBottom + GroupBoxBottom + TextBoxHeight + CheckBoxTop + CheckBoxHeight * 2 + CheckBoxBottom * 2 - ComboBoxHeight * 3) / 2;
+
+	ColorDepthLabel->Left = YCbCr444->Left;
+	ColorDepthLabel->Top = YCbCr444->Top + YCbCr444->Height + CheckBoxSpacing + Spacing;
+
+	ColorDepthComboBox->Width = FormButtonsWidth - PaddingWidth * 2;
+	ColorDepthComboBox->Height = ComboBoxHeight;
+	ColorDepthComboBox->Left = ColorDepthLabel->Left;
+	ColorDepthComboBox->Top = ColorDepthLabel->Top + CheckBoxHeight + CheckBoxSpacing;
+
+	ColorFormatsGroupBox->Width = DeviceIDGroupBox->Width;
+	ColorFormatsGroupBox->Height = ColorDepthComboBox->Top + ColorDepthComboBox->Height + PaddingBottom;
+	ColorFormatsGroupBox->Left = DeviceIDGroupBox->Left;
+	ColorFormatsGroupBox->Top = DeviceIDGroupBox->Top + DeviceIDGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
 	Name->AutoSize = false;
 	Name->Width = FormButtonsWidth - PaddingWidth * 2;
@@ -149,10 +211,10 @@ bool TPropertiesForm::ScaleControls()
 	IncludeName->Left = Name->Left;
 	IncludeName->Top = Name->Top + Name->Height + Scale + CheckBoxTop;
 
-	NameGroupBox->Width = ProductIDGroupBox->Width;
+	NameGroupBox->Width = ColorFormatsGroupBox->Width;
 	NameGroupBox->Height = IncludeName->Top + IncludeName->Height + CheckBoxBottom + PaddingBottom;
-	NameGroupBox->Left = ProductIDGroupBox->Left;
-	NameGroupBox->Top = ProductIDGroupBox->Top + ProductIDGroupBox->Height + GroupBoxBottom + GroupBoxTop;
+	NameGroupBox->Left = ColorFormatsGroupBox->Left;
+	NameGroupBox->Top = ColorFormatsGroupBox->Top + ColorFormatsGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
 	SerialNumber->AutoSize = false;
 	SerialNumber->Width = FormButtonsWidth - PaddingWidth * 2;
@@ -256,12 +318,12 @@ bool TPropertiesForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = RangeLimitsGroupBox->Top + RangeLimitsGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = RangeLimitsGroupBox->Left + RangeLimitsGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -278,27 +340,28 @@ void __fastcall TPropertiesForm::FormCreate(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TPropertiesForm::FormShow(TObject *Sender)
 {
+	InitColorDepthComboBox();
 	Refresh(NULL);
 }
 //---------------------------------------------------------------------------
-void __fastcall TPropertiesForm::ProductIDChange(TObject *Sender)
+void __fastcall TPropertiesForm::DeviceIDChange(TObject *Sender)
 {
 	if (Refreshing)
 		return;
 
-	Properties->SetProductID(ProductID->Text.c_str());
-	Refresh(ProductIDGroupBox);
+	Properties->SetDeviceID(DeviceID->Text.c_str());
+	Refresh(DeviceIDGroupBox);
 }
 //---------------------------------------------------------------------------
-void __fastcall TPropertiesForm::ProductIDExit(TObject *Sender)
+void __fastcall TPropertiesForm::DeviceIDExit(TObject *Sender)
 {
-	Refresh(ProductIDGroupBox);
+	Refresh(DeviceIDGroupBox);
 }
 //---------------------------------------------------------------------------
-void __fastcall TPropertiesForm::ProductIDResetButtonClick(TObject *Sender)
+void __fastcall TPropertiesForm::DeviceIDResetButtonClick(TObject *Sender)
 {
-	Properties->ResetProductID();
-	Refresh(ProductIDGroupBox);
+	Properties->ResetDeviceID();
+	Refresh(DeviceIDGroupBox);
 }
 //---------------------------------------------------------------------------
 void __fastcall TPropertiesForm::SerialIDChange(TObject *Sender)
@@ -306,13 +369,40 @@ void __fastcall TPropertiesForm::SerialIDChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	Properties->SetSerialID(Common::TextToDecimal(SerialID->Text.c_str(), 0));
-	Refresh(ProductIDGroupBox);
+	Properties->SetSerialID(TextToDecimal(SerialID->Text.c_str(), 0));
+	Refresh(DeviceIDGroupBox);
 }
 //---------------------------------------------------------------------------
 void __fastcall TPropertiesForm::SerialIDExit(TObject *Sender)
 {
-	Refresh(ProductIDGroupBox);
+	Refresh(DeviceIDGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TPropertiesForm::YCbCr422Click(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	Properties->SetYCbCr422(YCbCr422->Checked);
+	Refresh(ColorFormatsGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TPropertiesForm::YCbCr444Click(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	Properties->SetYCbCr444(YCbCr444->Checked);
+	Refresh(ColorFormatsGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TPropertiesForm::ColorDepthComboBoxChange(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	Properties->SetColorDepth(ColorDepthComboBox->ItemIndex);
+	Refresh(ColorFormatsGroupBox);
 }
 //---------------------------------------------------------------------------
 void __fastcall TPropertiesForm::NameChange(TObject *Sender)
@@ -366,7 +456,7 @@ void __fastcall TPropertiesForm::MinVRateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	Properties->SetMinVRate(Common::TextToInteger(MinVRate->Text.c_str()));
+	Properties->SetMinVRate(TextToInteger(MinVRate->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -380,7 +470,7 @@ void __fastcall TPropertiesForm::MaxVRateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	Properties->SetMaxVRate(Common::TextToInteger(MaxVRate->Text.c_str()));
+	Properties->SetMaxVRate(TextToInteger(MaxVRate->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -394,7 +484,7 @@ void __fastcall TPropertiesForm::MinHRateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	Properties->SetMinHRate(Common::TextToInteger(MinHRate->Text.c_str()));
+	Properties->SetMinHRate(TextToInteger(MinHRate->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -408,7 +498,7 @@ void __fastcall TPropertiesForm::MaxHRateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	Properties->SetMaxHRate(Common::TextToInteger(MaxHRate->Text.c_str()));
+	Properties->SetMaxHRate(TextToInteger(MaxHRate->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -422,7 +512,7 @@ void __fastcall TPropertiesForm::MaxPClockChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	Properties->SetMaxPClock(Common::TextToInteger(MaxPClock->Text.c_str()));
+	Properties->SetMaxPClock(TextToInteger(MaxPClock->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------

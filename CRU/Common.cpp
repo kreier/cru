@@ -1,363 +1,163 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
-#pragma hdrstop
-
-#include "Common.h"
-#include <cstdio>
-#include <cstring>
-//---------------------------------------------------------------------------
-int Common::GetFormSize()
+bool IsDigit(char Value)
 {
-	if (Screen->Width < 720 || Screen->Height < 576)
-		return 6;
-
-	return 8;
+	return Value >= '0' && Value <= '9';
 }
 //---------------------------------------------------------------------------
-int Common::GetFormScale()
+bool IsHexDigit(char Value)
 {
-	return (GetFormSize() * Screen->PixelsPerInch + 96) / 192 * 2;
-}
-//---------------------------------------------------------------------------
-int Common::GetFontHeight()
-{
-	return GetFormSize() * Screen->PixelsPerInch * 5 / 576 * 2 + 1;
-}
-//---------------------------------------------------------------------------
-BOOL Common::IsAppThemed()
-{
-	typedef BOOL IsAppThemedProc();
-	static IsAppThemedProc *IsAppThemed;
-	static HMODULE Library;
+	if (Value >= 'A' && Value <= 'F')
+		return true;
 
-	if (!IsAppThemed)
+	if (Value >= 'a' && Value <= 'f')
+		return true;
+
+	return IsDigit(Value);
+}
+//---------------------------------------------------------------------------
+bool IsSpace(char Value)
+{
+	return Value == ' ';
+}
+//---------------------------------------------------------------------------
+bool IsUpper(char Value)
+{
+	return Value >= 'A' && Value <= 'Z';
+}
+//---------------------------------------------------------------------------
+bool IsLower(char Value)
+{
+	return Value >= 'a' && Value <= 'z';
+}
+//---------------------------------------------------------------------------
+char ValueToHex(unsigned char Value)
+{
+	if (Value < 10)
+		return Value + 48;
+
+	return Value + 55;
+}
+//---------------------------------------------------------------------------
+unsigned char HexToValue(char Value)
+{
+	if (IsDigit(Value))
+		return Value - 48;
+
+	return Value - 55;
+}
+//---------------------------------------------------------------------------
+bool DataToHex(const unsigned char *Data, int Size, char *Text, bool Reverse)
+{
+	if (Reverse)
 	{
-		if (!Library)
+		for (int Index = Size - 1; Index >= 0; Index--)
 		{
-			Library = LoadLibrary("uxtheme.dll");
-
-			if (!Library)
-				return FALSE;
+			Text[0] = ValueToHex(Data[Index] >> 4);
+			Text[1] = ValueToHex(Data[Index] & 15);
+			Text += 2;
 		}
-
-		IsAppThemed = (IsAppThemedProc *)GetProcAddress(Library, "IsAppThemed");
-
-		if (!IsAppThemed)
-			return FALSE;
+	}
+	else
+	{
+		for (int Index = 0; Index < Size; Index++)
+		{
+			Text[0] = ValueToHex(Data[Index] >> 4);
+			Text[1] = ValueToHex(Data[Index] & 15);
+			Text += 2;
+		}
 	}
 
-	return IsAppThemed();
+	*Text = 0;
+	return true;
 }
 //---------------------------------------------------------------------------
-int Common::GetCheckBoxWidth()
+bool HexToData(const char *Text, unsigned char *Data, int Size, bool Reverse)
 {
-	int i;
-	int x[] = {120, 144, 192, 240, 288, 384,   0};
-	int y[] = { 15,  18,  23,  29,  35,  43,  55};
+	while (IsSpace(*Text))
+		Text++;
 
-	if (!IsAppThemed() || Screen->PixelsPerInch > 480)
-		return Screen->PixelsPerInch / 8 + 5;
+	if (Reverse)
+	{
+		for (int Index = Size - 1; Index >= 0; Index--)
+		{
+			if (!IsHexDigit(Text[0]) || !IsHexDigit(Text[1]))
+				return false;
 
-	for (i = 0; x[i]; i++)
-		if (Screen->PixelsPerInch < x[i])
-			break;
+			if (Data)
+			{
+				Data[Index] = 0;
+				Data[Index] |= HexToValue(Text[0]) << 4;
+				Data[Index] |= HexToValue(Text[1]) & 15;
+			}
 
-	return y[i];
-}
-//---------------------------------------------------------------------------
-int Common::GetCheckBoxRight()
-{
-	int i;
-	int x[] = {144,   0};
-	int y[] = { -2,  -3};
+			Text += 2;
+		}
+	}
+	else
+	{
+		for (int Index = 0; Index < Size; Index++)
+		{
+			if (!IsHexDigit(Text[0]) || !IsHexDigit(Text[1]))
+				return false;
 
-	if (!IsAppThemed())
-		return -2;
+			if (Data)
+			{
+				Data[Index] = 0;
+				Data[Index] |= HexToValue(Text[0]) << 4;
+				Data[Index] |= HexToValue(Text[1]) & 15;
+			}
 
-	for (i = 0; x[i]; i++)
-		if (Screen->PixelsPerInch < x[i])
-			break;
+			Text += 2;
+		}
+	}
 
-	return y[i];
-}
-//---------------------------------------------------------------------------
-int Common::GetRadioButtonWidth()
-{
-	int i;
-	int x[] = {120, 144, 192, 240, 288, 384,   0};
-	int y[] = { 15,  18,  23,  29,  35,  42,  55};
+	while (IsSpace(*Text))
+		Text++;
 
-	if (!IsAppThemed() || Screen->PixelsPerInch > 480)
-		return Screen->PixelsPerInch / 8 + 5;
-
-	for (i = 0; x[i]; i++)
-		if (Screen->PixelsPerInch < x[i])
-			break;
-
-	return y[i];
-}
-//---------------------------------------------------------------------------
-int Common::GetRadioButtonRight()
-{
-	int i;
-	int x[] = {144,   0};
-	int y[] = { -2,  -3};
-
-	if (!IsAppThemed())
-		return -2;
-
-	for (i = 0; x[i]; i++)
-		if (Screen->PixelsPerInch < x[i])
-			break;
-
-	return y[i];
-}
-//---------------------------------------------------------------------------
-int Common::GetScaledResourceID(int ResourceID)
-{
-	int i;
-	int x[] = {9, 11, 13, 15, 17, 19, 21, 23, 0};
-
-	for (i = 0; x[i]; i++)
-		if (GetFormScale() < x[i])
-			break;
-
-	return ResourceID + IsAppThemed() * 10 + i;
-}
-//---------------------------------------------------------------------------
-bool Common::FixButtonCaption(TButton *Button, int TextWidth)
-{
-	if (GetFormScale() == 8 && TextWidth % 2 != 0)
-		Button->Caption = "{                " + Button->Caption + "                ]";
+	if (*Text != 0)
+		return false;
 
 	return true;
 }
 //---------------------------------------------------------------------------
-void Common::ListBoxDrawItems(TListBox *ListBox, RECT Rect, TOwnerDrawState State, struct Column *Columns, int Count, bool Enabled, bool Bold)
+bool Trim(char *Text)
 {
-	RECT ItemRect;
-	int Index;
+	char *Byte = Text;
 
-	if (!Enabled)
-	{
-		if (State.Contains(odSelected))
-			ListBox->Canvas->Brush->Color = clGrayText;
-		else
-			ListBox->Canvas->Font->Color = clGrayText;
-	}
-
-	if (Bold)
-		ListBox->Canvas->Font->Style = TFontStyles() << fsBold;
-
-	ListBox->Canvas->FillRect(Rect);
-	ItemRect = Rect;
-	ItemRect.left += 2;
-
-	if (GetFormScale() == 8)
-		ItemRect.left++;
-
-	for (Index = 0; Index < Count; Index++)
-	{
-		ItemRect.right = ItemRect.left + Columns[Index].Width;
-		DrawText(ListBox->Canvas->Handle, Columns[Index].Text, -1, &ItemRect, Columns[Index].Format | DT_NOPREFIX);
-		ItemRect.left = ItemRect.right;
-	}
-
-	if (State.Contains(odFocused))
-		ListBox->Canvas->DrawFocusRect(Rect);
-}
-//---------------------------------------------------------------------------
-void Common::ListBoxDrawItem(TListBox *ListBox, RECT Rect, TOwnerDrawState State, const char *Text, bool Enabled, bool Bold)
-{
-	RECT ItemRect;
-
-	if (!Enabled)
-	{
-		if (State.Contains(odSelected))
-			ListBox->Canvas->Brush->Color = clGrayText;
-		else
-			ListBox->Canvas->Font->Color = clGrayText;
-	}
-
-	if (Bold)
-		ListBox->Canvas->Font->Style = TFontStyles() << fsBold;
-
-	ListBox->Canvas->FillRect(Rect);
-	ItemRect = Rect;
-	ItemRect.left += 2;
-
-	if (GetFormScale() == 8)
-		if (Text[0] < '0' || Text[0] > '9')
-			ItemRect.left++;
-
-	DrawText(ListBox->Canvas->Handle, Text, -1, &ItemRect, DT_LEFT | DT_NOPREFIX);
-
-	if (State.Contains(odFocused))
-		ListBox->Canvas->DrawFocusRect(Rect);
-}
-//---------------------------------------------------------------------------
-int Common::TextToInteger(const char *Text)
-{
-	int Value;
-
-	if (std::sscanf(Text, "%d", &Value) <= 0)
-		return BLANK;
-
-	return Value;
-}
-//---------------------------------------------------------------------------
-bool Common::IntegerToText(int Value, char *Text, int TextSize)
-{
-	if (Value == BLANK)
-	{
-		Text[0] = 0;
-		return true;
-	}
-
-	std::snprintf(Text, TextSize, "%d", Value);
-	return true;
-}
-//---------------------------------------------------------------------------
-long long Common::TextToDecimal(const char *Text, int Digits)
-{
-	const char *Byte;
-	int Negative;
-	bool Blank;
-	long long Value;
-	int Count;
-
-	Byte = Text;
-
-	while (*Byte == ' ')
+	while (*Byte != 0)
 		Byte++;
 
-	if (*Byte == '-')
-	{
-		Negative = -1;
-		Byte++;
-	}
-	else
-	{
-		Negative = 1;
+	Byte--;
 
-		if (*Byte == '+')
-			Byte++;
-	}
+	while (Byte >= Text && IsSpace(*Byte))
+		Byte--;
 
-	Blank = true;
-	Value = 0;
-
-	if (*Byte >= '0' && *Byte <= '9')
-	{
-		Blank = false;
-
-		do
-		{
-			Value *= 10;
-			Value += *Byte - '0';
-			Byte++;
-		}
-		while (*Byte >= '0' && *Byte <= '9');
-	}
-
-	Count = 0;
-
-	if (*Byte == '.')
-	{
-		Byte++;
-
-		if (Count < Digits && *Byte >= '0' && *Byte <= '9')
-		{
-			Blank = false;
-
-			do
-			{
-				Value *= 10;
-				Value += *Byte - '0';
-				Byte++;
-				Count++;
-			}
-			while (Count < Digits && *Byte >= '0' && *Byte <= '9');
-		}
-	}
-
-	if (Blank)
-		return BLANK;
-
-	while (Count < Digits)
-	{
-		Value *= 10;
-		Count++;
-	}
-
-	return Negative * Value;
-}
-//---------------------------------------------------------------------------
-bool Common::DecimalToText(long long Value, int MaxLength, int Digits, char *Text, int TextSize)
-{
-	char *Byte;
-	int Count;
-	int Negative;
-
-	if (Value == BLANK)
-	{
-		Text[0] = 0;
-		return true;
-	}
-
-	Byte = Text;
-	Count = 1;
-
-	if (Value < 0)
-		Negative = -1;
-	else
-		Negative = 1;
-
-	while (Count <= Digits && Count < TextSize)
-	{
-		*Byte = Negative * Value % 10 + '0';
-		Value /= 10;
-		Byte++;
-		Count++;
-	}
-
-	if (Count < TextSize)
-	{
-		if (Digits > 0)
-		{
-			*Byte = '.';
-			Byte++;
-			Count++;
-        }
-
-		if (Count < TextSize)
-		{
-			do
-			{
-				*Byte = Negative * Value % 10 + '0';
-				Value /= 10;
-				Byte++;
-				Count++;
-			}
-			while (Value != 0 && Count < TextSize);
-
-			if (Negative < 0 && Count < TextSize)
-			{
-				*Byte = '-';
-				Byte++;
-			}
-		}
-	}
-
+	Byte++;
 	*Byte = 0;
-	std::strrev(Text);
+	Byte = Text;
 
-	if (MaxLength < TextSize)
+	while (IsSpace(*Byte))
+		Byte++;
+
+	while (*Byte != 0)
 	{
-		if (Text[MaxLength - 1] == '.')
-			Text[MaxLength - 1] = 0;
-		else
-			Text[MaxLength] = 0;
+		*Text = *Byte;
+		Text++;
+		Byte++;
+	}
+
+	*Text = 0;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool ToUpper(char *Text)
+{
+	while (*Text != 0)
+	{
+		if (IsLower(*Text))
+			*Text -= 32;
+
+		Text++;
 	}
 
 	return true;

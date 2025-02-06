@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "StandardResolutionClass.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 const int StandardResolutionClass::HAspect[] = {16,  4,  5, 16};
 const int StandardResolutionClass::VAspect[] = {10,  3,  4,  9};
@@ -43,6 +42,8 @@ const int StandardResolutionClass::MaxAspect = 3;
 const int StandardResolutionClass::MinWidth = 256;
 const int StandardResolutionClass::MaxWidth = 2288;
 const int StandardResolutionClass::ModWidth = 8;
+const int StandardResolutionClass::MinHeight = 144;
+const int StandardResolutionClass::MaxHeight = 1830;
 const int StandardResolutionClass::MinRate = 60;
 const int StandardResolutionClass::MaxRate = 123;
 //---------------------------------------------------------------------------
@@ -240,8 +241,8 @@ bool StandardResolutionClass::IsValidWidth()
 //---------------------------------------------------------------------------
 bool StandardResolutionClass::IsValidHeight()
 {
-	if (Width == BLANK)
-		return true;
+	if (Width == BLANK || Width == INVALID)
+		return Height >= MinHeight && Height <= MaxHeight;
 
 	return IsValidWidth() && IsValidAspect();
 }

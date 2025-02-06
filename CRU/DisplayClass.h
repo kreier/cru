@@ -9,7 +9,6 @@
 #include "ExtensionBlockListClass.h"
 #include "EDIDListClass.h"
 #include "DetailedResolutionClass.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 class DisplayClass
 {
@@ -21,9 +20,9 @@ private:
 	unsigned char *OverrideData;
 	unsigned char *ResetData;
 
-	char *DisplayID;
 	char *DeviceID;
-	char *DeviceName;
+	char *InstanceID;
+	char *DriverName;
 
 	bool Active;
 	bool Override;
@@ -41,24 +40,30 @@ private:
 	ExtensionBlockListClass *ExtensionBlockList;
 
 public:
-	DisplayClass(const char *, const char *);
+	DisplayClass();
 	bool GetText(char *, int, bool);
-	bool Load();
+	bool Load(const char *, const char *);
 	bool MatchFullActive(EDIDListClass &);
 	bool MatchFullOverride(EDIDListClass &);
 	bool MatchPartialOverride(EDIDListClass &);
 	bool MatchFirstActive(EDIDListClass &);
 	bool Init();
-	bool LoadDeviceName();
-	bool GetActiveStatus();
+	bool LoadDriverName();
+	bool LoadActiveStatus();
 	bool LoadOverrideData();
 	bool LoadActiveData();
 	bool LoadDefaultData();
-	bool IsValidData(unsigned char *);
+	bool GetDeviceID(char *, int);
+	bool GetInstanceID(char *, int);
+	bool GetDriverName(char *, int);
+	bool GetActiveStatus();
+	bool GetOverrideStatus();
+	bool IsValidData(const unsigned char *);
 	bool FixData(unsigned char *, bool);
 	bool Import(const char *, bool);
 	bool ImportFile(std::FILE *, bool, const char *);
 	bool ImportINF(std::FILE *, bool);
+	bool ImportEXE(std::FILE *, bool);
 	static const char *GetImportFormats();
 	static const char *GetExportFormats();
 	bool Export(const char *, int, const char *);
@@ -79,8 +84,6 @@ public:
 	bool DisplayCopy();
 	bool DisplayPastePossible();
 	bool DisplayPaste();
-	bool DisplayResetPossible();
-	bool DisplayReset();
 	bool DisplayDeletePossible();
 	bool DisplayDelete();
 	bool DisplayRestore();

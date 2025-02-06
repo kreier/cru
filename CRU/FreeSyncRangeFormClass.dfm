@@ -22,14 +22,14 @@ object FreeSyncRangeForm: TFreeSyncRangeForm
     Top = 6
     Width = 154
     Height = 50
-    Caption = ' Range limits '
+    Caption = ' Refresh rate '
     TabOrder = 0
     object VRateLabel: TLabel
       Left = 9
       Top = 22
-      Width = 33
+      Width = 35
       Height = 13
-      Caption = 'V rate:'
+      Caption = 'Range:'
     end
     object VRateDash: TShape
       Left = 77

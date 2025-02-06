@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "HDMIResolutionClass.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 const char *HDMIResolutionClass::AspectText[] =
 {
@@ -36,7 +35,7 @@ const int HDMIResolutionClass::MaxMode = 2;
 const int HDMIResolutionClass::MinFormat = 0;
 const int HDMIResolutionClass::MaxFormat = 2;
 
-const int HDMIResolutionClass::Modes[][4] =
+const unsigned char HDMIResolutionClass::Modes[][4] =
 {
 	// 3840x2160
 	{3, 2, 1},

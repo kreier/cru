@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "AudioFormatListClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>

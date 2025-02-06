@@ -1,10 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "AMDDisplayClass.h"
-#include <cstdlib>
-#include <cstring>
 //---------------------------------------------------------------------------
 #define ADL_OK                          0
 #define ADL_MAX_PATH                    256
@@ -39,7 +37,7 @@ struct ADLDisplayID
 
 struct ADLDisplayInfo
 {
-	struct ADLDisplayID DisplayID;
+	ADLDisplayID DisplayID;
 	int DisplayControllerIndex;
 	char DisplayName[ADL_MAX_PATH];
 	char DisplayManufacturerName[ADL_MAX_PATH];
@@ -63,9 +61,9 @@ struct ADLDisplayEDIDData
 typedef void *(__stdcall *ADL_MAIN_MALLOC_CALLBACK)(int);
 typedef int (*ADL_MAIN_CONTROL_CREATE)(ADL_MAIN_MALLOC_CALLBACK, int);
 typedef int (*ADL_ADAPTER_NUMBEROFADAPTERS_GET)(int *);
-typedef int (*ADL_ADAPTER_ADAPTERINFO_GET)(struct ADLAdapterInfo *, int);
-typedef int (*ADL_DISPLAY_DISPLAYINFO_GET)(int, int *, struct ADLDisplayInfo **, int);
-typedef int (*ADL_DISPLAY_EDIDDATA_GET)(int, int, struct ADLDisplayEDIDData *);
+typedef int (*ADL_ADAPTER_ADAPTERINFO_GET)(ADLAdapterInfo *, int);
+typedef int (*ADL_DISPLAY_DISPLAYINFO_GET)(int, int *, ADLDisplayInfo **, int);
+typedef int (*ADL_DISPLAY_EDIDDATA_GET)(int, int, ADLDisplayEDIDData *);
 typedef int (*ADL_MAIN_CONTROL_DESTROY)();
 //---------------------------------------------------------------------------
 void *__stdcall ADL_Main_Memory_Alloc(int Size)
@@ -85,10 +83,10 @@ bool AMDDisplayClass::LoadEDIDList(EDIDListClass &EDIDList)
 	HMODULE Library;
 	int AdapterCount;
 	int AdapterInfoSize;
-	struct ADLAdapterInfo *AdapterInfo;
+	ADLAdapterInfo *AdapterInfo;
 	int AdapterNumber;
 	int AdapterIndex;
-	struct ADLDisplayInfo *DisplayInfo;
+	ADLDisplayInfo *DisplayInfo;
 	int DisplayCount;
 	int DisplayNumber;
 	ADLDisplayEDIDData DisplayEDID;
@@ -140,8 +138,8 @@ bool AMDDisplayClass::LoadEDIDList(EDIDListClass &EDIDList)
 
 	if (AdapterCount > 0)
 	{
-		AdapterInfoSize = AdapterCount * sizeof(struct ADLAdapterInfo);
-		AdapterInfo = (struct ADLAdapterInfo *)std::malloc(AdapterInfoSize);
+		AdapterInfoSize = AdapterCount * sizeof(ADLAdapterInfo);
+		AdapterInfo = (ADLAdapterInfo *)std::malloc(AdapterInfoSize);
 
 		if (ADL_Adapter_AdapterInfo_Get(AdapterInfo, AdapterInfoSize) == ADL_OK)
 		{

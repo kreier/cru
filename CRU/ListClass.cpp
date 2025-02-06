@@ -1,10 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "ListClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 ListClass::ListClass(int NewMaxSlotCount, int NewSlotSize)
 {

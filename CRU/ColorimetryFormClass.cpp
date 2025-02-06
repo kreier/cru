@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "ColorimetryFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TColorimetryForm *ColorimetryForm;
@@ -35,24 +34,27 @@ bool TColorimetryForm::Refresh(void *Value)
 //---------------------------------------------------------------------------
 bool TColorimetryForm::RefreshColorimetryCheckBoxes()
 {
-	ColorimetryCheckBox0->Checked = Colorimetry->GetColorimetry(0);
-	ColorimetryCheckBox1->Checked = Colorimetry->GetColorimetry(1);
-	ColorimetryCheckBox2->Checked = Colorimetry->GetColorimetry(2);
-	ColorimetryCheckBox3->Checked = Colorimetry->GetColorimetry(3);
-	ColorimetryCheckBox4->Checked = Colorimetry->GetColorimetry(4);
-	ColorimetryCheckBox5->Checked = Colorimetry->GetColorimetry(5);
-	ColorimetryCheckBox6->Checked = Colorimetry->GetColorimetry(6);
-	ColorimetryCheckBox7->Checked = Colorimetry->GetColorimetry(7);
-	ColorimetryCheckBox8->Checked = Colorimetry->GetColorimetry(8);
+	ColorimetryCheckBox0->Checked = Colorimetry->Get(0);
+	ColorimetryCheckBox1->Checked = Colorimetry->Get(1);
+	ColorimetryCheckBox2->Checked = Colorimetry->Get(2);
+	ColorimetryCheckBox3->Checked = Colorimetry->Get(3);
+	ColorimetryCheckBox4->Checked = Colorimetry->Get(4);
+	ColorimetryCheckBox5->Checked = Colorimetry->Get(5);
+	ColorimetryCheckBox6->Checked = Colorimetry->Get(6);
+	ColorimetryCheckBox7->Checked = Colorimetry->Get(7);
+	ColorimetryCheckBox15->Checked = Colorimetry->Get(15);
+	ColorimetryCheckBox14->Checked = Colorimetry->Get(14);
+	ColorimetryCheckBox13->Checked = Colorimetry->Get(13);
+	ColorimetryCheckBox12->Checked = Colorimetry->Get(12);
 	return true;
 }
 //---------------------------------------------------------------------------
 bool TColorimetryForm::RefreshMetadataCheckBoxes()
 {
-	MetadataCheckBox0->Checked = Colorimetry->GetMetadata(0);
-	MetadataCheckBox1->Checked = Colorimetry->GetMetadata(1);
-	MetadataCheckBox2->Checked = Colorimetry->GetMetadata(2);
-	MetadataCheckBox3->Checked = Colorimetry->GetMetadata(3);
+	MetadataCheckBox0->Checked = Colorimetry->Get(8);
+	MetadataCheckBox1->Checked = Colorimetry->Get(9);
+	MetadataCheckBox2->Checked = Colorimetry->Get(10);
+	MetadataCheckBox3->Checked = Colorimetry->Get(11);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -98,13 +100,28 @@ bool TColorimetryForm::ScaleControls()
 	ColorimetryCheckBox7->Left = ColorimetryCheckBox6->Left;
 	ColorimetryCheckBox7->Top = ColorimetryCheckBox6->Top + ColorimetryCheckBox6->Height + CheckBoxSpacing;
 
-	ColorimetryCheckBox8->Width = CheckBoxWidth + Canvas->TextWidth(ColorimetryCheckBox8->Caption);
-	ColorimetryCheckBox8->Height = CheckBoxHeight;
-	ColorimetryCheckBox8->Left = ColorimetryCheckBox7->Left;
-	ColorimetryCheckBox8->Top = ColorimetryCheckBox7->Top + ColorimetryCheckBox7->Height + CheckBoxSpacing;
+	ColorimetryCheckBox15->Width = CheckBoxWidth + Canvas->TextWidth(ColorimetryCheckBox15->Caption);
+	ColorimetryCheckBox15->Height = CheckBoxHeight;
+	ColorimetryCheckBox15->Left = ColorimetryCheckBox7->Left;
+	ColorimetryCheckBox15->Top = ColorimetryCheckBox7->Top + ColorimetryCheckBox7->Height + CheckBoxSpacing;
+
+	ColorimetryCheckBox14->Width = CheckBoxWidth + Canvas->TextWidth(ColorimetryCheckBox14->Caption);
+	ColorimetryCheckBox14->Height = CheckBoxHeight;
+	ColorimetryCheckBox14->Left = ColorimetryCheckBox15->Left;
+	ColorimetryCheckBox14->Top = ColorimetryCheckBox15->Top + ColorimetryCheckBox15->Height + CheckBoxSpacing;
+
+	ColorimetryCheckBox13->Width = CheckBoxWidth + Canvas->TextWidth(ColorimetryCheckBox13->Caption);
+	ColorimetryCheckBox13->Height = CheckBoxHeight;
+	ColorimetryCheckBox13->Left = ColorimetryCheckBox14->Left;
+	ColorimetryCheckBox13->Top = ColorimetryCheckBox14->Top + ColorimetryCheckBox14->Height + CheckBoxSpacing;
+
+	ColorimetryCheckBox12->Width = CheckBoxWidth + Canvas->TextWidth(ColorimetryCheckBox12->Caption);
+	ColorimetryCheckBox12->Height = CheckBoxHeight;
+	ColorimetryCheckBox12->Left = ColorimetryCheckBox13->Left;
+	ColorimetryCheckBox12->Top = ColorimetryCheckBox13->Top + ColorimetryCheckBox13->Height + CheckBoxSpacing;
 
 	ColorimetryGroupBox->Width = FormButtonsWidth;
-	ColorimetryGroupBox->Height = ColorimetryCheckBox8->Top + ColorimetryCheckBox8->Height + CheckBoxBottom + PaddingBottom;
+	ColorimetryGroupBox->Height = ColorimetryCheckBox12->Top + ColorimetryCheckBox12->Height + CheckBoxBottom + PaddingBottom;
 	ColorimetryGroupBox->Left = Scale;
 	ColorimetryGroupBox->Top = GroupBoxTop;
 
@@ -136,12 +153,12 @@ bool TColorimetryForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = MetadataGroupBox->Top + MetadataGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = MetadataGroupBox->Left + MetadataGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -167,7 +184,7 @@ void __fastcall TColorimetryForm::ColorimetryCheckBoxClick(TObject *Sender)
 		return;
 
 	TCheckBox *CheckBox = (TCheckBox *)Sender;
-	Colorimetry->SetColorimetry(CheckBox->Tag, CheckBox->Checked);
+	Colorimetry->Set(CheckBox->Tag, CheckBox->Checked);
 	Refresh(ColorimetryGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -177,7 +194,7 @@ void __fastcall TColorimetryForm::MetadataCheckBoxClick(TObject *Sender)
 		return;
 
 	TCheckBox *CheckBox = (TCheckBox *)Sender;
-	Colorimetry->SetMetadata(CheckBox->Tag, CheckBox->Checked);
+	Colorimetry->Set(CheckBox->Tag, CheckBox->Checked);
 	Refresh(MetadataGroupBox);
 }
 //---------------------------------------------------------------------------

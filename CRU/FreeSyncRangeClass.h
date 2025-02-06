@@ -12,6 +12,10 @@ private:
 
 	int MinVRate;
 	int MaxVRate;
+	int Version[2];
+	int OtherSize;
+	int MaxOtherSize;
+	unsigned char OtherData[24];
 
 public:
 	FreeSyncRangeClass();

@@ -36,18 +36,18 @@ object VideoCapabilityForm: TVideoCapabilityForm
     object TVRadioButton1: TRadioButton
       Left = 9
       Top = 34
-      Width = 117
+      Width = 82
       Height = 17
-      Caption = 'Always overscanned'
+      Caption = 'Overscanned'
       TabOrder = 1
       OnClick = TVRadioButton1Click
     end
     object TVRadioButton2: TRadioButton
       Left = 9
       Top = 51
-      Width = 123
+      Width = 100
       Height = 17
-      Caption = 'Always underscanned'
+      Caption = 'Not overscanned'
       TabOrder = 2
       OnClick = TVRadioButton2Click
     end
@@ -80,18 +80,18 @@ object VideoCapabilityForm: TVideoCapabilityForm
     object PCRadioButton1: TRadioButton
       Left = 9
       Top = 34
-      Width = 117
+      Width = 82
       Height = 17
-      Caption = 'Always overscanned'
+      Caption = 'Overscanned'
       TabOrder = 1
       OnClick = PCRadioButton1Click
     end
     object PCRadioButton2: TRadioButton
       Left = 9
       Top = 51
-      Width = 123
+      Width = 100
       Height = 17
-      Caption = 'Always underscanned'
+      Caption = 'Not overscanned'
       TabOrder = 2
       OnClick = PCRadioButton2Click
     end
@@ -124,18 +124,18 @@ object VideoCapabilityForm: TVideoCapabilityForm
     object NativeRadioButton1: TRadioButton
       Left = 9
       Top = 34
-      Width = 117
+      Width = 82
       Height = 17
-      Caption = 'Always overscanned'
+      Caption = 'Overscanned'
       TabOrder = 1
       OnClick = NativeRadioButton1Click
     end
     object NativeRadioButton2: TRadioButton
       Left = 9
       Top = 51
-      Width = 123
+      Width = 100
       Height = 17
-      Caption = 'Always underscanned'
+      Caption = 'Not overscanned'
       TabOrder = 2
       OnClick = NativeRadioButton2Click
     end

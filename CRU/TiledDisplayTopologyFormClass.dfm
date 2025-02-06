@@ -3,8 +3,8 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Tiled Display Topology'
-  ClientHeight = 663
-  ClientWidth = 170
+  ClientHeight = 368
+  ClientWidth = 332
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,13 +17,74 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object PhysicalEnclosuresGroupBox: TGroupBox
+  object TopologyIDGroupBox: TGroupBox
     Left = 8
     Top = 6
     Width = 154
+    Height = 100
+    Caption = ' Topology ID '
+    TabOrder = 0
+    object VendorIDLabel: TLabel
+      Left = 9
+      Top = 22
+      Width = 52
+      Height = 13
+      Caption = 'Vendor ID:'
+    end
+    object ProductIDLabel: TLabel
+      Left = 9
+      Top = 47
+      Width = 55
+      Height = 13
+      Caption = 'Product ID:'
+    end
+    object SerialIDLabel: TLabel
+      Left = 9
+      Top = 72
+      Width = 54
+      Height = 13
+      Caption = 'ID serial #:'
+    end
+    object VendorID: TEdit
+      Left = 68
+      Top = 19
+      Width = 77
+      Height = 21
+      CharCase = ecUpperCase
+      MaxLength = 6
+      TabOrder = 0
+      OnChange = VendorIDChange
+      OnExit = VendorIDExit
+    end
+    object ProductID: TEdit
+      Left = 68
+      Top = 44
+      Width = 77
+      Height = 21
+      CharCase = ecUpperCase
+      MaxLength = 4
+      TabOrder = 1
+      OnChange = ProductIDChange
+      OnExit = ProductIDExit
+    end
+    object SerialID: TEdit
+      Left = 68
+      Top = 69
+      Width = 77
+      Height = 21
+      MaxLength = 10
+      TabOrder = 2
+      OnChange = SerialIDChange
+      OnExit = SerialIDExit
+    end
+  end
+  object PhysicalEnclosuresGroupBox: TGroupBox
+    Left = 8
+    Top = 111
+    Width = 154
     Height = 59
     Caption = ' Physical display enclosures '
-    TabOrder = 0
+    TabOrder = 1
     object PhysicalEnclosuresRadioButton1: TRadioButton
       Tag = 1
       Left = 9
@@ -46,11 +107,11 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
   end
   object SingleTileBehaviorGroupBox: TGroupBox
     Left = 8
-    Top = 70
+    Top = 175
     Width = 154
     Height = 93
     Caption = ' Single-tile behavior '
-    TabOrder = 1
+    TabOrder = 2
     object SingleTileBehaviorRadioButton1: TRadioButton
       Tag = 1
       Left = 9
@@ -93,11 +154,11 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
   end
   object MultipleTileBehaviorGroupBox: TGroupBox
     Left = 8
-    Top = 168
+    Top = 273
     Width = 154
     Height = 59
     Caption = ' Multiple-tile behavior '
-    TabOrder = 2
+    TabOrder = 3
     object MultipleTileBehaviorRadioButton1: TRadioButton
       Tag = 1
       Left = 9
@@ -119,14 +180,14 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     end
   end
   object TilesGroupBox: TGroupBox
-    Left = 8
-    Top = 232
+    Left = 170
+    Top = 6
     Width = 154
     Height = 50
     Caption = ' Number of tiles '
-    TabOrder = 3
+    TabOrder = 4
     object TilesLabel: TLabel
-      Left = 37
+      Left = 34
       Top = 22
       Width = 6
       Height = 13
@@ -135,7 +196,7 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     object HTiles: TEdit
       Left = 9
       Top = 19
-      Width = 24
+      Width = 21
       Height = 21
       MaxLength = 2
       TabOrder = 0
@@ -143,9 +204,9 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
       OnExit = HTilesExit
     end
     object VTiles: TEdit
-      Left = 47
+      Left = 44
       Top = 19
-      Width = 24
+      Width = 21
       Height = 21
       MaxLength = 2
       TabOrder = 1
@@ -154,14 +215,14 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     end
   end
   object LocationGroupBox: TGroupBox
-    Left = 8
-    Top = 287
+    Left = 170
+    Top = 61
     Width = 154
     Height = 50
     Caption = ' Tile location '
-    TabOrder = 4
+    TabOrder = 5
     object LocationLabel: TLabel
-      Left = 37
+      Left = 34
       Top = 22
       Width = 4
       Height = 13
@@ -170,7 +231,7 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     object HLocation: TEdit
       Left = 9
       Top = 19
-      Width = 24
+      Width = 21
       Height = 21
       MaxLength = 2
       TabOrder = 0
@@ -178,9 +239,9 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
       OnExit = HLocationExit
     end
     object VLocation: TEdit
-      Left = 47
+      Left = 44
       Top = 19
-      Width = 24
+      Width = 21
       Height = 21
       MaxLength = 2
       TabOrder = 1
@@ -189,12 +250,12 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     end
   end
   object SizeGroupBox: TGroupBox
-    Left = 8
-    Top = 342
+    Left = 170
+    Top = 116
     Width = 154
     Height = 50
     Caption = ' Tile size '
-    TabOrder = 5
+    TabOrder = 6
     object SizeLabel: TLabel
       Left = 49
       Top = 22
@@ -224,49 +285,35 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     end
   end
   object BezelGroupBox: TGroupBox
-    Left = 8
-    Top = 397
+    Left = 170
+    Top = 171
     Width = 154
-    Height = 150
-    Caption = ' Bezel size '
-    TabOrder = 6
+    Height = 161
+    Caption = ' Bezel size in pixels '
+    TabOrder = 7
     object MultiplierLabel: TLabel
-      Left = 9
+      Left = 15
       Top = 22
       Width = 46
       Height = 13
       Caption = 'Multiplier:'
     end
-    object TopLabel: TLabel
-      Left = 9
-      Top = 47
-      Width = 22
+    object MultiplierDivisorLabel: TLabel
+      Left = 95
+      Top = 22
+      Width = 19
       Height = 13
-      Caption = 'Top:'
+      Caption = '/ 10'
     end
-    object BottomLabel: TLabel
-      Left = 9
-      Top = 72
-      Width = 38
-      Height = 13
-      Caption = 'Bottom:'
-    end
-    object RightLabel: TLabel
-      Left = 9
-      Top = 97
-      Width = 29
-      Height = 13
-      Caption = 'Right:'
-    end
-    object LeftLabel: TLabel
-      Left = 9
-      Top = 122
-      Width = 23
-      Height = 13
-      Caption = 'Left:'
+    object Rectangle: TShape
+      Left = 19
+      Top = 56
+      Width = 116
+      Height = 87
+      Pen.Width = 4
     end
     object PixelMultiplier: TEdit
-      Left = 59
+      Left = 65
       Top = 19
       Width = 24
       Height = 21
@@ -276,8 +323,8 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
       OnExit = PixelMultiplierExit
     end
     object TopBezelSize: TEdit
-      Left = 59
-      Top = 44
+      Left = 65
+      Top = 48
       Width = 24
       Height = 21
       MaxLength = 3
@@ -285,19 +332,19 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
       OnChange = TopBezelSizeChange
       OnExit = TopBezelSizeExit
     end
-    object BottomBezelSize: TEdit
-      Left = 59
-      Top = 69
+    object LeftBezelSize: TEdit
+      Left = 9
+      Top = 89
       Width = 24
       Height = 21
       MaxLength = 3
       TabOrder = 2
-      OnChange = BottomBezelSizeChange
-      OnExit = BottomBezelSizeExit
+      OnChange = LeftBezelSizeChange
+      OnExit = LeftBezelSizeExit
     end
     object RightBezelSize: TEdit
-      Left = 59
-      Top = 94
+      Left = 121
+      Top = 89
       Width = 24
       Height = 21
       MaxLength = 3
@@ -305,72 +352,20 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
       OnChange = RightBezelSizeChange
       OnExit = RightBezelSizeExit
     end
-    object LeftBezelSize: TEdit
-      Left = 59
-      Top = 119
+    object BottomBezelSize: TEdit
+      Left = 65
+      Top = 130
       Width = 24
       Height = 21
       MaxLength = 3
       TabOrder = 4
-      OnChange = LeftBezelSizeChange
-      OnExit = LeftBezelSizeExit
-    end
-  end
-  object TopologyIDGroupBox: TGroupBox
-    Left = 8
-    Top = 552
-    Width = 154
-    Height = 75
-    Caption = ' Topology ID '
-    TabOrder = 7
-    object ProductIDLabel: TLabel
-      Left = 9
-      Top = 22
-      Width = 15
-      Height = 13
-      Caption = 'ID:'
-    end
-    object SerialIDLabel: TLabel
-      Left = 9
-      Top = 47
-      Width = 54
-      Height = 13
-      Caption = 'ID serial #:'
-    end
-    object ProductID: TEdit
-      Left = 28
-      Top = 19
-      Width = 69
-      Height = 21
-      MaxLength = 7
-      TabOrder = 0
-      OnChange = ProductIDChange
-      OnExit = ProductIDExit
-      OnKeyPress = ProductIDKeyPress
-    end
-    object SerialID: TEdit
-      Left = 67
-      Top = 44
-      Width = 79
-      Height = 21
-      MaxLength = 10
-      TabOrder = 1
-      OnChange = SerialIDChange
-      OnExit = SerialIDExit
-    end
-    object ProductIDResetButton: TButton
-      Left = 104
-      Top = 19
-      Width = 42
-      Height = 21
-      Caption = 'Reset'
-      TabOrder = 2
-      OnClick = ProductIDResetButtonClick
+      OnChange = BottomBezelSizeChange
+      OnExit = BottomBezelSizeExit
     end
   end
   object FormOKButton: TButton
-    Left = 7
-    Top = 633
+    Left = 169
+    Top = 338
     Width = 75
     Height = 23
     Caption = 'OK'
@@ -379,8 +374,8 @@ object TiledDisplayTopologyForm: TTiledDisplayTopologyForm
     TabOrder = 8
   end
   object FormCancelButton: TButton
-    Left = 88
-    Top = 633
+    Left = 250
+    Top = 338
     Width = 75
     Height = 23
     Cancel = True

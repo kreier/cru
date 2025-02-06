@@ -1,15 +1,13 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "VideoCapabilityClass.h"
-#include <cstring>
-//---------------------------------------------------------------------------
-const int VideoCapabilityClass::VideoCapabilityMask = 255;
 //---------------------------------------------------------------------------
 VideoCapabilityClass::VideoCapabilityClass()
 {
-	VideoCapability = 0;
+	VideoCapabilityData[0] = 192;
+	VideoCapabilitySize = 1;
 }
 //---------------------------------------------------------------------------
 bool VideoCapabilityClass::Read(const unsigned char *Data, int MaxSize)
@@ -35,7 +33,8 @@ bool VideoCapabilityClass::Read(const unsigned char *Data, int MaxSize)
 	if (Data[1] != 0)
 		return false;
 
-	VideoCapability = Data[2] & VideoCapabilityMask;
+	VideoCapabilitySize = Size - 1;
+	std::memcpy(VideoCapabilityData, &Data[2], VideoCapabilitySize);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -44,34 +43,34 @@ bool VideoCapabilityClass::Write(unsigned char *Data, int MaxSize)
 	if (!Data)
 		return false;
 
-	if (MaxSize < 3)
+	if (MaxSize < VideoCapabilitySize + 2)
 		return false;
 
 	std::memset(Data, 0, MaxSize);
 	Data[0] = 7 << 5;
-	Data[0] |= 2;
+	Data[0] |= VideoCapabilitySize + 1;
 	Data[1] = 0;
-	Data[2] = VideoCapability & VideoCapabilityMask;
+	std::memcpy(&Data[2], VideoCapabilityData, VideoCapabilitySize);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool VideoCapabilityClass::GetVideoCapability(int Index)
+bool VideoCapabilityClass::Get(int Index)
 {
-	if (!(VideoCapabilityMask & (1 << Index)))
+	if (Index < 0 || Index >= VideoCapabilitySize * 8)
 		return false;
 
-	return VideoCapability & (1 << Index);
+	return VideoCapabilityData[Index / 8] & (1 << Index % 8);
 }
 //---------------------------------------------------------------------------
-bool VideoCapabilityClass::SetVideoCapability(int Index, bool Enabled)
+bool VideoCapabilityClass::Set(int Index, bool Enabled)
 {
-	if (!(VideoCapabilityMask & (1 << Index)))
+	if (Index < 0 || Index >= VideoCapabilitySize * 8)
 		return false;
 
 	if (Enabled)
-		VideoCapability |= 1 << Index;
+		VideoCapabilityData[Index / 8] |= 1 << Index % 8;
 	else
-		VideoCapability &= ~(1 << Index);
+		VideoCapabilityData[Index / 8] &= ~(1 << Index % 8);
 
 	return true;
 }

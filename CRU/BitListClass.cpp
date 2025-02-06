@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "BitListClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 BitListClass::BitListClass(int NewDataSize, const char *NewBitMask)
 {

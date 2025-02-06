@@ -1,13 +1,13 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "AddCEADataClass.h"
 //---------------------------------------------------------------------------
 const int AddCEADataClass::MinType = 0;
-const int AddCEADataClass::MaxType = 7;
+const int AddCEADataClass::MaxType = 8;
 
-const int AddCEADataClass::MinSize[] = {1, 1, 4, 6, 8, 9, 4, 3};
+const int AddCEADataClass::MinSize[] = {1, 1, 4, 6, 8, 9, 4, 3, 4};
 //---------------------------------------------------------------------------
 AddCEADataClass::AddCEADataClass()
 {

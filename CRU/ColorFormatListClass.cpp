@@ -1,16 +1,16 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "ColorFormatListClass.h"
 //---------------------------------------------------------------------------
 ColorFormatListClass::ColorFormatListClass()
 {
-	YCbCr422 = true;
+	YCbCr422 = false;
 	UndoYCbCr422 = YCbCr422;
 	RedoYCbCr422 = YCbCr422;
 
-	YCbCr444 = true;
+	YCbCr444 = false;
 	UndoYCbCr444 = YCbCr444;
 	RedoYCbCr444 = YCbCr444;
 }

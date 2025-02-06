@@ -13,7 +13,6 @@ class AddDIDDataClass
 private:
 	static const int MinType;
 	static const int MaxType;
-
 	static const int MinSize[];
 
 	int MaxSize;

@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "AddCEADataClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -22,6 +23,7 @@ __published:	// IDE-managed Components
 	TRadioButton *FreeSyncRadioButton;
 	TRadioButton *ColorimetryRadioButton;
 	TRadioButton *VideoCapabilityRadioButton;
+	TRadioButton *HDRStaticRadioButton;
 	TButton *FormOKButton;
 	TButton *FormCancelButton;
 	void __fastcall FormCreate(TObject *Sender);
@@ -34,6 +36,7 @@ __published:	// IDE-managed Components
 	void __fastcall FreeSyncRadioButtonClick(TObject *Sender);
 	void __fastcall ColorimetryRadioButtonClick(TObject *Sender);
 	void __fastcall VideoCapabilityRadioButtonClick(TObject *Sender);
+	void __fastcall HDRStaticRadioButtonClick(TObject *Sender);
 private:	// User declarations
 	AddCEADataClass *AddCEAData;
 	bool Refreshing;

@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "HDMIResolutionFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 THDMIResolutionForm *HDMIResolutionForm;
@@ -17,14 +16,6 @@ bool THDMIResolutionForm::Connect(HDMIResolutionClass &NewHDMIResolution)
 {
 	HDMIResolution = &NewHDMIResolution;
 	return true;
-}
-//---------------------------------------------------------------------------
-TColor THDMIResolutionForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
 }
 //---------------------------------------------------------------------------
 bool THDMIResolutionForm::Refresh(void *Value)
@@ -56,7 +47,7 @@ bool THDMIResolutionForm::Refresh(void *Value)
 	if (Value != FormatComboBox)
 		FormatComboBox->ItemIndex = HDMIResolution->GetFormat();
 
-	if (Value != Code && Common::IntegerToText(HDMIResolution->GetCode(), Text, TEXTSIZE))
+	if (Value != Code && IntegerToText(HDMIResolution->GetCode(), Text, TEXTSIZE))
 		Code->Text = Text;
 
 	Code->Font->Color = GetTextColor(HDMIResolution->IsValidCode());
@@ -75,8 +66,8 @@ bool THDMIResolutionForm::InitModeComboBox()
 	char Text[TEXTSIZE];
 
 	ItemIndex = ModeComboBox->ItemIndex;
-	ModeComboBox->Clear();
 	ModeComboBox->Items->BeginUpdate();
+	ModeComboBox->Clear();
 
 	for (Index = 0; HDMIResolution->GetModeText(Index, Text, TEXTSIZE); Index++)
 		ModeComboBox->Items->Add(Text);
@@ -93,8 +84,8 @@ bool THDMIResolutionForm::InitFormatComboBox()
 	char Text[TEXTSIZE];
 
 	ItemIndex = FormatComboBox->ItemIndex;
-	FormatComboBox->Clear();
 	FormatComboBox->Items->BeginUpdate();
+	FormatComboBox->Clear();
 
 	for (Index = 0; HDMIResolution->GetFormatText(Index, Text, TEXTSIZE); Index++)
 		FormatComboBox->Items->Add(Text);
@@ -140,12 +131,12 @@ bool THDMIResolutionForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = ResolutionGroupBox->Top + ResolutionGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = ResolutionGroupBox->Left + ResolutionGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -191,7 +182,7 @@ void __fastcall THDMIResolutionForm::CodeChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	HDMIResolution->SetCode(Common::TextToInteger(Code->Text.c_str()));
+	HDMIResolution->SetCode(TextToInteger(Code->Text.c_str()));
 	Refresh(Code);
 }
 //---------------------------------------------------------------------------

@@ -202,6 +202,8 @@
         <FILE FILENAME="HDMISupportFormClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HDMISupportFormClass" FORMNAME="HDMISupportForm" DESIGNCLASS="" ADDITIONAL="HDMISupportFormClass.h"/>
         <FILE FILENAME="HDMI2SupportClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HDMI2SupportClass" FORMNAME="" DESIGNCLASS="" ADDITIONAL="HDMI2SupportClass.h"/>
         <FILE FILENAME="HDMI2SupportFormClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HDMI2SupportFormClass" FORMNAME="HDMI2SupportForm" DESIGNCLASS="" ADDITIONAL="HDMI2SupportFormClass.h"/>
+        <FILE FILENAME="HDRStaticMetadataClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HDRStaticMetadataClass" FORMNAME="" DESIGNCLASS="" ADDITIONAL="HDRStaticMetadataClass.h"/>
+        <FILE FILENAME="HDRStaticMetadataFormClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="HDRStaticMetadataFormClass" FORMNAME="HDRStaticMetadataForm" DESIGNCLASS="" ADDITIONAL="HDRStaticMetadataFormClass.h"/>
         <FILE FILENAME="ItemClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ItemClass" FORMNAME="" DESIGNCLASS="" ADDITIONAL="ItemClass.h"/>
         <FILE FILENAME="ListClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="ListClass" FORMNAME="" DESIGNCLASS="" ADDITIONAL="ListClass.h"/>
         <FILE FILENAME="PropertiesClass.cpp" CONTAINERID="CCompiler" LOCALCOMMAND="" UNITNAME="PropertiesClass" FORMNAME="" DESIGNCLASS="" ADDITIONAL="PropertiesClass.h"/>

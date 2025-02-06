@@ -1,11 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "AudioFormatListFormClass.h"
 #include "AudioFormatFormClass.h"
-#include "Common.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TAudioFormatListForm *AudioFormatListForm;
@@ -66,8 +64,9 @@ bool TAudioFormatListForm::RefreshAudioListBox(int ItemIndex)
 		ItemIndex = -1;
 	}
 
-	AudioListBox->Clear();
+	int TopIndex = AudioListBox->TopIndex;
 	AudioListBox->Items->BeginUpdate();
+	AudioListBox->Clear();
 
 	for (Index = 0; Index < AudioFormatList->GetCount(); Index++)
 		AudioListBox->Items->Add("Text");
@@ -75,7 +74,12 @@ bool TAudioFormatListForm::RefreshAudioListBox(int ItemIndex)
 	if (Index == 0)
 		AudioListBox->Items->Add("No audio formats");
 
-	AudioListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		AudioListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < AudioFormatList->GetCount())
+		AudioListBox->ItemIndex = ItemIndex;
+
 	AudioListBox->Items->EndUpdate();
 	return true;
 }
@@ -105,45 +109,45 @@ bool TAudioFormatListForm::ScaleControls()
 	AudioAddButton->Height = ButtonHeight;
 	AudioAddButton->Left = AudioListBox->Left + ButtonLeft;
 	AudioAddButton->Top = AudioListBox->Top + AudioListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(AudioAddButton, Canvas->TextWidth(AudioAddButton->Caption));
+	FixButtonCaption(AudioAddButton, Canvas->TextWidth(AudioAddButton->Caption));
 
 	AudioEditButton->Width = ButtonWidth;
 	AudioEditButton->Height = ButtonHeight;
 	AudioEditButton->Left = AudioAddButton->Left + AudioAddButton->Width;
 	AudioEditButton->Top = AudioAddButton->Top;
-	Common::FixButtonCaption(AudioEditButton, Canvas->TextWidth(AudioEditButton->Caption));
+	FixButtonCaption(AudioEditButton, Canvas->TextWidth(AudioEditButton->Caption));
 
 	AudioDeleteButton->Width = ButtonWidth;
 	AudioDeleteButton->Height = ButtonHeight;
 	AudioDeleteButton->Left = AudioEditButton->Left + AudioEditButton->Width;
 	AudioDeleteButton->Top = AudioEditButton->Top;
-	Common::FixButtonCaption(AudioDeleteButton, Canvas->TextWidth(AudioDeleteButton->Caption));
+	FixButtonCaption(AudioDeleteButton, Canvas->TextWidth(AudioDeleteButton->Caption));
 
 	AudioDeleteAllButton->Width = LongButtonWidth;
 	AudioDeleteAllButton->Height = LongButtonHeight;
 	AudioDeleteAllButton->Left = AudioDeleteButton->Left + AudioDeleteButton->Width;
 	AudioDeleteAllButton->Top = AudioDeleteButton->Top;
-	Common::FixButtonCaption(AudioDeleteAllButton, Canvas->TextWidth(AudioDeleteAllButton->Caption));
+	FixButtonCaption(AudioDeleteAllButton, Canvas->TextWidth(AudioDeleteAllButton->Caption));
 
 	AudioResetButton->Width = ButtonWidth;
 	AudioResetButton->Height = ButtonHeight;
 	AudioResetButton->Left = AudioDeleteAllButton->Left + AudioDeleteAllButton->Width;
 	AudioResetButton->Top = AudioDeleteAllButton->Top;
-	Common::FixButtonCaption(AudioResetButton, Canvas->TextWidth(AudioResetButton->Caption));
+	FixButtonCaption(AudioResetButton, Canvas->TextWidth(AudioResetButton->Caption));
 
 	AudioUpButton->Width = ArrowButtonWidth;
 	AudioUpButton->Height = ArrowButtonHeight;
 	AudioUpButton->Top = AudioResetButton->Top;
 	AudioUpButton->Enabled = false;
 	AudioUpButton->NumGlyphs = NumGlyphs;
-	AudioUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	AudioUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	AudioDownButton->Width = ArrowButtonWidth;
 	AudioDownButton->Height = ArrowButtonHeight;
 	AudioDownButton->Top = AudioUpButton->Top;
 	AudioDownButton->Enabled = false;
 	AudioDownButton->NumGlyphs = NumGlyphs;
-	AudioDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	AudioDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	AudioDownButton->Left = AudioListBox->Left + AudioListBox->Width - ButtonRight - AudioDownButton->Width;
 	AudioUpButton->Left = AudioDownButton->Left - AudioUpButton->Width;
@@ -156,12 +160,12 @@ bool TAudioFormatListForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = AudioGroupBox->Top + AudioGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = AudioGroupBox->Left + AudioGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -184,31 +188,59 @@ void __fastcall TAudioFormatListForm::FormShow(TObject *Sender)
 void __fastcall TAudioFormatListForm::AudioListBoxDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
 	AudioFormatClass AudioFormat;
-	Common::Column Columns[4];
 
 	if (AudioFormatList->Get(Index, AudioFormat))
 	{
-		AudioFormat.GetFormatText(AudioFormat.GetFormat(), Columns[0].Text, TEXTSIZE);
-		Columns[0].Width = AudioListBox->Width / 12 * 2;
-		Columns[0].Format = DT_LEFT;
+		Column Columns[4];
 
-		std::snprintf(Columns[1].Text, TEXTSIZE, "%d", AudioFormat.GetChannels());
-		Columns[1].Width = AudioListBox->Width / 12;
-		Columns[1].Format = DT_RIGHT;
+		AudioFormat.GetFormatText(Columns[0].Text, TEXTSIZE);
 
-		std::snprintf(Columns[2].Text, TEXTSIZE, " channel%s", AudioFormat.GetChannels() != 1 ? "s" : "");
-		Columns[2].Width = AudioListBox->Width / 12 * 3;
-		Columns[2].Format = DT_LEFT;
+		switch (AudioFormat.GetMaxChannels())
+		{
+			case 8:
+				if (AudioFormat.GetType() == AUDIO_MPEG4_H && AudioFormat.GetSystemH())
+				{
+					std::snprintf(Columns[1].Text, TEXTSIZE, "22.2");
+					std::snprintf(Columns[2].Text, TEXTSIZE, " channels");
+				}
+				else
+				{
+					std::snprintf(Columns[1].Text, TEXTSIZE, "%d", AudioFormat.GetChannels());
+					std::snprintf(Columns[2].Text, TEXTSIZE, " channel%s", AudioFormat.GetChannels() != 1 ? "s" : "");
+				}
+
+				break;
+
+			case 32:
+				std::snprintf(Columns[1].Text, TEXTSIZE, "%d", AudioFormat.GetChannels3D());
+				std::snprintf(Columns[2].Text, TEXTSIZE, " channel%s", AudioFormat.GetChannels3D() != 1 ? "s" : "");
+				break;
+
+			default:
+				Columns[1].Text[0] = 0;
+				Columns[2].Text[0] = 0;
+				break;
+		}
 
 		AudioFormat.GetInfoText(Columns[3].Text, TEXTSIZE);
-		Columns[3].Width = AudioListBox->Width / 12 * 4;
+
+		Columns[0].Width = Canvas->TextWidth("MPEG-4 HE AAC + MPS");
+		Columns[1].Width = Canvas->TextWidth("99.9");
+		Columns[2].Width = Canvas->TextWidth(" channels");
+		Columns[3].Width = AudioListBox->Width / 3;
+
+		Columns[2].Width += AudioListBox->Width - Columns[0].Width - Columns[1].Width - Columns[2].Width - Columns[3].Width;
+
+		Columns[0].Format = DT_LEFT;
+		Columns[1].Format = DT_RIGHT;
+		Columns[2].Format = DT_LEFT;
 		Columns[3].Format = DT_LEFT;
 
-		Common::ListBoxDrawItems(AudioListBox, Rect, State, Columns, 4, AudioFormat.IsSupported(), false);
+		ListBoxDrawItems(AudioListBox, Rect, State, Columns, 4, AudioFormat.IsSupported(), false);
 		return;
 	}
 
-	Common::ListBoxDrawItem(AudioListBox, Rect, State, AudioListBox->Items->Strings[Index].c_str(), false, false);
+	ListBoxDrawItem(AudioListBox, Rect, State, AudioListBox->Items->Strings[Index].c_str(), false, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TAudioFormatListForm::AudioListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -273,10 +305,6 @@ void __fastcall TAudioFormatListForm::AudioEditButtonClick(TObject *Sender)
 void __fastcall TAudioFormatListForm::AudioDeleteButtonClick(TObject *Sender)
 {
 	AudioFormatList->Delete(AudioListBox->ItemIndex);
-
-	if (AudioListBox->ItemIndex >= AudioFormatList->GetCount())
-		AudioListBox->ItemIndex = -1;
-
 	Refresh(AudioGroupBox, AudioListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------

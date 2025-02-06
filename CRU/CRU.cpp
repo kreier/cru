@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
 USEFORM("AddCEADataFormClass.cpp", AddCEADataForm);
@@ -16,6 +16,7 @@ USEFORM("FreeSyncRangeFormClass.cpp", FreeSyncRangeForm);
 USEFORM("HDMIResolutionFormClass.cpp", HDMIResolutionForm);
 USEFORM("HDMISupportFormClass.cpp", HDMISupportForm);
 USEFORM("HDMI2SupportFormClass.cpp", HDMI2SupportForm);
+USEFORM("HDRStaticMetadataFormClass.cpp", HDRStaticMetadataForm);
 USEFORM("PropertiesFormClass.cpp", PropertiesForm);
 USEFORM("SpeakerSetupFormClass.cpp", SpeakerSetupForm);
 USEFORM("StandardResolutionFormClass.cpp", StandardResolutionForm);

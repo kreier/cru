@@ -1,10 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "HDMISupportClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 const int HDMISupportClass::MinTMDSClock = 5;
 const int HDMISupportClass::MaxTMDSClock = 1275;
@@ -18,17 +16,14 @@ const int HDMISupportClass::ModLatency = 2;
 HDMISupportClass::HDMISupportClass(int NewMaxDataSize)
 {
 	MaxDataSize = NewMaxDataSize;
-	MaxMaxDataSize = MaxDataSize;
-
-	PhysicalAddress = new char[TEXTSIZE];
-	std::snprintf(PhysicalAddress, TEXTSIZE, "0.0.0.0");
+	std::snprintf(PhysicalAddress, sizeof PhysicalAddress, "0.0.0.0");
 	DeepColorYCbCr444 = false;
 	DeepColor30bit = false;
 	DeepColor36bit = false;
 	DeepColor48bit = false;
 	SupportsAI = false;
 	DualLinkDVI = false;
-	OverrideTMDSClock = true;
+	OverrideTMDSClock = TMDSClockPossible();
 	TMDSClock = 340;
 	ContentType[0] = false;
 	ContentType[1] = false;
@@ -45,74 +40,10 @@ HDMISupportClass::HDMISupportClass(int NewMaxDataSize)
 	InterlacedAudioSupported = false;
 	InterlacedAudioLatency = BLANK;
 	OtherFlags = 0;
-	HDMIResolutionList = new HDMIResolutionListClass(7);
 	HDMI_3D_Length = 0;
 	OtherSize = 0;
-	MaxOtherSize = 23;
-	OtherData = new unsigned char[MaxOtherSize];
+	MaxOtherSize = sizeof OtherData;
 	std::memset(OtherData, 0, MaxOtherSize);
-}
-//---------------------------------------------------------------------------
-void HDMISupportClass::Copy(const HDMISupportClass &Source)
-{
-	MaxDataSize = Source.MaxDataSize;
-	MaxMaxDataSize = Source.MaxMaxDataSize;
-
-	PhysicalAddress = new char[TEXTSIZE];
-	std::memcpy(PhysicalAddress, Source.PhysicalAddress, TEXTSIZE);
-	DeepColorYCbCr444 = Source.DeepColorYCbCr444;
-	DeepColor30bit = Source.DeepColor30bit;
-	DeepColor36bit = Source.DeepColor36bit;
-	DeepColor48bit = Source.DeepColor48bit;
-	SupportsAI = Source.SupportsAI;
-	DualLinkDVI = Source.DualLinkDVI;
-	OverrideTMDSClock = Source.OverrideTMDSClock;
-	TMDSClock = Source.TMDSClock;
-	ContentType[0] = Source.ContentType[0];
-	ContentType[1] = Source.ContentType[1];
-	ContentType[2] = Source.ContentType[2];
-	ContentType[3] = Source.ContentType[3];
-	IncludeLatency = Source.IncludeLatency;
-	VideoSupported = Source.VideoSupported;
-	VideoLatency = Source.VideoLatency;
-	AudioSupported = Source.AudioSupported;
-	AudioLatency = Source.AudioLatency;
-	IncludeInterlacedLatency = Source.IncludeInterlacedLatency;
-	InterlacedVideoSupported = Source.InterlacedVideoSupported;
-	InterlacedVideoLatency = Source.InterlacedVideoLatency;
-	InterlacedAudioSupported = Source.InterlacedAudioSupported;
-	InterlacedAudioLatency = Source.InterlacedAudioLatency;
-	OtherFlags = Source.OtherFlags;
-	HDMIResolutionList = new HDMIResolutionListClass(*Source.HDMIResolutionList);
-	HDMI_3D_Length = Source.HDMI_3D_Length;
-	OtherSize = Source.OtherSize;
-	MaxOtherSize = Source.MaxOtherSize;
-	OtherData = new unsigned char[MaxOtherSize];
-	std::memcpy(OtherData, Source.OtherData, MaxOtherSize);
-}
-//---------------------------------------------------------------------------
-void HDMISupportClass::Delete()
-{
-	delete[] PhysicalAddress;
-	delete HDMIResolutionList;
-	delete[] OtherData;
-}
-//---------------------------------------------------------------------------
-HDMISupportClass::HDMISupportClass(const HDMISupportClass &Source)
-{
-	Copy(Source);
-}
-//---------------------------------------------------------------------------
-HDMISupportClass &HDMISupportClass::operator=(const HDMISupportClass &Source)
-{
-	Delete();
-	Copy(Source);
-	return *this;
-}
-//---------------------------------------------------------------------------
-HDMISupportClass::~HDMISupportClass()
-{
-	Delete();
 }
 //---------------------------------------------------------------------------
 bool HDMISupportClass::Read(const unsigned char *Data, int MaxSize)
@@ -128,16 +59,13 @@ bool HDMISupportClass::Read(const unsigned char *Data, int MaxSize)
 	if (MaxSize < 6)
 		return false;
 
-	MaxDataSize = MaxSize - 1;
-
-	if (MaxDataSize > MaxMaxDataSize)
-		return false;
-
 	Type = Data[0] >> 5;
 	Size = Data[0] & 31;
 
 	if (Type != 3)
 		return false;
+
+	MaxDataSize = MaxSize - 1;
 
 	if (Size < 5 || Size > MaxDataSize)
 		return false;
@@ -293,7 +221,7 @@ bool HDMISupportClass::Read(const unsigned char *Data, int MaxSize)
 	}
 
 	Index++;
-	HDMIResolutionList->Read(&Data[Index], HDMI_VIC_Length);
+	HDMIResolutionList.Read(&Data[Index], HDMI_VIC_Length);
 	Index += HDMI_VIC_Length;
 	OtherSize = Size - Index + 1;
 
@@ -301,13 +229,16 @@ bool HDMISupportClass::Read(const unsigned char *Data, int MaxSize)
 		OtherSize = 0;
 
 	std::memset(OtherData, 0, MaxOtherSize);
-	std::memcpy(OtherData, &Data[Index], OtherSize);
+
+	if (OtherSize > 0)
+		std::memcpy(OtherData, &Data[Index], OtherSize);
+
 	return true;
 }
 //---------------------------------------------------------------------------
 bool HDMISupportClass::Write(unsigned char *Data, int MaxSize)
 {
-	int DataSize;
+	int Size;
 
 	if (!Data)
 		return false;
@@ -315,16 +246,19 @@ bool HDMISupportClass::Write(unsigned char *Data, int MaxSize)
 	if (MaxSize < 6)
 		return false;
 
-	DataSize = 5;
 	std::memset(Data, 0, MaxSize);
-	std::memcpy(&Data[1], "\x03\x0C\x00", 3);
+	Data[1] = 0x03;
+	Data[2] = 0x0C;
+	Data[3] = 0x00;
 
 	if (!WritePhysicalAddress(&Data[4]))
 		return false;
 
+	Size = 5;
+
 	if (DeepColorYCbCr444 || DeepColor30bit || DeepColor36bit || DeepColor48bit || SupportsAI || DualLinkDVI)
 	{
-		DataSize = 6;
+		Size = 6;
 		Data[6] |= DeepColorYCbCr444 ? 8 : 0;
 		Data[6] |= DeepColor30bit ? 16 : 0;
 		Data[6] |= DeepColor36bit ? 32 : 0;
@@ -335,13 +269,13 @@ bool HDMISupportClass::Write(unsigned char *Data, int MaxSize)
 
 	if (OverrideTMDSClock)
 	{
-		DataSize = 7;
+		Size = 7;
 		Data[7] = TMDSClock / 5;
 	}
 
 	if (ContentType[0] || ContentType[1] || ContentType[2] || ContentType[3])
 	{
-		DataSize = 8;
+		Size = 8;
 		Data[8] |= ContentType[0] ? 1 : 0;
 		Data[8] |= ContentType[1] ? 2 : 0;
 		Data[8] |= ContentType[2] ? 4 : 0;
@@ -350,79 +284,74 @@ bool HDMISupportClass::Write(unsigned char *Data, int MaxSize)
 
 	if (IncludeLatency)
 	{
-		DataSize = 10;
+		Size = 10;
 		Data[8] |= IncludeLatency ? 128 : 0;
 
-		if (VideoSupported)
-			Data[9] = VideoLatency / 2 + 1;
-		else
+		if (!VideoSupported)
 			Data[9] = 255;
-
-		if (AudioSupported)
-			Data[10] = AudioLatency / 2 + 1;
+		else if (VideoLatency == BLANK)
+			Data[9] = 0;
 		else
+			Data[9] = VideoLatency / 2 + 1;
+
+		if (!AudioSupported)
 			Data[10] = 255;
+		else if (AudioLatency == BLANK)
+			Data[10] = 0;
+		else
+			Data[10] = AudioLatency / 2 + 1;
 	}
 
 	if (IncludeInterlacedLatencyPossible() && IncludeLatency && IncludeInterlacedLatency)
 	{
-		DataSize = 12;
+		Size = 12;
 		Data[8] |= IncludeInterlacedLatency ? 64 : 0;
 
-		if (InterlacedVideoSupported)
-			Data[11] = InterlacedVideoLatency / 2 + 1;
-		else
+		if (!InterlacedVideoSupported)
 			Data[11] = 255;
-
-		if (InterlacedAudioSupported)
-			Data[12] = InterlacedAudioLatency / 2 + 1;
+		else if (InterlacedVideoLatency == BLANK)
+			Data[11] = 0;
 		else
+			Data[11] = InterlacedVideoLatency / 2 + 1;
+
+		if (!InterlacedAudioSupported)
 			Data[12] = 255;
+		else if (InterlacedAudioLatency == BLANK)
+			Data[12] = 0;
+		else
+			Data[12] = InterlacedAudioLatency / 2 + 1;
 	}
 
-	if (OtherFlags || HDMIResolutionList->GetCount() > 0 || HDMI_3D_Length > 0)
+	if (OtherFlags || HDMIResolutionList.GetCount() > 0 || HDMI_3D_Length > 0)
 	{
-		if (DataSize < 8)
-			DataSize = 8;
+		if (Size < 8)
+			Size = 8;
 
 		Data[8] |= 32;
-		DataSize++;
-		Data[DataSize] = OtherFlags;
+		Size++;
+		Data[Size] = OtherFlags;
 	}
 
-	if (HDMIResolutionList->GetCount() > 0 || HDMI_3D_Length > 0)
+	if (HDMIResolutionList.GetCount() > 0 || HDMI_3D_Length > 0)
 	{
-		DataSize++;
-		Data[DataSize] = HDMIResolutionList->GetCount() << 5;
-		Data[DataSize] |= HDMI_3D_Length;
-		HDMIResolutionList->Write(&Data[DataSize + 1], HDMIResolutionList->GetSize());
-		DataSize += HDMIResolutionList->GetSize();
+		Size++;
+		Data[Size] = HDMIResolutionList.GetCount() << 5;
+		Data[Size] |= HDMI_3D_Length;
+		HDMIResolutionList.Write(&Data[Size + 1], HDMIResolutionList.GetSize());
+		Size += HDMIResolutionList.GetSize();
 	}
 
 	if (OtherSize > 0)
 	{
-		if (DataSize < 8)
-			DataSize = 8;
+		if (Size < 8)
+			Size = 8;
 
-		std::memcpy(&Data[DataSize + 1], OtherData, OtherSize);
-		DataSize += OtherSize;
+		std::memcpy(&Data[Size + 1], OtherData, OtherSize);
+		Size += OtherSize;
 	}
 
 	Data[0] = 3 << 5;
-	Data[0] |= DataSize;
-	return true;
-}
-//---------------------------------------------------------------------------
-bool HDMISupportClass::SetMaxSize(int NewMaxDataSize)
-{
-	if (NewMaxDataSize > MaxMaxDataSize)
-		NewMaxDataSize = MaxMaxDataSize;
-
-	MaxDataSize = NewMaxDataSize;
-
-	if (!TMDSClockPossible())
-		OverrideTMDSClock = false;
-
+	Data[0] |= Size;
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -431,27 +360,27 @@ bool HDMISupportClass::ReadPhysicalAddress(const unsigned char *Data)
 	if (!Data)
 		return false;
 
-	std::snprintf(PhysicalAddress, TEXTSIZE, "%d.%d.%d.%d", (Data[0] >> 4) & 15, Data[0] & 15, (Data[1] >> 4) & 15, Data[1] & 15);
+	std::snprintf(PhysicalAddress, sizeof PhysicalAddress, "%d.%d.%d.%d", (Data[0] >> 4) & 15, Data[0] & 15, (Data[1] >> 4) & 15, Data[1] & 15);
 	return true;
 }
 //---------------------------------------------------------------------------
 bool HDMISupportClass::WritePhysicalAddress(unsigned char *Data)
 {
-	int Address[5];
-	int Index;
-
 	if (!Data)
 		return false;
 
-	if (std::sscanf(PhysicalAddress, "%d.%d.%d.%d%c", &Address[0], &Address[1], &Address[2], &Address[3], &Address[4]) != 4)
+	int Value[4];
+	char Invalid;
+
+	if (std::sscanf(PhysicalAddress, "%d.%d.%d.%d %c", &Value[0], &Value[1], &Value[2], &Value[3], &Invalid) != 4)
 		return false;
 
-	for (Index = 0; Index < 4; Index++)
-		if (Address[Index] < 0 || Address[Index] > 15)
+	for (int Index = 0; Index < 4; Index++)
+		if (Value[Index] < 0 || Value[Index] > 15)
 			return false;
 
-	Data[0] = (Address[0] << 4) | Address[1];
-	Data[1] = (Address[2] << 4) | Address[3];
+	Data[0] = (Value[0] << 4) | Value[1];
+	Data[1] = (Value[2] << 4) | Value[3];
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -465,7 +394,7 @@ bool HDMISupportClass::SetPhysicalAddressText(const char *Text)
 {
 	unsigned char Data[2];
 
-	std::snprintf(PhysicalAddress, TEXTSIZE, "%s", Text);
+	std::snprintf(PhysicalAddress, sizeof PhysicalAddress, "%s", Text);
 
 	if (WritePhysicalAddress(Data))
 		ReadPhysicalAddress(Data);
@@ -597,13 +526,13 @@ bool HDMISupportClass::IncludeLatencyPossible()
 {
 	int DataSize = 10;
 
-	if (OtherFlags || HDMIResolutionList->GetCount() > 0 || HDMI_3D_Length > 0)
+	if (OtherFlags || HDMIResolutionList.GetCount() > 0 || HDMI_3D_Length > 0)
 		DataSize++;
 
-	if (HDMIResolutionList->GetCount() > 0 || HDMI_3D_Length > 0)
+	if (HDMIResolutionList.GetCount() > 0 || HDMI_3D_Length > 0)
 		DataSize++;
 
-	DataSize += HDMIResolutionList->GetSize();
+	DataSize += HDMIResolutionList.GetSize();
 	DataSize += OtherSize;
 	return DataSize <= MaxDataSize;
 }
@@ -671,13 +600,13 @@ bool HDMISupportClass::IncludeInterlacedLatencyPossible()
 {
 	int DataSize = 12;
 
-	if (OtherFlags || HDMIResolutionList->GetCount() > 0 || HDMI_3D_Length > 0)
+	if (OtherFlags || HDMIResolutionList.GetCount() > 0 || HDMI_3D_Length > 0)
 		DataSize++;
 
-	if (HDMIResolutionList->GetCount() > 0 || HDMI_3D_Length > 0)
+	if (HDMIResolutionList.GetCount() > 0 || HDMI_3D_Length > 0)
 		DataSize++;
 
-	DataSize += HDMIResolutionList->GetSize();
+	DataSize += HDMIResolutionList.GetSize();
 	DataSize += OtherSize;
 	return DataSize <= MaxDataSize;
 }
@@ -750,8 +679,8 @@ HDMIResolutionListClass *HDMISupportClass::Resolutions()
 	if (MaxSize < 0)
 		MaxSize = 0;
 
-	HDMIResolutionList->SetMaxSize(MaxSize);
-	return HDMIResolutionList;
+	HDMIResolutionList.SetMaxSize(MaxSize);
+	return &HDMIResolutionList;
 }
 //---------------------------------------------------------------------------
 bool HDMISupportClass::IsValid()

@@ -3,7 +3,7 @@ object DisplayForm: TDisplayForm
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Custom Resolution Utility 1.3.99-p1 by ToastyX'
+  Caption = 'Custom Resolution Utility 1.5.2 by ToastyX'
   ClientHeight = 456
   ClientWidth = 496
   Color = clBtnFace
@@ -24,6 +24,7 @@ object DisplayForm: TDisplayForm
     Width = 306
     Height = 21
     Style = csDropDownList
+    DropDownCount = 25
     ItemHeight = 13
     TabOrder = 0
     OnChange = DisplayComboBoxChange

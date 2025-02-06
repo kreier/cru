@@ -30,7 +30,8 @@ object DetailedResolutionForm: TDetailedResolutionForm
     Width = 195
     Height = 21
     Style = csDropDownList
-    ItemHeight = 0
+    DropDownCount = 25
+    ItemHeight = 13
     TabOrder = 0
     OnChange = TimingComboBoxChange
   end
@@ -324,6 +325,7 @@ object DetailedResolutionForm: TDetailedResolutionForm
       Width = 48
       Height = 21
       Style = csDropDownList
+      DropDownCount = 25
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -403,6 +405,7 @@ object DetailedResolutionForm: TDetailedResolutionForm
       Width = 48
       Height = 21
       Style = csDropDownList
+      DropDownCount = 25
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -484,6 +487,13 @@ object DetailedResolutionForm: TDetailedResolutionForm
       Height = 13
       Caption = 'Actual: '#8211' kHz'
     end
+    object ActualPClock: TLabel
+      Left = 211
+      Top = 72
+      Width = 66
+      Height = 13
+      Caption = 'Actual: '#8211' MHz'
+    end
     object LastRate0: TRadioButton
       Left = 9
       Top = 20
@@ -516,7 +526,7 @@ object DetailedResolutionForm: TDetailedResolutionForm
       Top = 19
       Width = 48
       Height = 21
-      MaxLength = 7
+      MaxLength = 15
       TabOrder = 3
       OnChange = VRateChange
       OnExit = VRateExit
@@ -526,7 +536,7 @@ object DetailedResolutionForm: TDetailedResolutionForm
       Top = 44
       Width = 48
       Height = 21
-      MaxLength = 7
+      MaxLength = 12
       TabOrder = 4
       OnChange = HRateChange
       OnExit = HRateExit
@@ -536,7 +546,7 @@ object DetailedResolutionForm: TDetailedResolutionForm
       Top = 69
       Width = 48
       Height = 21
-      MaxLength = 7
+      MaxLength = 9
       TabOrder = 5
       OnChange = PClockChange
       OnExit = PClockExit
@@ -550,14 +560,14 @@ object DetailedResolutionForm: TDetailedResolutionForm
       TabOrder = 6
       OnClick = InterlacedClick
     end
-    object Native: TCheckBox
+    object Preferred: TCheckBox
       Left = 292
       Top = 70
-      Width = 49
+      Width = 64
       Height = 17
-      Caption = 'Native'
+      Caption = 'Preferred'
       TabOrder = 7
-      OnClick = NativeClick
+      OnClick = PreferredClick
     end
   end
   object FormOKButton: TButton

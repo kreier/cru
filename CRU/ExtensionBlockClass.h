@@ -11,10 +11,12 @@
 //---------------------------------------------------------------------------
 enum
 {
-	CEA_861,
+	CEA_EXT,
 	VTB_EXT,
 	DISPLAYID_EXT,
+	DISPLAYID2_EXT,
 	DEFAULT_EXT,
+	OTHER_EXT,
 };
 //---------------------------------------------------------------------------
 class ExtensionBlockClass : public ItemClass
@@ -23,14 +25,12 @@ private:
 	static const int MinType;
 	static const int MaxType;
 	static const char *TypeText[];
-	static const int TypeCode[];
 
 	static unsigned char *CopyExtensionData;
 	unsigned char *OldExtensionData;
 	unsigned char *NewExtensionData;
 
 	int ExtensionType;
-	int ExtensionCode;
 
 	ColorFormatListClass *ColorFormatList;
 	DetailedResolutionListClass *DetailedResolutionList;

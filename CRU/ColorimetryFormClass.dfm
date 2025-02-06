@@ -3,7 +3,7 @@ object ColorimetryForm: TColorimetryForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Colorimetry'
-  ClientHeight = 318
+  ClientHeight = 369
   ClientWidth = 170
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,7 +21,7 @@ object ColorimetryForm: TColorimetryForm
     Left = 8
     Top = 6
     Width = 154
-    Height = 178
+    Height = 229
     Caption = ' Colorimetry '
     TabOrder = 0
     object ColorimetryCheckBox0: TCheckBox
@@ -103,8 +103,8 @@ object ColorimetryForm: TColorimetryForm
       TabOrder = 7
       OnClick = ColorimetryCheckBoxClick
     end
-    object ColorimetryCheckBox8: TCheckBox
-      Tag = 8
+    object ColorimetryCheckBox15: TCheckBox
+      Tag = 15
       Left = 9
       Top = 153
       Width = 52
@@ -113,15 +113,46 @@ object ColorimetryForm: TColorimetryForm
       TabOrder = 8
       OnClick = ColorimetryCheckBoxClick
     end
+    object ColorimetryCheckBox14: TCheckBox
+      Tag = 14
+      Left = 9
+      Top = 170
+      Width = 46
+      Height = 17
+      Caption = 'ICtCp'
+      TabOrder = 9
+      OnClick = ColorimetryCheckBoxClick
+    end
+    object ColorimetryCheckBox13: TCheckBox
+      Tag = 13
+      Left = 9
+      Top = 187
+      Width = 43
+      Height = 17
+      Caption = 'sRGB'
+      TabOrder = 10
+      OnClick = ColorimetryCheckBoxClick
+    end
+    object ColorimetryCheckBox12: TCheckBox
+      Tag = 12
+      Left = 9
+      Top = 204
+      Width = 76
+      Height = 17
+      Caption = 'Default RGB'
+      TabOrder = 11
+      OnClick = ColorimetryCheckBoxClick
+    end
   end
   object MetadataGroupBox: TGroupBox
     Left = 8
-    Top = 189
+    Top = 240
     Width = 154
     Height = 93
     Caption = ' Metadata '
     TabOrder = 1
     object MetadataCheckBox0: TCheckBox
+      Tag = 8
       Left = 9
       Top = 17
       Width = 39
@@ -131,7 +162,7 @@ object ColorimetryForm: TColorimetryForm
       OnClick = MetadataCheckBoxClick
     end
     object MetadataCheckBox1: TCheckBox
-      Tag = 1
+      Tag = 9
       Left = 9
       Top = 34
       Width = 39
@@ -141,7 +172,7 @@ object ColorimetryForm: TColorimetryForm
       OnClick = MetadataCheckBoxClick
     end
     object MetadataCheckBox2: TCheckBox
-      Tag = 2
+      Tag = 10
       Left = 9
       Top = 51
       Width = 39
@@ -151,7 +182,7 @@ object ColorimetryForm: TColorimetryForm
       OnClick = MetadataCheckBoxClick
     end
     object MetadataCheckBox3: TCheckBox
-      Tag = 3
+      Tag = 11
       Left = 9
       Top = 68
       Width = 39
@@ -163,7 +194,7 @@ object ColorimetryForm: TColorimetryForm
   end
   object FormOKButton: TButton
     Left = 7
-    Top = 288
+    Top = 339
     Width = 75
     Height = 23
     Caption = 'OK'
@@ -173,7 +204,7 @@ object ColorimetryForm: TColorimetryForm
   end
   object FormCancelButton: TButton
     Left = 88
-    Top = 288
+    Top = 339
     Width = 75
     Height = 23
     Cancel = True

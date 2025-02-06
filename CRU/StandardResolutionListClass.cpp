@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "StandardResolutionListClass.h"
 #include "StandardResolutionClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 StandardResolutionListClass::StandardResolutionListClass(int Slots) : ListClass(Slots, 2)
 {
@@ -13,7 +12,6 @@ StandardResolutionListClass::StandardResolutionListClass(int Slots) : ListClass(
 bool StandardResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 {
 	int Slot;
-	StandardResolutionClass StandardResolution;
 	int Block;
 	const unsigned char *Byte;
 
@@ -24,6 +22,8 @@ bool StandardResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 
 	if (!SetMaxSize(MaxSize))
 		return false;
+
+	StandardResolutionClass StandardResolution;
 
 	for (Slot = 0; Slot < 8 && SlotCount < MaxSlotCount; Slot++)
 	{
@@ -69,6 +69,9 @@ bool StandardResolutionListClass::Write(unsigned char *Data, int MaxSize)
 	if (!Data)
 		return false;
 
+	if (MaxSize < DataSize)
+		return false;
+
 	std::memset(Data, 1, 16);
 	Count = 0;
 
@@ -112,7 +115,6 @@ bool StandardResolutionListClass::ReadExtension(const unsigned char *Data, int M
 {
 	int Slots;
 	int Slot;
-	StandardResolutionClass StandardResolution;
 
 	if (!Data)
 		return false;
@@ -123,6 +125,7 @@ bool StandardResolutionListClass::ReadExtension(const unsigned char *Data, int M
 		return false;
 
 	Slots = MaxSize / SlotSize;
+	StandardResolutionClass StandardResolution;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
 	{

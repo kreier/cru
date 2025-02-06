@@ -28,6 +28,18 @@ enum
 	DID_TILED_DISPLAY_TOPOLOGY,
 	DID_TYPE_6_RESOLUTIONS,
 	DID_VENDOR_SPECIFIC_DATA,
+	DID2_PRODUCT_IDENTIFICATION,
+	DID2_DISPLAY_PARAMETERS,
+	DID2_DETAILED_RESOLUTIONS,
+	DID2_TYPE_8_RESOLUTIONS,
+	DID2_TYPE_9_RESOLUTIONS,
+	DID2_DYNAMIC_RANGE_LIMITS,
+	DID2_DISPLAY_INTERFACE_FEATURES,
+	DID2_STEREO_DISPLAY_INTERFACE,
+	DID2_TILED_DISPLAY_TOPOLOGY,
+	DID2_CONTAINERID,
+	DID2_VENDOR_SPECIFIC_DATA,
+	DID_CEA_DATA_BLOCKS,
 	DID_OTHER,
 };
 //---------------------------------------------------------------------------
@@ -35,6 +47,7 @@ class DIDDataListClass : public ListClass
 {
 private:
 	static const char *SlotTypeText[];
+	int Version;
 
 public:
 	DIDDataListClass(int);
@@ -47,6 +60,8 @@ public:
 	bool SetMaxSize(int);
 	bool GetSlotTypeText(int, char *, int);
 	bool GetSlotInfoText(int, char *, int);
+	bool SetVersion(int);
+	int GetVersion();
 	bool AddPossible();
 	bool EditPossible(int);
 };

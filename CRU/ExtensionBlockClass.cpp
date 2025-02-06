@@ -1,28 +1,19 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "ExtensionBlockClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 const int ExtensionBlockClass::MinType = 0;
-const int ExtensionBlockClass::MaxType = 3;
+const int ExtensionBlockClass::MaxType = 4;
 
 const char *ExtensionBlockClass::TypeText[] =
 {
-	"CEA-861",
+	"CTA-861",
 	"VTB-EXT",
-	"DisplayID",
+	"DisplayID 1.3",
+	"DisplayID 2.0",
 	"Default",
-};
-
-const int ExtensionBlockClass::TypeCode[] =
-{
-	0x02,
-	0x10,
-	0x70,
-	0x00,
 };
 
 unsigned char *ExtensionBlockClass::CopyExtensionData = NULL;
@@ -37,7 +28,6 @@ ExtensionBlockClass::ExtensionBlockClass()
 	std::memcpy(NewExtensionData, OldExtensionData, 128);
 
 	ExtensionType = 0;
-	ExtensionCode = TypeCode[ExtensionType];
 
 	ColorFormatList = new ColorFormatListClass;
 	DetailedResolutionList = new DetailedResolutionListClass(6);
@@ -55,7 +45,6 @@ void ExtensionBlockClass::Copy(const ExtensionBlockClass &Source)
 	std::memcpy(NewExtensionData, Source.NewExtensionData, 128);
 
 	ExtensionType = Source.ExtensionType;
-	ExtensionCode = Source.ExtensionCode;
 
 	ColorFormatList = new ColorFormatListClass(*Source.ColorFormatList);
 	DetailedResolutionList = new DetailedResolutionListClass(*Source.DetailedResolutionList);
@@ -123,9 +112,9 @@ bool ExtensionBlockClass::GetText(char *Text, int TextSize)
 {
 	int Count1;
 	int Count2;
-	char *HDMISupported;
+	const char *HDMISupported;
 
-	switch (ExtensionCode)
+	switch (NewExtensionData[0])
 	{
 		case 0x00:
 			std::snprintf(Text, TextSize, "Default extension block");
@@ -138,19 +127,21 @@ bool ExtensionBlockClass::GetText(char *Text, int TextSize)
 
 			if (CEADataList->HDMISupported())
 			{
-				if (CEADataList->HDMI2Supported())
+				if (CEADataList->HDMI21Supported())
+					HDMISupported = " (HDMI 2.1)";
+				else if (CEADataList->HDMI2Supported())
 					HDMISupported = " (HDMI 2.0)";
 				else
 					HDMISupported = " (HDMI)";
 			}
 
-			std::snprintf(Text, TextSize, "CEA-861: %d detailed resolution%s, %d data block%s%s", Count1, Count1 != 1 ? "s" : "", Count2, Count2 != 1 ? "s" : "", HDMISupported);
+			std::snprintf(Text, TextSize, "%s: %d detailed resolution%s, %d data block%s%s", TypeText[ExtensionType], Count1, Count1 != 1 ? "s" : "", Count2, Count2 != 1 ? "s" : "", HDMISupported);
 			break;
 
 		case 0x10:
 			Count1 = DetailedResolutionList->GetCount();
 			Count2 = StandardResolutionList->GetCount();
-			std::snprintf(Text, TextSize, "VTB-EXT: %d detailed resolution%s, %d standard resolution%s", Count1, Count1 != 1 ? "s" : "", Count2, Count2 != 1 ? "s" : "");
+			std::snprintf(Text, TextSize, "%s: %d detailed resolution%s, %d standard resolution%s", TypeText[ExtensionType], Count1, Count1 != 1 ? "s" : "", Count2, Count2 != 1 ? "s" : "");
 			break;
 
 		case 0x20:
@@ -171,7 +162,7 @@ bool ExtensionBlockClass::GetText(char *Text, int TextSize)
 
 		case 0x70:
 			Count1 = DIDDataList->GetCount();
-			std::snprintf(Text, TextSize, "DisplayID: %d data block%s", Count1, Count1 != 1 ? "s" : "");
+			std::snprintf(Text, TextSize, "%s: %d data block%s", TypeText[ExtensionType], Count1, Count1 != 1 ? "s" : "");
 			break;
 
 		case 0xF0:
@@ -179,7 +170,8 @@ bool ExtensionBlockClass::GetText(char *Text, int TextSize)
 			break;
 
 		default:
-			std::snprintf(Text, TextSize, "Other extension block (%d)", ExtensionCode);
+			std::snprintf(Text, TextSize, "Other extension block (%d)", NewExtensionData[0]);
+			break;
 	}
 
 	return true;
@@ -206,23 +198,27 @@ bool ExtensionBlockClass::SetType(int Value)
 {
 	ExtensionType = Value;
 
-	if (!IsValidType())
-		ExtensionCode = BLANK;
-	else
-		ExtensionCode = TypeCode[ExtensionType];
-
-	if (ExtensionGetBytesLeft() < 0)
+	switch (ExtensionType)
 	{
-		switch (ExtensionType)
-		{
-			case CEA_861:
+		case CEA_EXT:
+			if (ExtensionGetBytesLeft() < 0)
 				CEADataList->DeleteAll();
-				break;
 
-			case VTB_EXT:
+			break;
+
+		case VTB_EXT:
+			if (ExtensionGetBytesLeft() < 0)
 				StandardResolutionList->DeleteAll();
-				break;
-		}
+
+			break;
+
+		case DISPLAYID_EXT:
+			DIDDataList->SetVersion(1);
+			break;
+
+		case DISPLAYID2_EXT:
+			DIDDataList->SetVersion(2);
+			break;
 	}
 
 	return true;
@@ -230,14 +226,38 @@ bool ExtensionBlockClass::SetType(int Value)
 //---------------------------------------------------------------------------
 bool ExtensionBlockClass::ReadType()
 {
-	ExtensionCode = NewExtensionData[0];
-
-	for (ExtensionType = MinType; ExtensionType <= MaxType; ExtensionType++)
-		if (TypeCode[ExtensionType] == ExtensionCode)
+	switch (NewExtensionData[0])
+	{
+		case 0x00:
+			ExtensionType = DEFAULT_EXT;
 			break;
 
-	if (ExtensionType > MaxType)
-		ExtensionType = BLANK;
+		case 0x02:
+			ExtensionType = CEA_EXT;
+			break;
+
+		case 0x10:
+			ExtensionType = VTB_EXT;
+			break;
+
+		case 0x70:
+			if (NewExtensionData[1] < 0x20)
+			{
+				ExtensionType = DISPLAYID_EXT;
+				DIDDataList->SetVersion(1);
+			}
+			else
+			{
+				ExtensionType = DISPLAYID2_EXT;
+				DIDDataList->SetVersion(2);
+			}
+
+			break;
+
+		default:
+			ExtensionType = OTHER_EXT;
+			break;
+	}
 
 	return true;
 }
@@ -248,7 +268,7 @@ bool ExtensionBlockClass::ExtensionInit()
 
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			DetailedInit();
 			CEADataInit();
 
@@ -263,6 +283,7 @@ bool ExtensionBlockClass::ExtensionInit()
 			break;
 
 		case DISPLAYID_EXT:
+		case DISPLAYID2_EXT:
 			DIDDataInit();
 			break;
 	}
@@ -278,7 +299,7 @@ bool ExtensionBlockClass::ExtensionRead()
 
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			DetailedRead();
 			CEADataRead();
 
@@ -293,6 +314,7 @@ bool ExtensionBlockClass::ExtensionRead()
 			break;
 
 		case DISPLAYID_EXT:
+		case DISPLAYID2_EXT:
 			DIDDataRead();
 			break;
 	}
@@ -302,11 +324,16 @@ bool ExtensionBlockClass::ExtensionRead()
 //---------------------------------------------------------------------------
 bool ExtensionBlockClass::ExtensionWrite()
 {
+	if (ExtensionType == OTHER_EXT)
+		return true;
+
+	std::memset(NewExtensionData, 0, 128);
+
 	switch (ExtensionType)
 	{
-		case CEA_861:
-			std::memset(NewExtensionData, 0, 128);
-			std::memcpy(NewExtensionData, "\x02\x03", 2);
+		case CEA_EXT:
+			NewExtensionData[0] = 0x02;
+			NewExtensionData[1] = 0x03;
 			DetailedWrite();
 			CEADataWrite();
 
@@ -322,21 +349,22 @@ bool ExtensionBlockClass::ExtensionWrite()
 			break;
 
 		case VTB_EXT:
-			std::memset(NewExtensionData, 0, 128);
-			std::memcpy(NewExtensionData, "\x10\x01", 2);
+			NewExtensionData[0] = 0x10;
+			NewExtensionData[1] = 0x01;
 			DetailedWrite();
 			StandardWrite();
 			break;
 
 		case DISPLAYID_EXT:
-			std::memset(NewExtensionData, 0, 128);
 			NewExtensionData[0] = 0x70;
 			NewExtensionData[1] = 0x12;
 			DIDDataWrite();
 			break;
 
-		case DEFAULT_EXT:
-			std::memset(NewExtensionData, 0, 128);
+		case DISPLAYID2_EXT:
+			NewExtensionData[0] = 0x70;
+			NewExtensionData[1] = 0x20;
+			DIDDataWrite();
 			break;
 	}
 
@@ -412,7 +440,7 @@ int ExtensionBlockClass::ExtensionGetBytesLeft()
 
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			Bytes = 123;
 			Bytes -= DetailedResolutionList->GetSize();
 			Bytes -= CEADataList->GetSize();
@@ -425,6 +453,7 @@ int ExtensionBlockClass::ExtensionGetBytesLeft()
 			break;
 
 		case DISPLAYID_EXT:
+		case DISPLAYID2_EXT:
 			Bytes = 121;
 			Bytes -= DIDDataList->GetSize();
 			break;
@@ -475,7 +504,7 @@ bool ExtensionBlockClass::DetailedRead()
 
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			Offset = NewExtensionData[2];
 
 			if (Offset < 4)
@@ -514,7 +543,7 @@ bool ExtensionBlockClass::DetailedWrite()
 
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			Offset = 4 + CEADataList->GetSize();
 
 			if (Offset > 127)
@@ -551,7 +580,7 @@ bool ExtensionBlockClass::DetailedGetExtensionText(int Slot, char *Text, int Tex
 {
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			return DetailedResolutionList->GetExtensionText(Slot, Text, TextSize, CEADataList->GetBytesLeft());
 
 		case VTB_EXT:
@@ -565,7 +594,7 @@ DetailedResolutionListClass *ExtensionBlockClass::DetailedResolutions()
 {
 	switch (ExtensionType)
 	{
-		case CEA_861:
+		case CEA_EXT:
 			DetailedResolutionList->SetMaxSize(123 - CEADataList->GetSize());
 			break;
 
@@ -588,7 +617,7 @@ bool ExtensionBlockClass::CEADataRead()
 {
 	int Size;
 
-	if (ExtensionType == CEA_861)
+	if (ExtensionType == CEA_EXT)
 	{
 		Size = NewExtensionData[2] - 4;
 
@@ -609,7 +638,7 @@ bool ExtensionBlockClass::CEADataWrite()
 {
 	int Size;
 
-	if (ExtensionType == CEA_861)
+	if (ExtensionType == CEA_EXT)
 	{
 		Size = CEADataList->GetSize();
 
@@ -627,7 +656,7 @@ bool ExtensionBlockClass::CEADataWrite()
 //---------------------------------------------------------------------------
 CEADataListClass *ExtensionBlockClass::CEAData()
 {
-	if (ExtensionType == CEA_861)
+	if (ExtensionType == CEA_EXT)
 		CEADataList->SetMaxSize(123 - DetailedResolutionList->GetSize());
 
 	return CEADataList;
@@ -709,7 +738,7 @@ bool ExtensionBlockClass::DIDDataRead()
 {
 	int Size;
 
-	if (ExtensionType == DISPLAYID_EXT)
+	if (ExtensionType == DISPLAYID_EXT || ExtensionType == DISPLAYID2_EXT)
 	{
 		Size = NewExtensionData[2];
 
@@ -726,13 +755,12 @@ bool ExtensionBlockClass::DIDDataRead()
 bool ExtensionBlockClass::DIDDataWrite()
 {
 	int Size;
-	int Index;
 
-	if (ExtensionType == DISPLAYID_EXT)
+	if (ExtensionType == DISPLAYID_EXT || ExtensionType == DISPLAYID2_EXT)
 	{
 		Size = DIDDataList->GetSize();
 
-		if (Size > 121)
+		if (Size != 121)
 			Size = 121;
 
 		if (!DIDDataList->Write(&NewExtensionData[5], Size))
@@ -759,7 +787,7 @@ bool ExtensionBlockClass::DIDDataChecksum(int Size)
 //---------------------------------------------------------------------------
 DIDDataListClass *ExtensionBlockClass::DIDData()
 {
-	if (ExtensionType == DISPLAYID_EXT)
+	if (ExtensionType == DISPLAYID_EXT || ExtensionType == DISPLAYID2_EXT)
 		DIDDataList->SetMaxSize(121);
 
 	return DIDDataList;

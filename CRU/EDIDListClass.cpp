@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "EDIDListClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 EDIDListClass::EDIDListClass()
 {
@@ -69,7 +68,7 @@ bool EDIDListClass::Delete(int Index)
 		return false;
 
 	delete[] Items[Index];
-	Items.erase(&Items[Index]);
+	Items.erase(Items.begin() + Index);
 	Count--;
 	return true;
 }

@@ -10,7 +10,6 @@ private:
 	static const int HAspect[];
 	static const int VAspect[];
 	static const int Modes[][2];
-
 	static const int MinMode;
 	static const int MaxMode;
 	static const int MinAspect;
@@ -18,6 +17,8 @@ private:
 	static const int MinWidth;
 	static const int MaxWidth;
 	static const int ModWidth;
+	static const int MinHeight;
+	static const int MaxHeight;
 	static const int MinRate;
 	static const int MaxRate;
 

@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "FreeSyncRangeFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TFreeSyncRangeForm *FreeSyncRangeForm;
@@ -17,14 +16,6 @@ bool TFreeSyncRangeForm::Connect(FreeSyncRangeClass &NewFreeSyncRange)
 {
 	FreeSyncRange = &NewFreeSyncRange;
 	return true;
-}
-//---------------------------------------------------------------------------
-TColor TFreeSyncRangeForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
 }
 //---------------------------------------------------------------------------
 bool TFreeSyncRangeForm::Refresh(void *Value)
@@ -47,12 +38,12 @@ bool TFreeSyncRangeForm::RefreshRangeLimitsTextBoxes()
 
 	MinVRate->Font->Color = GetTextColor(FreeSyncRange->IsValidMinVRate());
 
-	if (!MinVRate->Focused() && Common::IntegerToText(FreeSyncRange->GetMinVRate(), Text, TEXTSIZE))
+	if (!MinVRate->Focused() && IntegerToText(FreeSyncRange->GetMinVRate(), Text, TEXTSIZE))
 		MinVRate->Text = Text;
 
 	MaxVRate->Font->Color = GetTextColor(FreeSyncRange->IsValidMaxVRate());
 
-	if (!MaxVRate->Focused() && Common::IntegerToText(FreeSyncRange->GetMaxVRate(), Text, TEXTSIZE))
+	if (!MaxVRate->Focused() && IntegerToText(FreeSyncRange->GetMaxVRate(), Text, TEXTSIZE))
 		MaxVRate->Text = Text;
 
 	return true;
@@ -96,12 +87,12 @@ bool TFreeSyncRangeForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = RangeLimitsGroupBox->Top + RangeLimitsGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = RangeLimitsGroupBox->Left + RangeLimitsGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -126,7 +117,7 @@ void __fastcall TFreeSyncRangeForm::MinVRateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	FreeSyncRange->SetMinVRate(Common::TextToInteger(MinVRate->Text.c_str()));
+	FreeSyncRange->SetMinVRate(TextToInteger(MinVRate->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -140,7 +131,7 @@ void __fastcall TFreeSyncRangeForm::MaxVRateChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	FreeSyncRange->SetMaxVRate(Common::TextToInteger(MaxVRate->Text.c_str()));
+	FreeSyncRange->SetMaxVRate(TextToInteger(MaxVRate->Text.c_str()));
 	Refresh(RangeLimitsGroupBox);
 }
 //---------------------------------------------------------------------------

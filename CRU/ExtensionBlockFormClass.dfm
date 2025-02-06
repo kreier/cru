@@ -3,7 +3,7 @@ object ExtensionBlockForm: TExtensionBlockForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Extension Block'
-  ClientHeight = 859
+  ClientHeight = 638
   ClientWidth = 346
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -26,7 +26,7 @@ object ExtensionBlockForm: TExtensionBlockForm
   end
   object DefaultOutline: TShape
     Left = 8
-    Top = 829
+    Top = 608
     Width = 169
     Height = 23
     Brush.Style = bsClear
@@ -35,7 +35,7 @@ object ExtensionBlockForm: TExtensionBlockForm
   end
   object DefaultLabel: TLabel
     Left = 17
-    Top = 834
+    Top = 612
     Width = 112
     Height = 13
     Caption = 'Default extension block'
@@ -52,7 +52,8 @@ object ExtensionBlockForm: TExtensionBlockForm
     Width = 166
     Height = 21
     Style = csDropDownList
-    ItemHeight = 0
+    DropDownCount = 25
+    ItemHeight = 13
     TabOrder = 0
     OnChange = ExtensionTypeComboBoxChange
   end
@@ -180,7 +181,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     Left = 8
     Top = 178
     Width = 330
-    Height = 164
+    Height = 138
     Caption = ' Data blocks '
     ParentBackground = False
     TabOrder = 5
@@ -188,7 +189,7 @@ object ExtensionBlockForm: TExtensionBlockForm
       Left = 9
       Top = 19
       Width = 312
-      Height = 108
+      Height = 82
       Style = lbOwnerDrawFixed
       ItemHeight = 13
       TabOrder = 0
@@ -199,7 +200,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataAddButton: TButton
       Left = 8
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Add...'
@@ -208,7 +209,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataEditButton: TButton
       Left = 50
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Edit...'
@@ -217,7 +218,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataDeleteButton: TButton
       Left = 92
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Delete'
@@ -226,7 +227,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataDeleteAllButton: TButton
       Left = 134
-      Top = 134
+      Top = 108
       Width = 56
       Height = 21
       Caption = 'Delete all'
@@ -235,7 +236,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataResetButton: TButton
       Left = 190
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Reset'
@@ -244,7 +245,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataUpButton: TBitBtn
       Left = 280
-      Top = 134
+      Top = 108
       Width = 21
       Height = 21
       TabOrder = 6
@@ -257,7 +258,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object CEADataDownButton: TBitBtn
       Left = 301
-      Top = 134
+      Top = 108
       Width = 21
       Height = 21
       TabOrder = 7
@@ -271,7 +272,7 @@ object ExtensionBlockForm: TExtensionBlockForm
   end
   object FormOKButton: TButton
     Left = 183
-    Top = 829
+    Top = 608
     Width = 75
     Height = 23
     Caption = 'OK'
@@ -281,7 +282,7 @@ object ExtensionBlockForm: TExtensionBlockForm
   end
   object FormCancelButton: TButton
     Left = 264
-    Top = 829
+    Top = 608
     Width = 75
     Height = 23
     Cancel = True
@@ -291,9 +292,9 @@ object ExtensionBlockForm: TExtensionBlockForm
   end
   object StandardGroupBox: TGroupBox
     Left = 8
-    Top = 347
+    Top = 321
     Width = 330
-    Height = 164
+    Height = 138
     Caption = ' Standard resolutions '
     ParentBackground = False
     TabOrder = 6
@@ -301,7 +302,7 @@ object ExtensionBlockForm: TExtensionBlockForm
       Left = 9
       Top = 19
       Width = 312
-      Height = 108
+      Height = 82
       Style = lbOwnerDrawFixed
       Columns = 2
       ItemHeight = 13
@@ -313,7 +314,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardAddButton: TButton
       Left = 8
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Add...'
@@ -322,7 +323,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardEditButton: TButton
       Left = 50
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Edit...'
@@ -331,7 +332,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardDeleteButton: TButton
       Left = 92
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Delete'
@@ -340,7 +341,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardDeleteAllButton: TButton
       Left = 134
-      Top = 134
+      Top = 108
       Width = 56
       Height = 21
       Caption = 'Delete all'
@@ -349,7 +350,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardResetButton: TButton
       Left = 190
-      Top = 134
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Reset'
@@ -358,7 +359,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardUpButton: TBitBtn
       Left = 280
-      Top = 134
+      Top = 108
       Width = 21
       Height = 21
       TabOrder = 6
@@ -371,7 +372,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object StandardDownButton: TBitBtn
       Left = 301
-      Top = 134
+      Top = 108
       Width = 21
       Height = 21
       TabOrder = 7
@@ -385,9 +386,9 @@ object ExtensionBlockForm: TExtensionBlockForm
   end
   object DIDDataGroupBox: TGroupBox
     Left = 8
-    Top = 516
+    Top = 464
     Width = 330
-    Height = 307
+    Height = 138
     Caption = ' Data blocks '
     ParentBackground = False
     TabOrder = 7
@@ -395,7 +396,7 @@ object ExtensionBlockForm: TExtensionBlockForm
       Left = 9
       Top = 19
       Width = 312
-      Height = 251
+      Height = 82
       Style = lbOwnerDrawFixed
       ItemHeight = 13
       TabOrder = 0
@@ -406,7 +407,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataAddButton: TButton
       Left = 8
-      Top = 277
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Add...'
@@ -415,7 +416,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataEditButton: TButton
       Left = 50
-      Top = 277
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Edit...'
@@ -424,7 +425,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataDeleteButton: TButton
       Left = 92
-      Top = 277
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Delete'
@@ -433,7 +434,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataDeleteAllButton: TButton
       Left = 134
-      Top = 277
+      Top = 108
       Width = 56
       Height = 21
       Caption = 'Delete all'
@@ -442,7 +443,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataResetButton: TButton
       Left = 190
-      Top = 277
+      Top = 108
       Width = 42
       Height = 21
       Caption = 'Reset'
@@ -451,7 +452,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataUpButton: TBitBtn
       Left = 280
-      Top = 277
+      Top = 108
       Width = 21
       Height = 21
       TabOrder = 6
@@ -464,7 +465,7 @@ object ExtensionBlockForm: TExtensionBlockForm
     end
     object DIDDataDownButton: TBitBtn
       Left = 301
-      Top = 277
+      Top = 108
       Width = 21
       Height = 21
       TabOrder = 7

@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "EstablishedResolutionListClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 EstablishedResolutionListClass::EstablishedResolutionListClass() : BitListClass(3, "\x2F\xCF\x00")
 {

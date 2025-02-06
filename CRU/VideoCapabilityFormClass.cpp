@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "VideoCapabilityFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TVideoCapabilityForm *VideoCapabilityForm;
@@ -41,9 +40,9 @@ bool TVideoCapabilityForm::Refresh(void *Value)
 //---------------------------------------------------------------------------
 bool TVideoCapabilityForm::RefreshTVRadioButtons()
 {
-	if (!VideoCapability->GetVideoCapability(S_CE1))
+	if (!VideoCapability->Get(S_CE1))
 	{
-		if (!VideoCapability->GetVideoCapability(S_CE0))
+		if (!VideoCapability->Get(S_CE0))
 		{
 			TVRadioButton0->Checked = true;
 			TVRadioButton1->Checked = false;
@@ -62,7 +61,7 @@ bool TVideoCapabilityForm::RefreshTVRadioButtons()
 		TVRadioButton0->Checked = false;
 		TVRadioButton1->Checked = false;
 
-		if (!VideoCapability->GetVideoCapability(S_CE0))
+		if (!VideoCapability->Get(S_CE0))
 		{
 			TVRadioButton2->Checked = true;
 			TVRadioButton3->Checked = false;
@@ -79,9 +78,9 @@ bool TVideoCapabilityForm::RefreshTVRadioButtons()
 //---------------------------------------------------------------------------
 bool TVideoCapabilityForm::RefreshPCRadioButtons()
 {
-	if (!VideoCapability->GetVideoCapability(S_IT1))
+	if (!VideoCapability->Get(S_IT1))
 	{
-		if (!VideoCapability->GetVideoCapability(S_IT0))
+		if (!VideoCapability->Get(S_IT0))
 		{
 			PCRadioButton0->Checked = true;
 			PCRadioButton1->Checked = false;
@@ -100,7 +99,7 @@ bool TVideoCapabilityForm::RefreshPCRadioButtons()
 		PCRadioButton0->Checked = false;
 		PCRadioButton1->Checked = false;
 
-		if (!VideoCapability->GetVideoCapability(S_IT0))
+		if (!VideoCapability->Get(S_IT0))
 		{
 			PCRadioButton2->Checked = true;
 			PCRadioButton3->Checked = false;
@@ -117,9 +116,9 @@ bool TVideoCapabilityForm::RefreshPCRadioButtons()
 //---------------------------------------------------------------------------
 bool TVideoCapabilityForm::RefreshNativeRadioButtons()
 {
-	if (!VideoCapability->GetVideoCapability(S_PT1))
+	if (!VideoCapability->Get(S_PT1))
 	{
-		if (!VideoCapability->GetVideoCapability(S_PT0))
+		if (!VideoCapability->Get(S_PT0))
 		{
 			NativeRadioButton0->Checked = true;
 			NativeRadioButton1->Checked = false;
@@ -138,7 +137,7 @@ bool TVideoCapabilityForm::RefreshNativeRadioButtons()
 		NativeRadioButton0->Checked = false;
 		NativeRadioButton1->Checked = false;
 
-		if (!VideoCapability->GetVideoCapability(S_PT0))
+		if (!VideoCapability->Get(S_PT0))
 		{
 			NativeRadioButton2->Checked = true;
 			NativeRadioButton3->Checked = false;
@@ -155,8 +154,8 @@ bool TVideoCapabilityForm::RefreshNativeRadioButtons()
 //---------------------------------------------------------------------------
 bool TVideoCapabilityForm::RefreshQuantizationCheckBoxes()
 {
-	RGBCheckBox->Checked = VideoCapability->GetVideoCapability(QS);
-	YCCCheckBox->Checked = VideoCapability->GetVideoCapability(QY);
+	RGBCheckBox->Checked = VideoCapability->Get(QS);
+	YCCCheckBox->Checked = VideoCapability->Get(QY);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -255,12 +254,12 @@ bool TVideoCapabilityForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = QuantizationGroupBox->Top + QuantizationGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = QuantizationGroupBox->Left + QuantizationGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -285,8 +284,8 @@ void __fastcall TVideoCapabilityForm::TVRadioButton0Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_CE0, false);
-	VideoCapability->SetVideoCapability(S_CE1, false);
+	VideoCapability->Set(S_CE0, false);
+	VideoCapability->Set(S_CE1, false);
 	Refresh(TVGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -295,8 +294,8 @@ void __fastcall TVideoCapabilityForm::TVRadioButton1Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_CE0, true);
-	VideoCapability->SetVideoCapability(S_CE1, false);
+	VideoCapability->Set(S_CE0, true);
+	VideoCapability->Set(S_CE1, false);
 	Refresh(TVGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -305,8 +304,8 @@ void __fastcall TVideoCapabilityForm::TVRadioButton2Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_CE0, false);
-	VideoCapability->SetVideoCapability(S_CE1, true);
+	VideoCapability->Set(S_CE0, false);
+	VideoCapability->Set(S_CE1, true);
 	Refresh(TVGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -315,8 +314,8 @@ void __fastcall TVideoCapabilityForm::TVRadioButton3Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_CE0, true);
-	VideoCapability->SetVideoCapability(S_CE1, true);
+	VideoCapability->Set(S_CE0, true);
+	VideoCapability->Set(S_CE1, true);
 	Refresh(TVGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -325,8 +324,8 @@ void __fastcall TVideoCapabilityForm::PCRadioButton0Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_IT0, false);
-	VideoCapability->SetVideoCapability(S_IT1, false);
+	VideoCapability->Set(S_IT0, false);
+	VideoCapability->Set(S_IT1, false);
 	Refresh(PCGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -335,8 +334,8 @@ void __fastcall TVideoCapabilityForm::PCRadioButton1Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_IT0, true);
-	VideoCapability->SetVideoCapability(S_IT1, false);
+	VideoCapability->Set(S_IT0, true);
+	VideoCapability->Set(S_IT1, false);
 	Refresh(PCGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -345,8 +344,8 @@ void __fastcall TVideoCapabilityForm::PCRadioButton2Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_IT0, false);
-	VideoCapability->SetVideoCapability(S_IT1, true);
+	VideoCapability->Set(S_IT0, false);
+	VideoCapability->Set(S_IT1, true);
 	Refresh(PCGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -355,8 +354,8 @@ void __fastcall TVideoCapabilityForm::PCRadioButton3Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_IT0, true);
-	VideoCapability->SetVideoCapability(S_IT1, true);
+	VideoCapability->Set(S_IT0, true);
+	VideoCapability->Set(S_IT1, true);
 	Refresh(PCGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -365,8 +364,8 @@ void __fastcall TVideoCapabilityForm::NativeRadioButton0Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_PT0, false);
-	VideoCapability->SetVideoCapability(S_PT1, false);
+	VideoCapability->Set(S_PT0, false);
+	VideoCapability->Set(S_PT1, false);
 	Refresh(NativeGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -375,8 +374,8 @@ void __fastcall TVideoCapabilityForm::NativeRadioButton1Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_PT0, true);
-	VideoCapability->SetVideoCapability(S_PT1, false);
+	VideoCapability->Set(S_PT0, true);
+	VideoCapability->Set(S_PT1, false);
 	Refresh(NativeGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -385,8 +384,8 @@ void __fastcall TVideoCapabilityForm::NativeRadioButton2Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_PT0, false);
-	VideoCapability->SetVideoCapability(S_PT1, true);
+	VideoCapability->Set(S_PT0, false);
+	VideoCapability->Set(S_PT1, true);
 	Refresh(NativeGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -395,8 +394,8 @@ void __fastcall TVideoCapabilityForm::NativeRadioButton3Click(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(S_PT0, true);
-	VideoCapability->SetVideoCapability(S_PT1, true);
+	VideoCapability->Set(S_PT0, true);
+	VideoCapability->Set(S_PT1, true);
 	Refresh(NativeGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -405,7 +404,7 @@ void __fastcall TVideoCapabilityForm::RGBCheckBoxClick(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(QS, RGBCheckBox->Checked);
+	VideoCapability->Set(QS, RGBCheckBox->Checked);
 	Refresh(QuantizationGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -414,7 +413,7 @@ void __fastcall TVideoCapabilityForm::YCCCheckBoxClick(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	VideoCapability->SetVideoCapability(QY, YCCCheckBox->Checked);
+	VideoCapability->Set(QY, YCCCheckBox->Checked);
 	Refresh(QuantizationGroupBox);
 }
 //---------------------------------------------------------------------------

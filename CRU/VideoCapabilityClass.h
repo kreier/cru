@@ -19,16 +19,15 @@ enum
 class VideoCapabilityClass : public ItemClass
 {
 private:
-	static const int VideoCapabilityMask;
-
-	int VideoCapability;
+	unsigned char VideoCapabilityData[30];
+	int VideoCapabilitySize;
 
 public:
 	VideoCapabilityClass();
 	bool Read(const unsigned char *, int);
 	bool Write(unsigned char *, int);
-	bool GetVideoCapability(int);
-	bool SetVideoCapability(int, bool);
+	bool Get(int);
+	bool Set(int, bool);
 };
 //---------------------------------------------------------------------------
 #endif

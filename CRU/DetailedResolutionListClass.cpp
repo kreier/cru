@@ -1,10 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "DetailedResolutionListClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 DetailedResolutionListClass::DetailedResolutionListClass(int Slots) : ListClass(Slots, 18)
 {
@@ -14,7 +12,6 @@ bool DetailedResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 {
 	int Slots;
 	int Slot;
-	DetailedResolutionClass DetailedResolution;
 
 	if (!Data)
 		return false;
@@ -25,6 +22,7 @@ bool DetailedResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 		return false;
 
 	Slots = MaxSize / SlotSize;
+	DetailedResolutionClass DetailedResolution;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
 	{

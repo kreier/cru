@@ -1,10 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "TiledDisplayTopologyClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 const int TiledDisplayTopologyClass::MinPhysicalEnclosures = 0;
 const int TiledDisplayTopologyClass::MaxPhysicalEnclosures = 1;
@@ -34,11 +32,12 @@ const int TiledDisplayTopologyClass::MinRightBezelSize = 0;
 const int TiledDisplayTopologyClass::MaxRightBezelSize = 255;
 const int TiledDisplayTopologyClass::MinLeftBezelSize = 0;
 const int TiledDisplayTopologyClass::MaxLeftBezelSize = 255;
-const long long TiledDisplayTopologyClass::MinSerialID = 0;
+const long long TiledDisplayTopologyClass::MinSerialID = 1;
 const long long TiledDisplayTopologyClass::MaxSerialID = 4294967295LL;
 //---------------------------------------------------------------------------
-TiledDisplayTopologyClass::TiledDisplayTopologyClass()
+TiledDisplayTopologyClass::TiledDisplayTopologyClass(int NewVersion)
 {
+	Version = NewVersion;
 	PhysicalEnclosures = 1;
 	SingleTileBehavior = 1;
 	MultipleTileBehavior = 1;
@@ -53,14 +52,14 @@ TiledDisplayTopologyClass::TiledDisplayTopologyClass()
 	BottomBezelSize = 0;
 	RightBezelSize = 0;
 	LeftBezelSize = 0;
+	VendorID[0] = 0;
 	ProductID[0] = 0;
-	ResetID[0] = 0;
-	SerialID = BLANK;
+	SerialID = DECIMAL_BLANK;
 }
 //---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::Read(const unsigned char *Data, int MaxSize)
 {
-	int Type;
+	int Code;
 	int Size;
 
 	if (!Data)
@@ -69,11 +68,26 @@ bool TiledDisplayTopologyClass::Read(const unsigned char *Data, int MaxSize)
 	if (MaxSize < 25)
 		return false;
 
-	Type = Data[0];
+	Code = Data[0];
 	Size = Data[2];
 
-	if (Type != 18)
-		return false;
+	switch (Version)
+	{
+		case 1:
+			if (Code != 18)
+				return false;
+
+			break;
+
+		case 2:
+			if (Code != 40)
+				return false;
+
+			break;
+
+		default:
+			return false;
+	}
 
 	if (Size < 22)
 		return false;
@@ -99,34 +113,44 @@ bool TiledDisplayTopologyClass::Read(const unsigned char *Data, int MaxSize)
 	BottomBezelSize = Data[13];
 	RightBezelSize = Data[14];
 	LeftBezelSize = Data[15];
-	ReadProductID(Data);
-	ReadSerialID(Data);
+	ReadVendorID(&Data[16]);
+	ReadProductID(&Data[19]);
+	ReadSerialID(&Data[21]);
 	return true;
+}
+//---------------------------------------------------------------------------
+bool TiledDisplayTopologyClass::ReadVendorID(const unsigned char *Data)
+{
+	if (Version == 1)
+	if (IsUpper(Data[0]))
+	if (IsUpper(Data[1]))
+	if (IsUpper(Data[2]))
+	{
+		VendorID[0] = Data[0];
+		VendorID[1] = Data[1];
+		VendorID[2] = Data[2];
+		VendorID[3] = 0;
+		return true;
+	}
+
+	return DataToHex(Data, 3, VendorID);
 }
 //---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::ReadProductID(const unsigned char *Data)
 {
-	ProductID[0] = Data[16];
-	ProductID[1] = Data[17];
-	ProductID[2] = Data[18];
-	ProductID[3] = Data[20] >> 4;
-	ProductID[4] = Data[20] & 15;
-	ProductID[5] = Data[19] >> 4;
-	ProductID[6] = Data[19] & 15;
-	ProductID[3] += ProductID[3] < 10 ? 48 : 55;
-	ProductID[4] += ProductID[4] < 10 ? 48 : 55;
-	ProductID[5] += ProductID[5] < 10 ? 48 : 55;
-	ProductID[6] += ProductID[6] < 10 ? 48 : 55;
-	ProductID[7] = 0;
-	return true;
+	return DataToHex(Data, 2, ProductID, true);
 }
 //---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::ReadSerialID(const unsigned char *Data)
 {
-	SerialID = Data[21];
-	SerialID += Data[22] << 8;
-	SerialID += Data[23] << 16;
-	SerialID += (long long)Data[24] << 24;
+	SerialID = Data[0];
+	SerialID += Data[1] << 8;
+	SerialID += Data[2] << 16;
+	SerialID += (long long)Data[3] << 24;
+
+	if (SerialID == 0)
+		SerialID = DECIMAL_BLANK;
+
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -139,7 +163,21 @@ bool TiledDisplayTopologyClass::Write(unsigned char *Data, int MaxSize)
 		return false;
 
 	std::memset(Data, 0, MaxSize);
-	Data[0] = 18;
+
+	switch (Version)
+	{
+		case 1:
+			Data[0] = 18;
+			break;
+
+		case 2:
+			Data[0] = 40;
+			break;
+
+		default:
+			return false;
+	}
+
 	Data[2] = 22;
 	Data[3] = ((PhysicalEnclosures & 1) << 7) + (SingleTileBehavior & 7) + ((MultipleTileBehavior & 3) << 3) + (PixelMultiplier ? 64 : 0);
 	Data[4] = ((--HTiles & 15) << 4) + (--VTiles & 15);
@@ -154,26 +192,36 @@ bool TiledDisplayTopologyClass::Write(unsigned char *Data, int MaxSize)
 	Data[13] = BottomBezelSize & 255;
 	Data[14] = RightBezelSize & 255;
 	Data[15] = LeftBezelSize & 255;
-	WriteProductID(Data);
-	WriteSerialID(Data);
+	WriteVendorID(&Data[16]);
+	WriteProductID(&Data[19]);
+	WriteSerialID(&Data[21]);
 	return true;
+}
+//---------------------------------------------------------------------------
+bool TiledDisplayTopologyClass::WriteVendorID(unsigned char *Data)
+{
+	if (Version == 1)
+	if (IsUpper(VendorID[0]))
+	if (IsUpper(VendorID[1]))
+	if (IsUpper(VendorID[2]))
+	if (VendorID[3] == 0)
+	{
+		if (Data)
+		{
+			Data[0] = VendorID[0];
+			Data[1] = VendorID[1];
+			Data[2] = VendorID[2];
+		}
+
+		return true;
+	}
+
+	return HexToData(VendorID, Data, 3);
 }
 //---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::WriteProductID(unsigned char *Data)
 {
-	if (!IsValidProductID())
-		return false;
-
-	Data[16] = ProductID[0];
-	Data[17] = ProductID[1];
-	Data[18] = ProductID[2];
-	Data[19] = 0;
-	Data[19] |= std::isdigit(ProductID[5]) ? ProductID[5] << 4 : (ProductID[5] - 7) << 4;
-	Data[19] |= std::isdigit(ProductID[6]) ? ProductID[6] & 15 : (ProductID[6] - 7) & 15;
-	Data[20] = 0;
-	Data[20] |= std::isdigit(ProductID[3]) ? ProductID[3] << 4 : (ProductID[3] - 7) << 4;
-	Data[20] |= std::isdigit(ProductID[4]) ? ProductID[4] & 15 : (ProductID[4] - 7) & 15;
-	return true;
+	return HexToData(ProductID, Data, 2, true);
 }
 //---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::WriteSerialID(unsigned char *Data)
@@ -181,10 +229,21 @@ bool TiledDisplayTopologyClass::WriteSerialID(unsigned char *Data)
 	if (!IsValidSerialID())
 		return false;
 
-	Data[21] = SerialID & 255;
-	Data[22] = (SerialID >> 8) & 255;
-	Data[23] = (SerialID >> 16) & 255;
-	Data[24] = (SerialID >> 24) & 255;
+	if (SerialID == DECIMAL_BLANK)
+	{
+		Data[0] = 0;
+		Data[1] = 0;
+		Data[2] = 0;
+		Data[3] = 0;
+	}
+	else
+	{
+		Data[0] = SerialID & 255;
+		Data[1] = (SerialID >> 8) & 255;
+		Data[2] = (SerialID >> 16) & 255;
+		Data[3] = (SerialID >> 24) & 255;
+	}
+
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -342,6 +401,20 @@ bool TiledDisplayTopologyClass::SetLeftBezelSize(int Value)
 	return true;
 }
 //---------------------------------------------------------------------------
+bool TiledDisplayTopologyClass::GetVendorID(char *Text, int TextSize)
+{
+	std::snprintf(Text, TextSize, "%s", VendorID);
+	return true;
+}
+//---------------------------------------------------------------------------
+bool TiledDisplayTopologyClass::SetVendorID(const char *NewVendorID)
+{
+	std::snprintf(VendorID, sizeof VendorID, "%s", NewVendorID);
+	Trim(VendorID);
+	ToUpper(VendorID);
+	return true;
+}
+//---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::GetProductID(char *Text, int TextSize)
 {
 	std::snprintf(Text, TextSize, "%s", ProductID);
@@ -351,23 +424,22 @@ bool TiledDisplayTopologyClass::GetProductID(char *Text, int TextSize)
 bool TiledDisplayTopologyClass::SetProductID(const char *NewProductID)
 {
 	std::snprintf(ProductID, sizeof ProductID, "%s", NewProductID);
+	Trim(ProductID);
+	ToUpper(ProductID);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool TiledDisplayTopologyClass::SetResetID(const char *NewResetID)
+bool TiledDisplayTopologyClass::SetDeviceID(const char *NewDeviceID)
 {
-	std::snprintf(ResetID, sizeof ResetID, "%s", NewResetID);
-	return true;
-}
-//---------------------------------------------------------------------------
-bool TiledDisplayTopologyClass::ResetProductIDPossible()
-{
-	return std::strcmp(ProductID, ResetID) != 0;
-}
-//---------------------------------------------------------------------------
-bool TiledDisplayTopologyClass::ResetProductID()
-{
-	std::snprintf(ProductID, sizeof ProductID, "%s", ResetID);
+	if (std::strlen(NewDeviceID) != 7)
+		return false;
+
+	ReadVendorID((const unsigned char *)NewDeviceID);
+	ProductID[0] = NewDeviceID[3];
+	ProductID[1] = NewDeviceID[4];
+	ProductID[2] = NewDeviceID[5];
+	ProductID[3] = NewDeviceID[6];
+	ProductID[4] = 0;
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -398,6 +470,7 @@ bool TiledDisplayTopologyClass::IsValid()
 	if (IsValidBottomBezelSize())
 	if (IsValidRightBezelSize())
 	if (IsValidLeftBezelSize())
+	if (IsValidVendorID())
 	if (IsValidProductID())
 	if (IsValidSerialID())
 		return true;
@@ -475,22 +548,21 @@ bool TiledDisplayTopologyClass::IsValidLeftBezelSize()
 	return LeftBezelSize >= MinLeftBezelSize && LeftBezelSize <= MaxLeftBezelSize;
 }
 //---------------------------------------------------------------------------
+bool TiledDisplayTopologyClass::IsValidVendorID()
+{
+	return WriteVendorID(NULL);
+}
+//---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::IsValidProductID()
 {
-	if (std::strlen(ProductID) != 7)
-		return false;
-
-	if (isxdigit(ProductID[3]))
-	if (isxdigit(ProductID[4]))
-	if (isxdigit(ProductID[5]))
-	if (isxdigit(ProductID[6]))
-		return true;
-
-	return false;
+	return WriteProductID(NULL);
 }
 //---------------------------------------------------------------------------
 bool TiledDisplayTopologyClass::IsValidSerialID()
 {
+	if (SerialID == DECIMAL_BLANK)
+		return true;
+
 	return SerialID >= MinSerialID && SerialID <= MaxSerialID;
 }
 //---------------------------------------------------------------------------

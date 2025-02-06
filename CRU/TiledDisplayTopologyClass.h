@@ -38,6 +38,7 @@ private:
 	static const long long MinSerialID;
 	static const long long MaxSerialID;
 
+	int Version;
 	int PhysicalEnclosures;
 	int SingleTileBehavior;
 	int MultipleTileBehavior;
@@ -52,16 +53,18 @@ private:
 	int BottomBezelSize;
 	int RightBezelSize;
 	int LeftBezelSize;
-	char ProductID[8];
-	char ResetID[8];
+	char VendorID[7];
+	char ProductID[7];
 	long long SerialID;
 
 public:
-	TiledDisplayTopologyClass();
+	TiledDisplayTopologyClass(int = 1);
 	bool Read(const unsigned char *, int);
+	bool ReadVendorID(const unsigned char *);
 	bool ReadProductID(const unsigned char *);
 	bool ReadSerialID(const unsigned char *);
 	bool Write(unsigned char *, int);
+	bool WriteVendorID(unsigned char *);
 	bool WriteProductID(unsigned char *);
 	bool WriteSerialID(unsigned char *);
 	int GetPhysicalEnclosures();
@@ -92,11 +95,11 @@ public:
 	bool SetRightBezelSize(int);
 	int GetLeftBezelSize();
 	bool SetLeftBezelSize(int);
+	bool GetVendorID(char *, int);
+	bool SetVendorID(const char *);
 	bool GetProductID(char *, int);
 	bool SetProductID(const char *);
-	bool SetResetID(const char *);
-	bool ResetProductIDPossible();
-	bool ResetProductID();
+	bool SetDeviceID(const char *);
 	long long GetSerialID();
 	bool SetSerialID(long long);
 	bool IsValid();
@@ -114,6 +117,7 @@ public:
 	bool IsValidBottomBezelSize();
 	bool IsValidRightBezelSize();
 	bool IsValidLeftBezelSize();
+	bool IsValidVendorID();
 	bool IsValidProductID();
 	bool IsValidSerialID();
 };

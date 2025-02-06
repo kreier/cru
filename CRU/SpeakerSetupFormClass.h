@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "SpeakerSetupClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -25,6 +26,15 @@ __published:	// IDE-managed Components
 	TCheckBox *SpeakerCheckBox8;
 	TCheckBox *SpeakerCheckBox9;
 	TCheckBox *SpeakerCheckBox10;
+	TCheckBox *SpeakerCheckBox11;
+	TCheckBox *SpeakerCheckBox12;
+	TCheckBox *SpeakerCheckBox13;
+	TCheckBox *SpeakerCheckBox14;
+	TCheckBox *SpeakerCheckBox15;
+	TCheckBox *SpeakerCheckBox16;
+	TCheckBox *SpeakerCheckBox17;
+	TCheckBox *SpeakerCheckBox18;
+	TCheckBox *SpeakerCheckBox19;
 	TButton *Speaker20Button;
 	TButton *Speaker51Button;
 	TButton *Speaker71Button;

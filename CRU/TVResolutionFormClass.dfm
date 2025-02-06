@@ -51,7 +51,8 @@ object TVResolutionForm: TTVResolutionForm
       Width = 136
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      DropDownCount = 25
+      ItemHeight = 13
       TabOrder = 0
       OnChange = ModeComboBoxChange
     end
@@ -61,7 +62,8 @@ object TVResolutionForm: TTVResolutionForm
       Width = 94
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      DropDownCount = 25
+      ItemHeight = 13
       TabOrder = 1
       OnChange = FormatComboBoxChange
     end

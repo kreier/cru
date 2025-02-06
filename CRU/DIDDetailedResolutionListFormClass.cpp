@@ -1,11 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "DIDDetailedResolutionListFormClass.h"
 #include "DetailedResolutionFormClass.h"
-#include "Common.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TDIDDetailedResolutionListForm *DIDDetailedResolutionListForm;
@@ -21,7 +19,8 @@ bool TDIDDetailedResolutionListForm::Connect(DIDDetailedResolutionListClass &New
 {
 	DIDDetailedResolutionList = &NewDIDDetailedResolutionList;
 	NativeResolution = NewNativeResolution;
-	NativeResolution.SetType(1);
+	Type = DIDDetailedResolutionList->GetType();
+	NativeResolution.SetType(Type);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -53,7 +52,6 @@ bool TDIDDetailedResolutionListForm::RefreshDetailedCaption()
 bool TDIDDetailedResolutionListForm::RefreshDetailedListBox(int ItemIndex)
 {
 	int Index;
-	DetailedResolutionClass DetailedResolution(1);
 	char Text[TEXTSIZE];
 
 	if (DIDDetailedResolutionList->GetMaxCount() > 0)
@@ -70,17 +68,24 @@ bool TDIDDetailedResolutionListForm::RefreshDetailedListBox(int ItemIndex)
 		ItemIndex = -1;
 	}
 
-	DetailedListBox->Clear();
+	int TopIndex = DetailedListBox->TopIndex;
 	DetailedListBox->Items->BeginUpdate();
+	DetailedListBox->Clear();
+	DetailedResolutionClass DetailedResolution(Type);
 
 	for (Index = 0; DIDDetailedResolutionList->Get(Index, DetailedResolution); Index++)
-		if (DetailedResolution.GetText(Text, TEXTSIZE))
+		if (DetailedResolution.GetText(Text, TEXTSIZE, Dash()))
 			DetailedListBox->Items->Add(Text);
 
 	if (Index == 0)
 		DetailedListBox->Items->Add("No detailed resolutions");
 
-	DetailedListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		DetailedListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < DIDDetailedResolutionList->GetCount())
+		DetailedListBox->ItemIndex = ItemIndex;
+
 	DetailedListBox->Items->EndUpdate();
 	return true;
 }
@@ -110,45 +115,45 @@ bool TDIDDetailedResolutionListForm::ScaleControls()
 	DetailedAddButton->Height = ButtonHeight;
 	DetailedAddButton->Left = DetailedListBox->Left + ButtonLeft;
 	DetailedAddButton->Top = DetailedListBox->Top + DetailedListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(DetailedAddButton, Canvas->TextWidth(DetailedAddButton->Caption));
+	FixButtonCaption(DetailedAddButton, Canvas->TextWidth(DetailedAddButton->Caption));
 
 	DetailedEditButton->Width = ButtonWidth;
 	DetailedEditButton->Height = ButtonHeight;
 	DetailedEditButton->Left = DetailedAddButton->Left + DetailedAddButton->Width;
 	DetailedEditButton->Top = DetailedAddButton->Top;
-	Common::FixButtonCaption(DetailedEditButton, Canvas->TextWidth(DetailedEditButton->Caption));
+	FixButtonCaption(DetailedEditButton, Canvas->TextWidth(DetailedEditButton->Caption));
 
 	DetailedDeleteButton->Width = ButtonWidth;
 	DetailedDeleteButton->Height = ButtonHeight;
 	DetailedDeleteButton->Left = DetailedEditButton->Left + DetailedEditButton->Width;
 	DetailedDeleteButton->Top = DetailedEditButton->Top;
-	Common::FixButtonCaption(DetailedDeleteButton, Canvas->TextWidth(DetailedDeleteButton->Caption));
+	FixButtonCaption(DetailedDeleteButton, Canvas->TextWidth(DetailedDeleteButton->Caption));
 
 	DetailedDeleteAllButton->Width = LongButtonWidth;
 	DetailedDeleteAllButton->Height = LongButtonHeight;
 	DetailedDeleteAllButton->Left = DetailedDeleteButton->Left + DetailedDeleteButton->Width;
 	DetailedDeleteAllButton->Top = DetailedDeleteButton->Top;
-	Common::FixButtonCaption(DetailedDeleteAllButton, Canvas->TextWidth(DetailedDeleteAllButton->Caption));
+	FixButtonCaption(DetailedDeleteAllButton, Canvas->TextWidth(DetailedDeleteAllButton->Caption));
 
 	DetailedResetButton->Width = ButtonWidth;
 	DetailedResetButton->Height = ButtonHeight;
 	DetailedResetButton->Left = DetailedDeleteAllButton->Left + DetailedDeleteAllButton->Width;
 	DetailedResetButton->Top = DetailedDeleteAllButton->Top;
-	Common::FixButtonCaption(DetailedResetButton, Canvas->TextWidth(DetailedResetButton->Caption));
+	FixButtonCaption(DetailedResetButton, Canvas->TextWidth(DetailedResetButton->Caption));
 
 	DetailedUpButton->Width = ArrowButtonWidth;
 	DetailedUpButton->Height = ArrowButtonHeight;
 	DetailedUpButton->Top = DetailedResetButton->Top;
 	DetailedUpButton->Enabled = false;
 	DetailedUpButton->NumGlyphs = NumGlyphs;
-	DetailedUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	DetailedUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	DetailedDownButton->Width = ArrowButtonWidth;
 	DetailedDownButton->Height = ArrowButtonHeight;
 	DetailedDownButton->Top = DetailedUpButton->Top;
 	DetailedDownButton->Enabled = false;
 	DetailedDownButton->NumGlyphs = NumGlyphs;
-	DetailedDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	DetailedDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	DetailedDownButton->Left = DetailedListBox->Left + DetailedListBox->Width - ButtonRight - DetailedDownButton->Width;
 	DetailedUpButton->Left = DetailedDownButton->Left - DetailedUpButton->Width;
@@ -161,12 +166,12 @@ bool TDIDDetailedResolutionListForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = DetailedGroupBox->Top + DetailedGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = DetailedGroupBox->Left + DetailedGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -188,7 +193,7 @@ void __fastcall TDIDDetailedResolutionListForm::FormShow(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDIDDetailedResolutionListForm::DetailedListBoxDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
-	Common::ListBoxDrawItem(DetailedListBox, Rect, State, DetailedListBox->Items->Strings[Index].c_str(), DIDDetailedResolutionList->EditPossible(Index), false);
+	ListBoxDrawItem(DetailedListBox, Rect, State, DetailedListBox->Items->Strings[Index].c_str(), DIDDetailedResolutionList->EditPossible(Index), false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDIDDetailedResolutionListForm::DetailedListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -219,7 +224,7 @@ void __fastcall TDIDDetailedResolutionListForm::DetailedListBoxSelect(TObject *S
 //---------------------------------------------------------------------------
 void __fastcall TDIDDetailedResolutionListForm::DetailedAddButtonClick(TObject *Sender)
 {
-	DetailedResolutionClass DetailedResolution(1);
+	DetailedResolutionClass DetailedResolution(Type);
 	TDetailedResolutionForm *DetailedResolutionForm = new TDetailedResolutionForm(this);
 
 	DetailedResolution = NativeResolution;
@@ -236,7 +241,7 @@ void __fastcall TDIDDetailedResolutionListForm::DetailedAddButtonClick(TObject *
 //---------------------------------------------------------------------------
 void __fastcall TDIDDetailedResolutionListForm::DetailedEditButtonClick(TObject *Sender)
 {
-	DetailedResolutionClass DetailedResolution(1);
+	DetailedResolutionClass DetailedResolution(Type);
 	TDetailedResolutionForm *DetailedResolutionForm = new TDetailedResolutionForm(this);
 
 	DIDDetailedResolutionList->Get(DetailedListBox->ItemIndex, DetailedResolution);
@@ -254,10 +259,6 @@ void __fastcall TDIDDetailedResolutionListForm::DetailedEditButtonClick(TObject 
 void __fastcall TDIDDetailedResolutionListForm::DetailedDeleteButtonClick(TObject *Sender)
 {
 	DIDDetailedResolutionList->Delete(DetailedListBox->ItemIndex);
-
-	if (DetailedListBox->ItemIndex >= DIDDetailedResolutionList->GetCount())
-		DetailedListBox->ItemIndex = -1;
-
 	Refresh(DetailedGroupBox, DetailedListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------

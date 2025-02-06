@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "TVResolutionClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -36,7 +37,6 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TTVResolutionForm(TComponent *Owner);
 	bool Connect(TVResolutionClass &);
-	TColor GetTextColor(bool);
 	bool Refresh(void *);
 	bool InitModeComboBox();
 	bool InitFormatComboBox();

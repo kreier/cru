@@ -5,6 +5,7 @@
 #include "CommonFormClass.h"
 #include "DIDDetailedResolutionListClass.h"
 #include "DetailedResolutionClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -41,6 +42,7 @@ __published:	// IDE-managed Components
 private:	// User declarations
 	DIDDetailedResolutionListClass *DIDDetailedResolutionList;
 	DetailedResolutionClass NativeResolution;
+	int Type;
 	bool Refreshing;
 	int DetailedLastItemIndex;
 	int DetailedLastClickedItemIndex;

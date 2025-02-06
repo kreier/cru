@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "TiledDisplayTopologyFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TTiledDisplayTopologyForm *TiledDisplayTopologyForm;
@@ -19,17 +18,12 @@ bool TTiledDisplayTopologyForm::Connect(TiledDisplayTopologyClass &NewTiledDispl
 	return true;
 }
 //---------------------------------------------------------------------------
-TColor TTiledDisplayTopologyForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
-}
-//---------------------------------------------------------------------------
 bool TTiledDisplayTopologyForm::Refresh(void *Value)
 {
 	Refreshing = true;
+
+	if (Value == NULL || Value == TopologyIDGroupBox)
+		RefreshTopologyIDTextBoxes();
 
 	if (Value == NULL || Value == PhysicalEnclosuresGroupBox)
 		RefreshPhysicalEnclosuresRadioButtons();
@@ -52,13 +46,32 @@ bool TTiledDisplayTopologyForm::Refresh(void *Value)
 	if (Value == NULL || Value == BezelGroupBox)
 		RefreshBezelTextBoxes();
 
-	if (Value == NULL || Value == TopologyIDGroupBox)
-		RefreshTopologyIDTextBoxes();
-
 	if (Value != FormOKButton)
 		FormOKButton->Enabled = TiledDisplayTopology->IsValid();
 
 	Refreshing = false;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool TTiledDisplayTopologyForm::RefreshTopologyIDTextBoxes()
+{
+	char Text[TEXTSIZE];
+
+	VendorID->Font->Color = GetTextColor(TiledDisplayTopology->IsValidVendorID());
+
+	if (!VendorID->Focused() && TiledDisplayTopology->GetVendorID(Text, TEXTSIZE))
+		VendorID->Text = Text;
+
+	ProductID->Font->Color = GetTextColor(TiledDisplayTopology->IsValidProductID());
+
+	if (!ProductID->Focused() && TiledDisplayTopology->GetProductID(Text, TEXTSIZE))
+		ProductID->Text = Text;
+
+	SerialID->Font->Color = GetTextColor(TiledDisplayTopology->IsValidSerialID());
+
+	if (!SerialID->Focused() && DecimalToText(TiledDisplayTopology->GetSerialID(), SerialID->MaxLength, 0, Text, TEXTSIZE))
+		SerialID->Text = Text;
+
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -91,12 +104,12 @@ bool TTiledDisplayTopologyForm::RefreshTilesTextBoxes()
 
 	HTiles->Font->Color = GetTextColor(TiledDisplayTopology->IsValidHTiles());
 
-	if (!HTiles->Focused() && Common::IntegerToText(TiledDisplayTopology->GetHTiles(), Text, TEXTSIZE))
+	if (!HTiles->Focused() && IntegerToText(TiledDisplayTopology->GetHTiles(), Text, TEXTSIZE))
 		HTiles->Text = Text;
 
 	VTiles->Font->Color = GetTextColor(TiledDisplayTopology->IsValidVTiles());
 
-	if (!VTiles->Focused() && Common::IntegerToText(TiledDisplayTopology->GetVTiles(), Text, TEXTSIZE))
+	if (!VTiles->Focused() && IntegerToText(TiledDisplayTopology->GetVTiles(), Text, TEXTSIZE))
 		VTiles->Text = Text;
 
 	return true;
@@ -108,12 +121,12 @@ bool TTiledDisplayTopologyForm::RefreshLocationTextBoxes()
 
 	HLocation->Font->Color = GetTextColor(TiledDisplayTopology->IsValidHLocation());
 
-	if (!HLocation->Focused() && Common::IntegerToText(TiledDisplayTopology->GetHLocation(), Text, TEXTSIZE))
+	if (!HLocation->Focused() && IntegerToText(TiledDisplayTopology->GetHLocation(), Text, TEXTSIZE))
 		HLocation->Text = Text;
 
 	VLocation->Font->Color = GetTextColor(TiledDisplayTopology->IsValidVLocation());
 
-	if (!VLocation->Focused() && Common::IntegerToText(TiledDisplayTopology->GetVLocation(), Text, TEXTSIZE))
+	if (!VLocation->Focused() && IntegerToText(TiledDisplayTopology->GetVLocation(), Text, TEXTSIZE))
 		VLocation->Text = Text;
 
 	return true;
@@ -125,12 +138,12 @@ bool TTiledDisplayTopologyForm::RefreshSizeTextBoxes()
 
 	HSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidHSize());
 
-	if (!HSize->Focused() && Common::IntegerToText(TiledDisplayTopology->GetHSize(), Text, TEXTSIZE))
+	if (!HSize->Focused() && IntegerToText(TiledDisplayTopology->GetHSize(), Text, TEXTSIZE))
 		HSize->Text = Text;
 
 	VSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidVSize());
 
-	if (!VSize->Focused() && Common::IntegerToText(TiledDisplayTopology->GetVSize(), Text, TEXTSIZE))
+	if (!VSize->Focused() && IntegerToText(TiledDisplayTopology->GetVSize(), Text, TEXTSIZE))
 		VSize->Text = Text;
 
 	return true;
@@ -142,52 +155,69 @@ bool TTiledDisplayTopologyForm::RefreshBezelTextBoxes()
 
 	PixelMultiplier->Font->Color = GetTextColor(TiledDisplayTopology->IsValidPixelMultiplier());
 
-	if (!PixelMultiplier->Focused() && Common::IntegerToText(TiledDisplayTopology->GetPixelMultiplier(), Text, TEXTSIZE))
+	if (!PixelMultiplier->Focused() && IntegerToText(TiledDisplayTopology->GetPixelMultiplier(), Text, TEXTSIZE))
 		PixelMultiplier->Text = Text;
 
 	TopBezelSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidTopBezelSize());
 
-	if (!TopBezelSize->Focused() && Common::IntegerToText(TiledDisplayTopology->GetTopBezelSize(), Text, TEXTSIZE))
+	if (!TopBezelSize->Focused() && IntegerToText(TiledDisplayTopology->GetTopBezelSize(), Text, TEXTSIZE))
 		TopBezelSize->Text = Text;
-
-	BottomBezelSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidBottomBezelSize());
-
-	if (!BottomBezelSize->Focused() && Common::IntegerToText(TiledDisplayTopology->GetBottomBezelSize(), Text, TEXTSIZE))
-		BottomBezelSize->Text = Text;
-
-	RightBezelSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidRightBezelSize());
-
-	if (!RightBezelSize->Focused() && Common::IntegerToText(TiledDisplayTopology->GetRightBezelSize(), Text, TEXTSIZE))
-		RightBezelSize->Text = Text;
 
 	LeftBezelSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidLeftBezelSize());
 
-	if (!LeftBezelSize->Focused() && Common::IntegerToText(TiledDisplayTopology->GetLeftBezelSize(), Text, TEXTSIZE))
+	if (!LeftBezelSize->Focused() && IntegerToText(TiledDisplayTopology->GetLeftBezelSize(), Text, TEXTSIZE))
 		LeftBezelSize->Text = Text;
 
-	return true;
-}
-//---------------------------------------------------------------------------
-bool TTiledDisplayTopologyForm::RefreshTopologyIDTextBoxes()
-{
-	char Text[TEXTSIZE];
+	RightBezelSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidRightBezelSize());
 
-	ProductID->Font->Color = GetTextColor(TiledDisplayTopology->IsValidProductID());
+	if (!RightBezelSize->Focused() && IntegerToText(TiledDisplayTopology->GetRightBezelSize(), Text, TEXTSIZE))
+		RightBezelSize->Text = Text;
 
-	if (!ProductID->Focused() && TiledDisplayTopology->GetProductID(Text, TEXTSIZE))
-		ProductID->Text = Text;
+	BottomBezelSize->Font->Color = GetTextColor(TiledDisplayTopology->IsValidBottomBezelSize());
 
-	SerialID->Font->Color = GetTextColor(TiledDisplayTopology->IsValidSerialID());
+	if (!BottomBezelSize->Focused() && IntegerToText(TiledDisplayTopology->GetBottomBezelSize(), Text, TEXTSIZE))
+		BottomBezelSize->Text = Text;
 
-	if (!SerialID->Focused() && Common::DecimalToText(TiledDisplayTopology->GetSerialID(), SerialID->MaxLength, 0, Text, TEXTSIZE))
-		SerialID->Text = Text;
-
-	ProductIDResetButton->Enabled = TiledDisplayTopology->ResetProductIDPossible();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool TTiledDisplayTopologyForm::ScaleControls()
 {
+	VendorID->AutoSize = false;
+	VendorID->Width = FormButtonsWidth - PaddingWidth - ProductIDLabel->Width - LabelSpacing - PaddingWidth;
+	VendorID->Height = TextBoxHeight;
+
+	ProductID->AutoSize = false;
+	ProductID->Width = VendorID->Width;
+	ProductID->Height = TextBoxHeight;
+
+	SerialID->AutoSize = false;
+	SerialID->Width = ProductID->Width;
+	SerialID->Height = TextBoxHeight;
+
+	VendorIDLabel->Left = PaddingWidth;
+	VendorID->Left = VendorIDLabel->Left + ProductIDLabel->Width + LabelSpacing;
+
+	ProductIDLabel->Left = VendorIDLabel->Left;
+	ProductID->Left = VendorID->Left;
+
+	SerialIDLabel->Left = ProductIDLabel->Left;
+	SerialID->Left = ProductID->Left;
+
+	VendorID->Top = PaddingTop;
+	VendorIDLabel->Top = VendorID->Top + 3;
+
+	ProductID->Top = VendorID->Top + VendorID->Height + TextBoxSpacing;
+	ProductIDLabel->Top = ProductID->Top + 3;
+
+	SerialID->Top = ProductID->Top + ProductID->Height + TextBoxSpacing;
+	SerialIDLabel->Top = SerialID->Top + 3;
+
+	TopologyIDGroupBox->Width = FormButtonsWidth;
+	TopologyIDGroupBox->Height = SerialID->Top + SerialID->Height + PaddingBottom;
+	TopologyIDGroupBox->Left = Scale;
+	TopologyIDGroupBox->Top = GroupBoxTop;
+
 	PhysicalEnclosuresRadioButton1->Width = RadioButtonWidth + Canvas->TextWidth(PhysicalEnclosuresRadioButton1->Caption);
 	PhysicalEnclosuresRadioButton1->Height = RadioButtonHeight;
 	PhysicalEnclosuresRadioButton1->Left = PaddingWidth;
@@ -198,10 +228,10 @@ bool TTiledDisplayTopologyForm::ScaleControls()
 	PhysicalEnclosuresRadioButton0->Left = PhysicalEnclosuresRadioButton1->Left;
 	PhysicalEnclosuresRadioButton0->Top = PhysicalEnclosuresRadioButton1->Top + PhysicalEnclosuresRadioButton1->Height + RadioButtonSpacing;
 
-	PhysicalEnclosuresGroupBox->Width = FormButtonsWidth;
+	PhysicalEnclosuresGroupBox->Width = TopologyIDGroupBox->Width;
 	PhysicalEnclosuresGroupBox->Height = PhysicalEnclosuresRadioButton0->Top + PhysicalEnclosuresRadioButton0->Height + RadioButtonBottom + PaddingBottom;
-	PhysicalEnclosuresGroupBox->Left = Scale;
-	PhysicalEnclosuresGroupBox->Top = GroupBoxTop;
+	PhysicalEnclosuresGroupBox->Left = TopologyIDGroupBox->Left;
+	PhysicalEnclosuresGroupBox->Top = TopologyIDGroupBox->Top + TopologyIDGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
 	SingleTileBehaviorRadioButton1->Width = RadioButtonWidth + Canvas->TextWidth(SingleTileBehaviorRadioButton1->Caption);
 	SingleTileBehaviorRadioButton1->Height = RadioButtonHeight;
@@ -244,7 +274,7 @@ bool TTiledDisplayTopologyForm::ScaleControls()
 	MultipleTileBehaviorGroupBox->Top = SingleTileBehaviorGroupBox->Top + SingleTileBehaviorGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
 	HTiles->AutoSize = false;
-	HTiles->Width = HTiles->MaxLength * NumberWidth + NumberWidth + TextBoxPadding;
+	HTiles->Width = TextBoxHeight;
 	HTiles->Height = TextBoxHeight;
 	HTiles->Left = PaddingWidth;
 	HTiles->Top = PaddingTop;
@@ -253,18 +283,18 @@ bool TTiledDisplayTopologyForm::ScaleControls()
 	TilesLabel->Top = HTiles->Top + 3;
 
 	VTiles->AutoSize = false;
-	VTiles->Width = VTiles->MaxLength * NumberWidth + NumberWidth + TextBoxPadding;
+	VTiles->Width = TextBoxHeight;
 	VTiles->Height = TextBoxHeight;
 	VTiles->Left = TilesLabel->Left + TilesLabel->Width + LabelSpacing;
 	VTiles->Top = HTiles->Top;
 
-	TilesGroupBox->Width = MultipleTileBehaviorGroupBox->Width;
+	TilesGroupBox->Width = TopologyIDGroupBox->Width;
 	TilesGroupBox->Height = HTiles->Top + HTiles->Height + PaddingBottom;
-	TilesGroupBox->Left = MultipleTileBehaviorGroupBox->Left;
-	TilesGroupBox->Top = MultipleTileBehaviorGroupBox->Top + MultipleTileBehaviorGroupBox->Height + GroupBoxBottom + GroupBoxTop;
+	TilesGroupBox->Left = TopologyIDGroupBox->Left + TopologyIDGroupBox->Width + Scale;
+	TilesGroupBox->Top = TopologyIDGroupBox->Top;
 
 	HLocation->AutoSize = false;
-	HLocation->Width = HLocation->MaxLength * NumberWidth + NumberWidth + TextBoxPadding;
+	HLocation->Width = TextBoxHeight;
 	HLocation->Height = TextBoxHeight;
 	HLocation->Left = PaddingWidth;
 	HLocation->Top = PaddingTop;
@@ -273,7 +303,7 @@ bool TTiledDisplayTopologyForm::ScaleControls()
 	LocationLabel->Top = HLocation->Top + 3;
 
 	VLocation->AutoSize = false;
-	VLocation->Width = VLocation->MaxLength * NumberWidth + NumberWidth + TextBoxPadding;
+	VLocation->Width = TextBoxHeight;
 	VLocation->Height = TextBoxHeight;
 	VLocation->Left = LocationLabel->Left + TilesLabel->Width + LabelSpacing;
 	VLocation->Top = HLocation->Top;
@@ -311,89 +341,62 @@ bool TTiledDisplayTopologyForm::ScaleControls()
 	TopBezelSize->Width = TopBezelSize->MaxLength * NumberWidth + TextBoxPadding;
 	TopBezelSize->Height = TextBoxHeight;
 
-	BottomBezelSize->AutoSize = false;
-	BottomBezelSize->Width = BottomBezelSize->MaxLength * NumberWidth + TextBoxPadding;
-	BottomBezelSize->Height = TextBoxHeight;
+	LeftBezelSize->AutoSize = false;
+	LeftBezelSize->Width = LeftBezelSize->MaxLength * NumberWidth + TextBoxPadding;
+	LeftBezelSize->Height = TextBoxHeight;
 
 	RightBezelSize->AutoSize = false;
 	RightBezelSize->Width = RightBezelSize->MaxLength * NumberWidth + TextBoxPadding;
 	RightBezelSize->Height = TextBoxHeight;
 
-	LeftBezelSize->AutoSize = false;
-	LeftBezelSize->Width = LeftBezelSize->MaxLength * NumberWidth + TextBoxPadding;
-	LeftBezelSize->Height = TextBoxHeight;
+	BottomBezelSize->AutoSize = false;
+	BottomBezelSize->Width = BottomBezelSize->MaxLength * NumberWidth + TextBoxPadding;
+	BottomBezelSize->Height = TextBoxHeight;
+
+	PixelMultiplier->Left = (FormButtonsWidth - PixelMultiplier->Width) / 2;
+	TopBezelSize->Left = PixelMultiplier->Left;
+	LeftBezelSize->Left = PaddingWidth;
+	RightBezelSize->Left = FormButtonsWidth - RightBezelSize->Width - PaddingWidth;
+	BottomBezelSize->Left = TopBezelSize->Left;
+
+	int Space = TextBoxSpacing * 2 + RadioButtonTop * 3 + RadioButtonHeight * 8 + RadioButtonSpacing * 5 + RadioButtonBottom * 3 - TextBoxHeight * 4 - Scale;
 
 	PixelMultiplier->Top = PaddingTop;
-	TopBezelSize->Top = PixelMultiplier->Top + PixelMultiplier->Height + TextBoxSpacing;
-	BottomBezelSize->Top = TopBezelSize->Top + TopBezelSize->Height + TextBoxSpacing;
-	RightBezelSize->Top = BottomBezelSize->Top + BottomBezelSize->Height + TextBoxSpacing;
-	LeftBezelSize->Top = RightBezelSize->Top + RightBezelSize->Height + TextBoxSpacing;
+	TopBezelSize->Top = PixelMultiplier->Top + PixelMultiplier->Height + Scale - Space % 2;
+	LeftBezelSize->Top = TopBezelSize->Top + TopBezelSize->Height + Space / 2 + Space % 2;
+	RightBezelSize->Top = LeftBezelSize->Top;
+	BottomBezelSize->Top = LeftBezelSize->Top + LeftBezelSize->Height + Space / 2 + Space % 2;
 
+	MultiplierLabel->Left = PixelMultiplier->Left - MultiplierLabel->Width - LabelSpacing;
 	MultiplierLabel->Top = PixelMultiplier->Top + 3;
-	TopLabel->Top = TopBezelSize->Top + 3;
-	BottomLabel->Top = BottomBezelSize->Top + 3;
-	RightLabel->Top = RightBezelSize->Top + 3;
-	LeftLabel->Top = LeftBezelSize->Top + 3;
 
-	MultiplierLabel->Left = PaddingWidth;
-	TopLabel->Left = MultiplierLabel->Left;
-	BottomLabel->Left = TopLabel->Left;
-	RightLabel->Left = BottomLabel->Left;
-	LeftLabel->Left = RightLabel->Left;
+	MultiplierDivisorLabel->Left = PixelMultiplier->Left + PixelMultiplier->Width + PostLabelSpacing;
+	MultiplierDivisorLabel->Top = PixelMultiplier->Top + 3;
 
-	PixelMultiplier->Left = MultiplierLabel->Left + MultiplierLabel->Width + LabelSpacing;
-	TopBezelSize->Left = PixelMultiplier->Left;
-	BottomBezelSize->Left = TopBezelSize->Left;
-	RightBezelSize->Left = BottomBezelSize->Left;
-	LeftBezelSize->Left = RightBezelSize->Left;
+	Rectangle->Pen->Width = Scale / 2;
+	int MarginWidth = (LeftBezelSize->Width - Rectangle->Pen->Width) / 2;
+	int MarginHeight = (TopBezelSize->Height - Rectangle->Pen->Width) / 2;
+	Rectangle->Width = RightBezelSize->Left + RightBezelSize->Width - LeftBezelSize->Left - MarginWidth * 2;
+	Rectangle->Height = BottomBezelSize->Top + BottomBezelSize->Height - TopBezelSize->Top - MarginHeight * 2;
+	Rectangle->Left = LeftBezelSize->Left + MarginWidth;
+	Rectangle->Top = TopBezelSize->Top + MarginHeight;
 
 	BezelGroupBox->Width = SizeGroupBox->Width;
-	BezelGroupBox->Height = LeftBezelSize->Top + LeftBezelSize->Height + PaddingBottom;
+	BezelGroupBox->Height = BottomBezelSize->Top + BottomBezelSize->Height + PaddingBottom;
 	BezelGroupBox->Left = SizeGroupBox->Left;
 	BezelGroupBox->Top = SizeGroupBox->Top + SizeGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
-	ProductIDResetButton->Width = ButtonWidth;
-	ProductIDResetButton->Height = ButtonHeight;
-	Common::FixButtonCaption(ProductIDResetButton, Canvas->TextWidth(ProductIDResetButton->Caption));
-
-	ProductID->AutoSize = false;
-	ProductID->Width = FormButtonsWidth - PaddingWidth - ProductIDLabel->Width - LabelSpacing - Scale - ButtonLeft - ProductIDResetButton->Width - ButtonRight - PaddingWidth;
-	ProductID->Height = TextBoxHeight;
-
-	SerialID->AutoSize = false;
-	SerialID->Width = FormButtonsWidth - PaddingWidth - SerialIDLabel->Width - LabelSpacing - PaddingWidth;
-	SerialID->Height = TextBoxHeight;
-
-	ProductID->Top = PaddingTop;
-	ProductIDLabel->Top = ProductID->Top + 3;
-	ProductIDResetButton->Top = ProductID->Top;
-
-	SerialID->Top = ProductID->Top + ProductID->Height + TextBoxSpacing;
-	SerialIDLabel->Top = SerialID->Top + 3;
-
-	ProductIDLabel->Left = PaddingWidth;
-	ProductID->Left = ProductIDLabel->Left + ProductIDLabel->Width + LabelSpacing;
-	ProductIDResetButton->Left = ProductID->Left + ProductID->Width + Scale + ButtonLeft;
-
-	SerialIDLabel->Left = ProductIDLabel->Left;
-	SerialID->Left = SerialIDLabel->Left + SerialIDLabel->Width + LabelSpacing;
-
-	TopologyIDGroupBox->Width = BezelGroupBox->Width;
-	TopologyIDGroupBox->Height = SerialID->Top + SerialID->Height + PaddingBottom;
-	TopologyIDGroupBox->Left = BezelGroupBox->Left;
-	TopologyIDGroupBox->Top = BezelGroupBox->Top + BezelGroupBox->Height + GroupBoxBottom + GroupBoxTop;
-
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
-	FormOKButton->Top = TopologyIDGroupBox->Top + TopologyIDGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FormOKButton->Top = BezelGroupBox->Top + BezelGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
-	FormCancelButton->Left = TopologyIDGroupBox->Left + TopologyIDGroupBox->Width - ButtonRight - FormCancelButton->Width;
+	FormCancelButton->Left = BezelGroupBox->Left + BezelGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
 
 	ClientWidth = FormCancelButton->Left + FormCancelButton->Width + ButtonRight + Scale;
@@ -409,6 +412,48 @@ void __fastcall TTiledDisplayTopologyForm::FormCreate(TObject *Sender)
 void __fastcall TTiledDisplayTopologyForm::FormShow(TObject *Sender)
 {
 	Refresh(NULL);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTiledDisplayTopologyForm::VendorIDChange(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	TiledDisplayTopology->SetVendorID(VendorID->Text.c_str());
+	Refresh(TopologyIDGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTiledDisplayTopologyForm::VendorIDExit(TObject *Sender)
+{
+	Refresh(TopologyIDGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTiledDisplayTopologyForm::ProductIDChange(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	TiledDisplayTopology->SetProductID(ProductID->Text.c_str());
+	Refresh(TopologyIDGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTiledDisplayTopologyForm::ProductIDExit(TObject *Sender)
+{
+	Refresh(TopologyIDGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTiledDisplayTopologyForm::SerialIDChange(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	TiledDisplayTopology->SetSerialID(TextToDecimal(SerialID->Text.c_str(), 0));
+	Refresh(TopologyIDGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TTiledDisplayTopologyForm::SerialIDExit(TObject *Sender)
+{
+	Refresh(TopologyIDGroupBox);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTiledDisplayTopologyForm::EnclosuresRadioButtonClick(TObject *Sender)
@@ -446,7 +491,7 @@ void __fastcall TTiledDisplayTopologyForm::HTilesChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetHTiles(Common::TextToInteger(HTiles->Text.c_str()));
+	TiledDisplayTopology->SetHTiles(TextToInteger(HTiles->Text.c_str()));
 	Refresh(TilesGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -460,7 +505,7 @@ void __fastcall TTiledDisplayTopologyForm::VTilesChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetVTiles(Common::TextToInteger(VTiles->Text.c_str()));
+	TiledDisplayTopology->SetVTiles(TextToInteger(VTiles->Text.c_str()));
 	Refresh(TilesGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -474,7 +519,7 @@ void __fastcall TTiledDisplayTopologyForm::HLocationChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetHLocation(Common::TextToInteger(HLocation->Text.c_str()));
+	TiledDisplayTopology->SetHLocation(TextToInteger(HLocation->Text.c_str()));
 	Refresh(LocationGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -488,7 +533,7 @@ void __fastcall TTiledDisplayTopologyForm::VLocationChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetVLocation(Common::TextToInteger(VLocation->Text.c_str()));
+	TiledDisplayTopology->SetVLocation(TextToInteger(VLocation->Text.c_str()));
 	Refresh(LocationGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -502,7 +547,7 @@ void __fastcall TTiledDisplayTopologyForm::HSizeChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetHSize(Common::TextToInteger(HSize->Text.c_str()));
+	TiledDisplayTopology->SetHSize(TextToInteger(HSize->Text.c_str()));
 	Refresh(SizeGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -516,7 +561,7 @@ void __fastcall TTiledDisplayTopologyForm::VSizeChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetVSize(Common::TextToInteger(VSize->Text.c_str()));
+	TiledDisplayTopology->SetVSize(TextToInteger(VSize->Text.c_str()));
 	Refresh(SizeGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -530,7 +575,7 @@ void __fastcall TTiledDisplayTopologyForm::PixelMultiplierChange(TObject *Sender
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetPixelMultiplier(Common::TextToInteger(PixelMultiplier->Text.c_str()));
+	TiledDisplayTopology->SetPixelMultiplier(TextToInteger(PixelMultiplier->Text.c_str()));
 	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -544,39 +589,11 @@ void __fastcall TTiledDisplayTopologyForm::TopBezelSizeChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetTopBezelSize(Common::TextToInteger(TopBezelSize->Text.c_str()));
+	TiledDisplayTopology->SetTopBezelSize(TextToInteger(TopBezelSize->Text.c_str()));
 	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTiledDisplayTopologyForm::TopBezelSizeExit(TObject *Sender)
-{
-	Refresh(BezelGroupBox);
-}
-//---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::BottomBezelSizeChange(TObject *Sender)
-{
-	if (Refreshing)
-		return;
-
-	TiledDisplayTopology->SetBottomBezelSize(Common::TextToInteger(BottomBezelSize->Text.c_str()));
-	Refresh(BezelGroupBox);
-}
-//---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::BottomBezelSizeExit(TObject *Sender)
-{
-	Refresh(BezelGroupBox);
-}
-//---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::RightBezelSizeChange(TObject *Sender)
-{
-	if (Refreshing)
-		return;
-
-	TiledDisplayTopology->SetRightBezelSize(Common::TextToInteger(RightBezelSize->Text.c_str()));
-	Refresh(BezelGroupBox);
-}
-//---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::RightBezelSizeExit(TObject *Sender)
 {
 	Refresh(BezelGroupBox);
 }
@@ -586,7 +603,7 @@ void __fastcall TTiledDisplayTopologyForm::LeftBezelSizeChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetLeftBezelSize(Common::TextToInteger(LeftBezelSize->Text.c_str()));
+	TiledDisplayTopology->SetLeftBezelSize(TextToInteger(LeftBezelSize->Text.c_str()));
 	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
@@ -595,51 +612,31 @@ void __fastcall TTiledDisplayTopologyForm::LeftBezelSizeExit(TObject *Sender)
 	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::ProductIDChange(TObject *Sender)
+void __fastcall TTiledDisplayTopologyForm::RightBezelSizeChange(TObject *Sender)
 {
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetProductID(ProductID->Text.c_str());
-	Refresh(TopologyIDGroupBox);
+	TiledDisplayTopology->SetRightBezelSize(TextToInteger(RightBezelSize->Text.c_str()));
+	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::ProductIDExit(TObject *Sender)
+void __fastcall TTiledDisplayTopologyForm::RightBezelSizeExit(TObject *Sender)
 {
-	Refresh(TopologyIDGroupBox);
+	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::ProductIDKeyPress(TObject *Sender, char &Key)
-{
-	if (GetAsyncKeyState(VK_SHIFT) < 0)
-	{
-		if (Key >= 'A' && Key <= 'Z')
-			Key |= 32;
-	}
-	else
-	{
-		if (Key >= 'a' && Key <= 'z')
-			Key &= ~32;
-	}
-}
-//---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::ProductIDResetButtonClick(TObject *Sender)
-{
-	TiledDisplayTopology->ResetProductID();
-	Refresh(TopologyIDGroupBox);
-}
-//---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::SerialIDChange(TObject *Sender)
+void __fastcall TTiledDisplayTopologyForm::BottomBezelSizeChange(TObject *Sender)
 {
 	if (Refreshing)
 		return;
 
-	TiledDisplayTopology->SetSerialID(Common::TextToDecimal(SerialID->Text.c_str(), 0));
-	Refresh(TopologyIDGroupBox);
+	TiledDisplayTopology->SetBottomBezelSize(TextToInteger(BottomBezelSize->Text.c_str()));
+	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------
-void __fastcall TTiledDisplayTopologyForm::SerialIDExit(TObject *Sender)
+void __fastcall TTiledDisplayTopologyForm::BottomBezelSizeExit(TObject *Sender)
 {
-	Refresh(TopologyIDGroupBox);
+	Refresh(BezelGroupBox);
 }
 //---------------------------------------------------------------------------

@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "TVResolutionListFormClass.h"
 #include "TVResolutionFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TTVResolutionListForm *TVResolutionListForm;
@@ -58,7 +57,6 @@ bool TTVResolutionListForm::RefreshTVCaption()
 bool TTVResolutionListForm::RefreshTVListBox(int ItemIndex)
 {
 	int Index;
-	TVResolutionClass TVResolution;
 	char Text[TEXTSIZE];
 
 	if (TVResolutionList->GetMaxCount() > 0)
@@ -75,8 +73,10 @@ bool TTVResolutionListForm::RefreshTVListBox(int ItemIndex)
 		ItemIndex = -1;
 	}
 
-	TVListBox->Clear();
+	int TopIndex = TVListBox->TopIndex;
 	TVListBox->Items->BeginUpdate();
+	TVListBox->Clear();
+	TVResolutionClass TVResolution;
 
 	for (Index = 0; TVResolutionList->Get(Index, TVResolution); Index++)
 		if (TVResolution.GetText(Text, TEXTSIZE))
@@ -85,7 +85,12 @@ bool TTVResolutionListForm::RefreshTVListBox(int ItemIndex)
 	if (Index == 0)
 		TVListBox->Items->Add("No TV resolutions");
 
-	TVListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		TVListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < TVResolutionList->GetCount())
+		TVListBox->ItemIndex = ItemIndex;
+
 	TVListBox->Items->EndUpdate();
 	return true;
 }
@@ -115,45 +120,45 @@ bool TTVResolutionListForm::ScaleControls()
 	TVAddButton->Height = ButtonHeight;
 	TVAddButton->Left = TVListBox->Left + ButtonLeft;
 	TVAddButton->Top = TVListBox->Top + TVListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(TVAddButton, Canvas->TextWidth(TVAddButton->Caption));
+	FixButtonCaption(TVAddButton, Canvas->TextWidth(TVAddButton->Caption));
 
 	TVEditButton->Width = ButtonWidth;
 	TVEditButton->Height = ButtonHeight;
 	TVEditButton->Left = TVAddButton->Left + TVAddButton->Width;
 	TVEditButton->Top = TVAddButton->Top;
-	Common::FixButtonCaption(TVEditButton, Canvas->TextWidth(TVEditButton->Caption));
+	FixButtonCaption(TVEditButton, Canvas->TextWidth(TVEditButton->Caption));
 
 	TVDeleteButton->Width = ButtonWidth;
 	TVDeleteButton->Height = ButtonHeight;
 	TVDeleteButton->Left = TVEditButton->Left + TVEditButton->Width;
 	TVDeleteButton->Top = TVEditButton->Top;
-	Common::FixButtonCaption(TVDeleteButton, Canvas->TextWidth(TVDeleteButton->Caption));
+	FixButtonCaption(TVDeleteButton, Canvas->TextWidth(TVDeleteButton->Caption));
 
 	TVDeleteAllButton->Width = LongButtonWidth;
 	TVDeleteAllButton->Height = LongButtonHeight;
 	TVDeleteAllButton->Left = TVDeleteButton->Left + TVDeleteButton->Width;
 	TVDeleteAllButton->Top = TVDeleteButton->Top;
-	Common::FixButtonCaption(TVDeleteAllButton, Canvas->TextWidth(TVDeleteAllButton->Caption));
+	FixButtonCaption(TVDeleteAllButton, Canvas->TextWidth(TVDeleteAllButton->Caption));
 
 	TVResetButton->Width = ButtonWidth;
 	TVResetButton->Height = ButtonHeight;
 	TVResetButton->Left = TVDeleteAllButton->Left + TVDeleteAllButton->Width;
 	TVResetButton->Top = TVDeleteAllButton->Top;
-	Common::FixButtonCaption(TVResetButton, Canvas->TextWidth(TVResetButton->Caption));
+	FixButtonCaption(TVResetButton, Canvas->TextWidth(TVResetButton->Caption));
 
 	TVUpButton->Width = ArrowButtonWidth;
 	TVUpButton->Height = ArrowButtonHeight;
 	TVUpButton->Top = TVResetButton->Top;
 	TVUpButton->Enabled = false;
 	TVUpButton->NumGlyphs = NumGlyphs;
-	TVUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	TVUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	TVDownButton->Width = ArrowButtonWidth;
 	TVDownButton->Height = ArrowButtonHeight;
 	TVDownButton->Top = TVUpButton->Top;
 	TVDownButton->Enabled = false;
 	TVDownButton->NumGlyphs = NumGlyphs;
-	TVDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	TVDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	TVDownButton->Left = TVListBox->Left + TVListBox->Width - ButtonRight - TVDownButton->Width;
 	TVUpButton->Left = TVDownButton->Left - TVUpButton->Width;
@@ -171,12 +176,12 @@ bool TTVResolutionListForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = TVGroupBox->Top + TVGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = TVGroupBox->Left + TVGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -217,7 +222,7 @@ void __fastcall TTVResolutionListForm::TVListBoxDrawItem(TWinControl *Control, i
 		Native = TVResolution.GetNative();
 	}
 
-	Common::ListBoxDrawItem(TVListBox, Rect, State, TVListBox->Items->Strings[Index].c_str(), Supported, Native);
+	ListBoxDrawItem(TVListBox, Rect, State, TVListBox->Items->Strings[Index].c_str(), Supported, Native);
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVResolutionListForm::TVListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -282,10 +287,6 @@ void __fastcall TTVResolutionListForm::TVEditButtonClick(TObject *Sender)
 void __fastcall TTVResolutionListForm::TVDeleteButtonClick(TObject *Sender)
 {
 	TVResolutionList->Delete(TVListBox->ItemIndex);
-
-	if (TVListBox->ItemIndex >= TVResolutionList->GetCount())
-		TVListBox->ItemIndex = -1;
-
 	Refresh(TVGroupBox, TVListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------

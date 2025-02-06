@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "HDMISupportFormClass.h"
 #include "HDMIResolutionFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 THDMISupportForm *HDMISupportForm;
@@ -21,22 +20,6 @@ bool THDMISupportForm::Connect(HDMISupportClass &NewHDMISupport, ColorFormatList
 	HDMISupport = &NewHDMISupport;
 	ColorFormatList = &NewColorFormatList;
 	return true;
-}
-//---------------------------------------------------------------------------
-TColor THDMISupportForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
-}
-//---------------------------------------------------------------------------
-TColor THDMISupportForm::GetColor(bool Set)
-{
-	if (!Set)
-		return clBtnFace;
-
-	return clWindow;
 }
 //---------------------------------------------------------------------------
 bool THDMISupportForm::Refresh(void *Value, int ItemIndex)
@@ -105,7 +88,7 @@ bool THDMISupportForm::RefreshColorFormatsCaption()
 	if (HDMISupport->ExtensionPossible())
 		ColorFormatsGroupBox->Caption = " Color formats ";
 	else
-		ColorFormatsGroupBox->Caption = " Color formats (no space left for deep color) ";
+		ColorFormatsGroupBox->Caption = " Color formats (no space for deep color) ";
 
 	return true;
 }
@@ -139,9 +122,9 @@ bool THDMISupportForm::RefreshColorFormatsCheckBoxes()
 bool THDMISupportForm::RefreshFeaturesCaption()
 {
 	if (HDMISupport->ExtensionPossible())
-		FeaturesGroupBox->Caption = " Supported features ";
+		FeaturesGroupBox->Caption = " Features ";
 	else
-		FeaturesGroupBox->Caption = " Supported features (no space left) ";
+		FeaturesGroupBox->Caption = " Features (no space left) ";
 
 	return true;
 }
@@ -167,9 +150,9 @@ bool THDMISupportForm::RefreshFeaturesCheckBoxes()
 bool THDMISupportForm::RefreshTMDSClockCaption()
 {
 	if (HDMISupport->TMDSClockPossible())
-		TMDSClockGroupBox->Caption = " Maximum TMDS clock ";
+		TMDSClockGroupBox->Caption = " TMDS clock ";
 	else
-		TMDSClockGroupBox->Caption = " Maximum TMDS clock (no space left) ";
+		TMDSClockGroupBox->Caption = " TMDS clock (no space left) ";
 
 	return true;
 }
@@ -204,7 +187,7 @@ bool THDMISupportForm::RefreshTMDSClockTextBox()
 		TMDSClockLabel->Font->Color = clGrayText;
 	}
 
-	if (!TMDSClock->Focused() && Common::IntegerToText(HDMISupport->GetTMDSClock(), Text, TEXTSIZE))
+	if (!TMDSClock->Focused() && IntegerToText(HDMISupport->GetTMDSClock(), Text, TEXTSIZE))
 		TMDSClock->Text = Text;
 
 	return true;
@@ -213,9 +196,9 @@ bool THDMISupportForm::RefreshTMDSClockTextBox()
 bool THDMISupportForm::RefreshContentTypesCaption()
 {
 	if (HDMISupport->ContentTypesPossible())
-		ContentTypesGroupBox->Caption = " Supported content types ";
+		ContentTypesGroupBox->Caption = " Content types ";
 	else
-		ContentTypesGroupBox->Caption = " Supported content types (no space left) ";
+		ContentTypesGroupBox->Caption = " Content types (no space left) ";
 
 	return true;
 }
@@ -247,11 +230,11 @@ bool THDMISupportForm::RefreshContentTypesCheckBoxes()
 bool THDMISupportForm::RefreshLatencyCaption()
 {
 	if (HDMISupport->IncludeLatencyPossible() && HDMISupport->IncludeInterlacedLatencyPossible())
-		LatencyGroupBox->Caption = " Latency information ";
+		LatencyGroupBox->Caption = " Latency ";
 	else if (HDMISupport->IncludeLatencyPossible())
-		LatencyGroupBox->Caption = " Latency information (no space left for interlaced data) ";
+		LatencyGroupBox->Caption = " Latency (no space for interlaced info) ";
 	else
-		LatencyGroupBox->Caption = " Latency information (no space left) ";
+		LatencyGroupBox->Caption = " Latency (no space left) ";
 
 	return true;
 }
@@ -321,7 +304,7 @@ bool THDMISupportForm::RefreshLatencyTextBoxes()
 		VideoLatencyLabel->Font->Color = clGrayText;
 	}
 
-	if (!VideoLatency->Focused() && Common::IntegerToText(HDMISupport->GetVideoLatency(), Text, TEXTSIZE))
+	if (!VideoLatency->Focused() && IntegerToText(HDMISupport->GetVideoLatency(), Text, TEXTSIZE))
 		VideoLatency->Text = Text;
 
 	if (HDMISupport->IncludeLatencyPossible() && HDMISupport->GetIncludeLatency() && HDMISupport->GetAudioSupported())
@@ -339,7 +322,7 @@ bool THDMISupportForm::RefreshLatencyTextBoxes()
 		AudioLatencyLabel->Font->Color = clGrayText;
 	}
 
-	if (!AudioLatency->Focused() && Common::IntegerToText(HDMISupport->GetAudioLatency(), Text, TEXTSIZE))
+	if (!AudioLatency->Focused() && IntegerToText(HDMISupport->GetAudioLatency(), Text, TEXTSIZE))
 		AudioLatency->Text = Text;
 
 	if (HDMISupport->IncludeLatencyPossible() && HDMISupport->GetIncludeLatency() && HDMISupport->IncludeInterlacedLatencyPossible() && HDMISupport->GetIncludeInterlacedLatency() && HDMISupport->GetInterlacedVideoSupported())
@@ -357,7 +340,7 @@ bool THDMISupportForm::RefreshLatencyTextBoxes()
 		InterlacedVideoLatencyLabel->Font->Color = clGrayText;
 	}
 
-	if (!InterlacedVideoLatency->Focused() && Common::IntegerToText(HDMISupport->GetInterlacedVideoLatency(), Text, TEXTSIZE))
+	if (!InterlacedVideoLatency->Focused() && IntegerToText(HDMISupport->GetInterlacedVideoLatency(), Text, TEXTSIZE))
 		InterlacedVideoLatency->Text = Text;
 
 	if (HDMISupport->IncludeLatencyPossible() && HDMISupport->GetIncludeLatency() && HDMISupport->IncludeInterlacedLatencyPossible() && HDMISupport->GetIncludeInterlacedLatency() && HDMISupport->GetInterlacedAudioSupported())
@@ -375,7 +358,7 @@ bool THDMISupportForm::RefreshLatencyTextBoxes()
 		InterlacedAudioLatencyLabel->Font->Color = clGrayText;
 	}
 
-	if (!InterlacedAudioLatency->Focused() && Common::IntegerToText(HDMISupport->GetInterlacedAudioLatency(), Text, TEXTSIZE))
+	if (!InterlacedAudioLatency->Focused() && IntegerToText(HDMISupport->GetInterlacedAudioLatency(), Text, TEXTSIZE))
 		InterlacedAudioLatency->Text = Text;
 
 	return true;
@@ -394,7 +377,6 @@ bool THDMISupportForm::RefreshHDMIResolutionsCaption()
 bool THDMISupportForm::RefreshHDMIResolutionsListBox(int ItemIndex)
 {
 	int Index;
-	HDMIResolutionClass HDMIResolution;
 	char Text[TEXTSIZE];
 
 	if (HDMISupport->Resolutions()->GetMaxCount() > 0)
@@ -411,8 +393,10 @@ bool THDMISupportForm::RefreshHDMIResolutionsListBox(int ItemIndex)
 		ItemIndex = -1;
 	}
 
-	HDMIResolutionsListBox->Clear();
+	int TopIndex = HDMIResolutionsListBox->TopIndex;
 	HDMIResolutionsListBox->Items->BeginUpdate();
+	HDMIResolutionsListBox->Clear();
+	HDMIResolutionClass HDMIResolution;
 
 	for (Index = 0; HDMISupport->Resolutions()->Get(Index, HDMIResolution); Index++)
 		if (HDMIResolution.GetText(Text, TEXTSIZE))
@@ -421,7 +405,12 @@ bool THDMISupportForm::RefreshHDMIResolutionsListBox(int ItemIndex)
 	if (Index == 0)
 		HDMIResolutionsListBox->Items->Add("No HDMI resolutions");
 
-	HDMIResolutionsListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		HDMIResolutionsListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < HDMISupport->Resolutions()->GetCount())
+		HDMIResolutionsListBox->ItemIndex = ItemIndex;
+
 	HDMIResolutionsListBox->Items->EndUpdate();
 	return true;
 }
@@ -497,13 +486,13 @@ bool THDMISupportForm::ScaleControls()
 
 	SupportsAI->Width = CheckBoxWidth + Canvas->TextWidth(SupportsAI->Caption);
 	SupportsAI->Height = CheckBoxHeight;
-	SupportsAI->Left = PaddingWidth;
+	SupportsAI->Left = Column1Left;
 	SupportsAI->Top = PaddingTop + CheckBoxTop;
 
 	DualLinkDVI->Width = CheckBoxWidth + Canvas->TextWidth(DualLinkDVI->Caption);
 	DualLinkDVI->Height = CheckBoxHeight;
-	DualLinkDVI->Left = SupportsAI->Left;
-	DualLinkDVI->Top = SupportsAI->Top + SupportsAI->Height + CheckBoxSpacing;
+	DualLinkDVI->Left = Column2Left;
+	DualLinkDVI->Top = SupportsAI->Top;
 
 	FeaturesGroupBox->Width = ColorFormatsGroupBox->Width;
 	FeaturesGroupBox->Height = DualLinkDVI->Top + DualLinkDVI->Height + CheckBoxBottom + PaddingBottom;
@@ -644,45 +633,45 @@ bool THDMISupportForm::ScaleControls()
 	HDMIResolutionsAddButton->Height = ButtonHeight;
 	HDMIResolutionsAddButton->Left = HDMIResolutionsListBox->Left + ButtonLeft;
 	HDMIResolutionsAddButton->Top = HDMIResolutionsListBox->Top + HDMIResolutionsListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(HDMIResolutionsAddButton, Canvas->TextWidth(HDMIResolutionsAddButton->Caption));
+	FixButtonCaption(HDMIResolutionsAddButton, Canvas->TextWidth(HDMIResolutionsAddButton->Caption));
 
 	HDMIResolutionsEditButton->Width = ButtonWidth;
 	HDMIResolutionsEditButton->Height = ButtonHeight;
 	HDMIResolutionsEditButton->Left = HDMIResolutionsAddButton->Left + HDMIResolutionsAddButton->Width;
 	HDMIResolutionsEditButton->Top = HDMIResolutionsAddButton->Top;
-	Common::FixButtonCaption(HDMIResolutionsEditButton, Canvas->TextWidth(HDMIResolutionsEditButton->Caption));
+	FixButtonCaption(HDMIResolutionsEditButton, Canvas->TextWidth(HDMIResolutionsEditButton->Caption));
 
 	HDMIResolutionsDeleteButton->Width = ButtonWidth;
 	HDMIResolutionsDeleteButton->Height = ButtonHeight;
 	HDMIResolutionsDeleteButton->Left = HDMIResolutionsEditButton->Left + HDMIResolutionsEditButton->Width;
 	HDMIResolutionsDeleteButton->Top = HDMIResolutionsEditButton->Top;
-	Common::FixButtonCaption(HDMIResolutionsDeleteButton, Canvas->TextWidth(HDMIResolutionsDeleteButton->Caption));
+	FixButtonCaption(HDMIResolutionsDeleteButton, Canvas->TextWidth(HDMIResolutionsDeleteButton->Caption));
 
 	HDMIResolutionsDeleteAllButton->Width = LongButtonWidth;
 	HDMIResolutionsDeleteAllButton->Height = LongButtonHeight;
 	HDMIResolutionsDeleteAllButton->Left = HDMIResolutionsDeleteButton->Left + HDMIResolutionsDeleteButton->Width;
 	HDMIResolutionsDeleteAllButton->Top = HDMIResolutionsDeleteButton->Top;
-	Common::FixButtonCaption(HDMIResolutionsDeleteAllButton, Canvas->TextWidth(HDMIResolutionsDeleteAllButton->Caption));
+	FixButtonCaption(HDMIResolutionsDeleteAllButton, Canvas->TextWidth(HDMIResolutionsDeleteAllButton->Caption));
 
 	HDMIResolutionsResetButton->Width = ButtonWidth;
 	HDMIResolutionsResetButton->Height = ButtonHeight;
 	HDMIResolutionsResetButton->Left = HDMIResolutionsDeleteAllButton->Left + HDMIResolutionsDeleteAllButton->Width;
 	HDMIResolutionsResetButton->Top = HDMIResolutionsDeleteAllButton->Top;
-	Common::FixButtonCaption(HDMIResolutionsResetButton, Canvas->TextWidth(HDMIResolutionsResetButton->Caption));
+	FixButtonCaption(HDMIResolutionsResetButton, Canvas->TextWidth(HDMIResolutionsResetButton->Caption));
 
 	HDMIResolutionsUpButton->Width = ArrowButtonWidth;
 	HDMIResolutionsUpButton->Height = ArrowButtonHeight;
 	HDMIResolutionsUpButton->Top = HDMIResolutionsResetButton->Top;
 	HDMIResolutionsUpButton->Enabled = false;
 	HDMIResolutionsUpButton->NumGlyphs = NumGlyphs;
-	HDMIResolutionsUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	HDMIResolutionsUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	HDMIResolutionsDownButton->Width = ArrowButtonWidth;
 	HDMIResolutionsDownButton->Height = ArrowButtonHeight;
 	HDMIResolutionsDownButton->Top = HDMIResolutionsUpButton->Top;
 	HDMIResolutionsDownButton->Enabled = false;
 	HDMIResolutionsDownButton->NumGlyphs = NumGlyphs;
-	HDMIResolutionsDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	HDMIResolutionsDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	HDMIResolutionsDownButton->Left = HDMIResolutionsListBox->Left + HDMIResolutionsListBox->Width - ButtonRight - HDMIResolutionsDownButton->Width;
 	HDMIResolutionsUpButton->Left = HDMIResolutionsDownButton->Left - HDMIResolutionsUpButton->Width;
@@ -695,12 +684,12 @@ bool THDMISupportForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = HDMIResolutionsGroupBox->Top + HDMIResolutionsGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = HDMIResolutionsGroupBox->Left + HDMIResolutionsGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -820,7 +809,7 @@ void __fastcall THDMISupportForm::TMDSClockChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	HDMISupport->SetTMDSClock(Common::TextToInteger(TMDSClock->Text.c_str()));
+	HDMISupport->SetTMDSClock(TextToInteger(TMDSClock->Text.c_str()));
 	Refresh(TMDSClockGroupBox, -1);
 }
 //---------------------------------------------------------------------------
@@ -862,7 +851,7 @@ void __fastcall THDMISupportForm::VideoLatencyChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	HDMISupport->SetVideoLatency(Common::TextToInteger(VideoLatency->Text.c_str()));
+	HDMISupport->SetVideoLatency(TextToInteger(VideoLatency->Text.c_str()));
 	Refresh(LatencyGroupBox, HDMIResolutionsListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -885,7 +874,7 @@ void __fastcall THDMISupportForm::AudioLatencyChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	HDMISupport->SetAudioLatency(Common::TextToInteger(AudioLatency->Text.c_str()));
+	HDMISupport->SetAudioLatency(TextToInteger(AudioLatency->Text.c_str()));
 	Refresh(LatencyGroupBox, HDMIResolutionsListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -917,7 +906,7 @@ void __fastcall THDMISupportForm::InterlacedVideoLatencyChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	HDMISupport->SetInterlacedVideoLatency(Common::TextToInteger(InterlacedVideoLatency->Text.c_str()));
+	HDMISupport->SetInterlacedVideoLatency(TextToInteger(InterlacedVideoLatency->Text.c_str()));
 	Refresh(LatencyGroupBox, HDMIResolutionsListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -940,7 +929,7 @@ void __fastcall THDMISupportForm::InterlacedAudioLatencyChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	HDMISupport->SetInterlacedAudioLatency(Common::TextToInteger(InterlacedAudioLatency->Text.c_str()));
+	HDMISupport->SetInterlacedAudioLatency(TextToInteger(InterlacedAudioLatency->Text.c_str()));
 	Refresh(LatencyGroupBox, HDMIResolutionsListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -957,7 +946,7 @@ void __fastcall THDMISupportForm::HDMIResolutionsListBoxDrawItem(TWinControl *Co
 	if (HDMISupport->Resolutions()->Get(Index, HDMIResolution))
 		Supported = HDMIResolution.IsSupported();
 
-	Common::ListBoxDrawItem(HDMIResolutionsListBox, Rect, State, HDMIResolutionsListBox->Items->Strings[Index].c_str(), Supported, false);
+	ListBoxDrawItem(HDMIResolutionsListBox, Rect, State, HDMIResolutionsListBox->Items->Strings[Index].c_str(), Supported, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall THDMISupportForm::HDMIResolutionsListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -1022,10 +1011,6 @@ void __fastcall THDMISupportForm::HDMIResolutionsEditButtonClick(TObject *Sender
 void __fastcall THDMISupportForm::HDMIResolutionsDeleteButtonClick(TObject *Sender)
 {
 	HDMISupport->Resolutions()->Delete(HDMIResolutionsListBox->ItemIndex);
-
-	if (HDMIResolutionsListBox->ItemIndex >= HDMISupport->Resolutions()->GetCount())
-		HDMIResolutionsListBox->ItemIndex = -1;
-
 	Refresh(HDMIResolutionsGroupBox, HDMIResolutionsListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------

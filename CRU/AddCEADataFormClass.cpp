@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "AddCEADataFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TAddCEADataForm *AddCEADataForm;
@@ -43,6 +42,7 @@ bool TAddCEADataForm::RefreshTypeRadioButtons()
 	FreeSyncRadioButton->Enabled = AddCEAData->TypePossible(ADD_CEA_FREESYNC);
 	ColorimetryRadioButton->Enabled = AddCEAData->TypePossible(ADD_CEA_COLORIMETRY);
 	VideoCapabilityRadioButton->Enabled = AddCEAData->TypePossible(ADD_CEA_VIDEO_CAPABILITY);
+	HDRStaticRadioButton->Enabled = AddCEAData->TypePossible(ADD_CEA_HDR_STATIC);
 
 	TVRadioButton->Checked = AddCEAData->IsType(ADD_CEA_VIDEO);
 	AudioRadioButton->Checked = AddCEAData->IsType(ADD_CEA_AUDIO);
@@ -52,6 +52,7 @@ bool TAddCEADataForm::RefreshTypeRadioButtons()
 	FreeSyncRadioButton->Checked = AddCEAData->IsType(ADD_CEA_FREESYNC);
 	ColorimetryRadioButton->Checked = AddCEAData->IsType(ADD_CEA_COLORIMETRY);
 	VideoCapabilityRadioButton->Checked = AddCEAData->IsType(ADD_CEA_VIDEO_CAPABILITY);
+	HDRStaticRadioButton->Checked = AddCEAData->IsType(ADD_CEA_HDR_STATIC);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -97,20 +98,25 @@ bool TAddCEADataForm::ScaleControls()
 	VideoCapabilityRadioButton->Left = ColorimetryRadioButton->Left;
 	VideoCapabilityRadioButton->Top = ColorimetryRadioButton->Top + ColorimetryRadioButton->Height + CheckBoxSpacing;
 
+	HDRStaticRadioButton->Width = RadioButtonWidth + Canvas->TextWidth(HDRStaticRadioButton->Caption);
+	HDRStaticRadioButton->Height = RadioButtonHeight;
+	HDRStaticRadioButton->Left = VideoCapabilityRadioButton->Left;
+	HDRStaticRadioButton->Top = VideoCapabilityRadioButton->Top + VideoCapabilityRadioButton->Height + CheckBoxSpacing;
+
 	TypeGroupBox->Width = FormButtonsWidth;
-	TypeGroupBox->Height = VideoCapabilityRadioButton->Top + VideoCapabilityRadioButton->Height + CheckBoxBottom + PaddingBottom;
+	TypeGroupBox->Height = HDRStaticRadioButton->Top + HDRStaticRadioButton->Height + CheckBoxBottom + PaddingBottom;
 	TypeGroupBox->Left = Scale;
 	TypeGroupBox->Top = GroupBoxTop;
 
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = TypeGroupBox->Top + TypeGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = TypeGroupBox->Left + TypeGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -199,6 +205,15 @@ void __fastcall TAddCEADataForm::VideoCapabilityRadioButtonClick(TObject *Sender
 		return;
 
 	AddCEAData->SetType(ADD_CEA_VIDEO_CAPABILITY);
+	Refresh(TypeGroupBox);
+}
+//---------------------------------------------------------------------------
+void __fastcall TAddCEADataForm::HDRStaticRadioButtonClick(TObject *Sender)
+{
+	if (Refreshing)
+		return;
+
+	AddCEAData->SetType(ADD_CEA_HDR_STATIC);
 	Refresh(TypeGroupBox);
 }
 //---------------------------------------------------------------------------

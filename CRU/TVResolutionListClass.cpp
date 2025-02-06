@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "TVResolutionListClass.h"
 #include "TVResolutionClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 TVResolutionListClass::TVResolutionListClass(int Slots) : ListClass(Slots, 1)
 {
@@ -19,7 +18,6 @@ bool TVResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 	int Size;
 	int Slots;
 	int Slot;
-	TVResolutionClass TVResolution;
 
 	if (!Data)
 		return false;
@@ -40,6 +38,7 @@ bool TVResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 		return false;
 
 	Slots = (Size - YCbCr420) / SlotSize;
+	TVResolutionClass TVResolution;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
 	{

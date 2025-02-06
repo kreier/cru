@@ -1,13 +1,11 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "DisplayListClass.h"
 #include "EDIDListClass.h"
 #include "AMDDisplayClass.h"
 #include "NVIDIADisplayClass.h"
-#include <algorithm>
-#include <cstdio>
 //---------------------------------------------------------------------------
 DisplayListClass::DisplayListClass()
 {
@@ -17,9 +15,6 @@ DisplayListClass::DisplayListClass()
 //---------------------------------------------------------------------------
 bool DisplayListClass::Load()
 {
-	EDIDListClass EDIDList;
-	AMDDisplayClass AMDDisplay;
-	NVIDIADisplayClass NVIDIADisplay;
 	int Index;
 
 	if (!LoadDisplays())
@@ -28,7 +23,10 @@ bool DisplayListClass::Load()
 	if (Count == 0)
 		return true;
 
+	EDIDListClass EDIDList;
+	AMDDisplayClass AMDDisplay;
 	AMDDisplay.LoadEDIDList(EDIDList);
+	NVIDIADisplayClass NVIDIADisplay;
 	NVIDIADisplay.LoadEDIDList(EDIDList);
 
 	if (EDIDList.GetCount() > 0)
@@ -49,63 +47,58 @@ bool DisplayListClass::Load()
 	for (Index = 0; Index < Count; Index++)
 		Items[Index]->Init();
 
+	std::sort(Items.begin(), Items.end(), DisplayClass::Compare);
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DisplayListClass::LoadDisplays()
 {
 	HKEY Key;
-	char DisplayID[TEXTSIZE];
+	char DeviceID[TEXTSIZE];
 	unsigned long TextSize;
 	int Index;
 
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Enum\\DISPLAY", 0, KEY_ENUMERATE_SUB_KEYS, &Key) != ERROR_SUCCESS)
 		return false;
 
-	for (Index = 0; TextSize = TEXTSIZE, RegEnumKeyEx(Key, Index, DisplayID, &TextSize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; Index++)
-		LoadDisplay(DisplayID);
+	for (Index = 0; TextSize = TEXTSIZE, RegEnumKeyEx(Key, Index, DeviceID, &TextSize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; Index++)
+		LoadDisplay(DeviceID);
 
 	RegCloseKey(Key);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DisplayListClass::LoadDisplay(const char *DisplayID)
+bool DisplayListClass::LoadDisplay(const char *DeviceID)
 {
 	HKEY Key;
 	char Path[TEXTSIZE];
-	char DeviceID[TEXTSIZE];
+	char InstanceID[TEXTSIZE];
 	unsigned long TextSize;
 	int Index;
 
-	if (std::snprintf(Path, TEXTSIZE, "SYSTEM\\CurrentControlSet\\Enum\\DISPLAY\\%s", DisplayID) >= TEXTSIZE)
+	if (std::snprintf(Path, TEXTSIZE, "SYSTEM\\CurrentControlSet\\Enum\\DISPLAY\\%s", DeviceID) >= TEXTSIZE)
 		return false;
 
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, Path, 0, KEY_ENUMERATE_SUB_KEYS, &Key) != ERROR_SUCCESS)
 		return false;
 
-	for (Index = 0; TextSize = TEXTSIZE, RegEnumKeyEx(Key, Index, DeviceID, &TextSize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; Index++)
-		LoadDevice(DisplayID, DeviceID);
+	for (Index = 0; TextSize = TEXTSIZE, RegEnumKeyEx(Key, Index, InstanceID, &TextSize, NULL, NULL, NULL, NULL) == ERROR_SUCCESS; Index++)
+		LoadInstance(DeviceID, InstanceID);
 
 	RegCloseKey(Key);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DisplayListClass::LoadDevice(const char *DisplayID, const char *DeviceID)
+bool DisplayListClass::LoadInstance(const char *DeviceID, const char *InstanceID)
 {
-	DisplayClass *NewDisplay = new DisplayClass(DisplayID, DeviceID);
+	DisplayClass *NewDisplay = new DisplayClass;
 
-	if (!NewDisplay->Load())
+	if (!NewDisplay->Load(DeviceID, InstanceID))
 	{
 		delete NewDisplay;
 		return false;
 	}
 
-	Add(NewDisplay);
-	return true;
-}
-//---------------------------------------------------------------------------
-bool DisplayListClass::Add(DisplayClass *NewDisplay)
-{
 	Items.push_back(NewDisplay);
 	Count++;
 	return true;
@@ -134,12 +127,6 @@ int DisplayListClass::GetCount()
 	return Count;
 }
 //---------------------------------------------------------------------------
-bool DisplayListClass::Sort()
-{
-	std::sort(Items.begin(), Items.end(), DisplayClass::Compare);
-	return true;
-}
-//---------------------------------------------------------------------------
 bool DisplayListClass::GetItemText(int Index, char *Text, int TextSize)
 {
 	if (Index < 0 || Index >= Count)
@@ -149,22 +136,11 @@ bool DisplayListClass::GetItemText(int Index, char *Text, int TextSize)
 	return true;
 }
 //---------------------------------------------------------------------------
-int DisplayListClass::GetCurrent()
+DisplayClass *DisplayListClass::Get(int Index)
 {
-	return ItemIndex;
-}
-//---------------------------------------------------------------------------
-bool DisplayListClass::SetCurrent(int NewItemIndex)
-{
-	ItemIndex = NewItemIndex;
-	return true;
-}
-//---------------------------------------------------------------------------
-DisplayClass *DisplayListClass::Current()
-{
-	if (ItemIndex < 0 || ItemIndex >= Count)
+	if (Index < 0 || Index >= Count)
 		return NULL;
 
-	return Items[ItemIndex];
+	return Items[Index];
 }
 //---------------------------------------------------------------------------

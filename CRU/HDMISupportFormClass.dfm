@@ -3,7 +3,7 @@ object HDMISupportForm: THDMISupportForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'HDMI Support'
-  ClientHeight = 557
+  ClientHeight = 540
   ClientWidth = 332
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -108,37 +108,37 @@ object HDMISupportForm: THDMISupportForm
     Left = 8
     Top = 142
     Width = 316
-    Height = 59
-    Caption = ' Supported features '
+    Height = 42
+    Caption = ' Features '
     TabOrder = 2
     object SupportsAI: TCheckBox
       Left = 9
       Top = 17
-      Width = 147
+      Width = 112
       Height = 17
-      Caption = 'Supports audio information'
+      Caption = 'Supports ACP/ISRC'
       TabOrder = 0
       OnClick = SupportsAIClick
     end
     object DualLinkDVI: TCheckBox
-      Left = 9
-      Top = 34
-      Width = 172
+      Left = 162
+      Top = 17
+      Width = 123
       Height = 17
-      Caption = 'Supports DVI dual-link operation'
+      Caption = 'Supports dual-link DVI'
       TabOrder = 1
       OnClick = DualLinkDVIClick
     end
   end
   object TMDSClockGroupBox: TGroupBox
     Left = 8
-    Top = 206
+    Top = 189
     Width = 316
     Height = 50
-    Caption = ' Maximum TMDS clock '
+    Caption = ' TMDS clock '
     TabOrder = 3
     object TMDSClockLabel: TLabel
-      Left = 214
+      Left = 171
       Top = 22
       Width = 20
       Height = 13
@@ -146,15 +146,15 @@ object HDMISupportForm: THDMISupportForm
     end
     object OverrideTMDSClock: TCheckBox
       Left = 9
-      Top = 20
-      Width = 167
+      Top = 21
+      Width = 122
       Height = 17
-      Caption = 'Override maximum TMDS clock:'
+      Caption = 'Maximum TMDS clock:'
       TabOrder = 0
       OnClick = OverrideTMDSClockClick
     end
     object TMDSClock: TEdit
-      Left = 178
+      Left = 135
       Top = 19
       Width = 30
       Height = 21
@@ -166,10 +166,10 @@ object HDMISupportForm: THDMISupportForm
   end
   object ContentTypesGroupBox: TGroupBox
     Left = 8
-    Top = 261
+    Top = 244
     Width = 316
     Height = 42
-    Caption = ' Supported content types '
+    Caption = ' Content types '
     TabOrder = 4
     object ContentType0: TCheckBox
       Left = 9
@@ -213,34 +213,34 @@ object HDMISupportForm: THDMISupportForm
   end
   object LatencyGroupBox: TGroupBox
     Left = 8
-    Top = 308
+    Top = 291
     Width = 316
     Height = 96
-    Caption = ' Latency information '
+    Caption = ' Latency '
     TabOrder = 5
     object VideoLatencyLabel: TLabel
-      Left = 110
+      Left = 112
       Top = 43
       Width = 13
       Height = 13
       Caption = 'ms'
     end
     object AudioLatencyLabel: TLabel
-      Left = 110
+      Left = 112
       Top = 68
       Width = 13
       Height = 13
       Caption = 'ms'
     end
     object InterlacedVideoLatencyLabel: TLabel
-      Left = 263
+      Left = 265
       Top = 43
       Width = 13
       Height = 13
       Caption = 'ms'
     end
     object InterlacedAudioLatencyLabel: TLabel
-      Left = 263
+      Left = 265
       Top = 68
       Width = 13
       Height = 13
@@ -249,15 +249,15 @@ object HDMISupportForm: THDMISupportForm
     object IncludeLatency: TCheckBox
       Left = 9
       Top = 17
-      Width = 120
+      Width = 116
       Height = 17
-      Caption = 'Include latency data:'
+      Caption = 'Include latency info:'
       TabOrder = 0
       OnClick = IncludeLatencyClick
     end
     object VideoSupported: TCheckBox
       Left = 29
-      Top = 41
+      Top = 42
       Width = 48
       Height = 17
       Caption = 'Video:'
@@ -265,7 +265,7 @@ object HDMISupportForm: THDMISupportForm
       OnClick = VideoSupportedClick
     end
     object VideoLatency: TEdit
-      Left = 80
+      Left = 82
       Top = 40
       Width = 24
       Height = 21
@@ -276,7 +276,7 @@ object HDMISupportForm: THDMISupportForm
     end
     object AudioSupported: TCheckBox
       Left = 29
-      Top = 66
+      Top = 67
       Width = 49
       Height = 17
       Caption = 'Audio:'
@@ -284,7 +284,7 @@ object HDMISupportForm: THDMISupportForm
       OnClick = AudioSupportedClick
     end
     object AudioLatency: TEdit
-      Left = 80
+      Left = 82
       Top = 65
       Width = 24
       Height = 21
@@ -296,15 +296,15 @@ object HDMISupportForm: THDMISupportForm
     object IncludeInterlacedLatency: TCheckBox
       Left = 162
       Top = 17
-      Width = 132
+      Width = 128
       Height = 17
-      Caption = 'Include interlaced data:'
+      Caption = 'Include interlaced info:'
       TabOrder = 5
       OnClick = IncludeInterlacedLatencyClick
     end
     object InterlacedVideoSupported: TCheckBox
       Left = 182
-      Top = 41
+      Top = 42
       Width = 48
       Height = 17
       Caption = 'Video:'
@@ -312,7 +312,7 @@ object HDMISupportForm: THDMISupportForm
       OnClick = InterlacedVideoSupportedClick
     end
     object InterlacedVideoLatency: TEdit
-      Left = 233
+      Left = 235
       Top = 40
       Width = 24
       Height = 21
@@ -323,7 +323,7 @@ object HDMISupportForm: THDMISupportForm
     end
     object InterlacedAudioSupported: TCheckBox
       Left = 182
-      Top = 66
+      Top = 67
       Width = 49
       Height = 17
       Caption = 'Audio:'
@@ -331,7 +331,7 @@ object HDMISupportForm: THDMISupportForm
       OnClick = InterlacedAudioSupportedClick
     end
     object InterlacedAudioLatency: TEdit
-      Left = 233
+      Left = 235
       Top = 65
       Width = 24
       Height = 21
@@ -343,7 +343,7 @@ object HDMISupportForm: THDMISupportForm
   end
   object HDMIResolutionsGroupBox: TGroupBox
     Left = 8
-    Top = 409
+    Top = 392
     Width = 316
     Height = 112
     Caption = ' HDMI resolutions '
@@ -437,7 +437,7 @@ object HDMISupportForm: THDMISupportForm
   end
   object FormOKButton: TButton
     Left = 169
-    Top = 527
+    Top = 510
     Width = 75
     Height = 23
     Caption = 'OK'
@@ -447,7 +447,7 @@ object HDMISupportForm: THDMISupportForm
   end
   object FormCancelButton: TButton
     Left = 250
-    Top = 527
+    Top = 510
     Width = 75
     Height = 23
     Cancel = True

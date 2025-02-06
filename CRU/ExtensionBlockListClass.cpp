@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "ExtensionBlockListClass.h"
 #include "ExtensionBlockClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 ExtensionBlockListClass::ExtensionBlockListClass(int Slots) : ListClass(Slots, 128)
 {
@@ -14,7 +13,6 @@ bool ExtensionBlockListClass::Read(const unsigned char *Data, int MaxSize)
 {
 	int Slots;
 	int Slot;
-	ExtensionBlockClass ExtensionBlock;
 
 	if (!Data)
 		return false;
@@ -25,6 +23,7 @@ bool ExtensionBlockListClass::Read(const unsigned char *Data, int MaxSize)
 		return false;
 
 	Slots = Data[0];
+	ExtensionBlockClass ExtensionBlock;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
 	{

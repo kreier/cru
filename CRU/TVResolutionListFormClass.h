@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "TVResolutionListClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>

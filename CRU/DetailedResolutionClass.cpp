@@ -1,88 +1,224 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "DetailedResolutionClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
-const int DetailedResolutionClass::MinTiming = 0;
-const int DetailedResolutionClass::MaxTiming = 5;
+const int DetailedResolutionClass::MinTiming = TIMING_MANUAL;
+const int DetailedResolutionClass::MaxTiming = TIMING_MANUAL_VTOTAL;
 
 const char *DetailedResolutionClass::TimingText[] =
 {
 	"Manual",
-	"Automatic - LCD standard",
-	"Automatic - LCD native",
-	"Automatic - LCD reduced",
-	"Automatic - CRT standard",
-	"Automatic - Old standard",
+	"Automatic PC",
+	"Automatic HDTV",
+	"Automatic CRT",
+	"Native PC",
+	"Native HDTV",
+	"Exact",
+	"Exact reduced",
+	"Exact CRT",
+	"CVT standard",
+	"CVT-RB standard",
+	"CVT-RB2 standard",
+	"GTF standard",
+	"Vertical total calculator",
 };
 
 bool (DetailedResolutionClass::*DetailedResolutionClass::TimingFunction[])() =
 {
-	NULL,
-	CalculateLCDStandard,
-	CalculateLCDNative,
-	CalculateLCDReduced,
-	CalculateCRTStandard,
-	CalculateOldStandard,
+	&CalculateManual,
+	&CalculateAutomaticPC,
+	&CalculateAutomaticHDTV,
+	&CalculateAutomaticCRT,
+	&CalculateNativePC,
+	&CalculateNativeHDTV,
+	&CalculateExact,
+	&CalculateExactReduced,
+	&CalculateExactCRT,
+	&CalculateCVTStandard,
+	&CalculateCVTRBStandard,
+	&CalculateCVTRB2Standard,
+	&CalculateGTFStandard,
+	&CalculateManualVTotal,
 };
 
-const int DetailedResolutionClass::LCDStandard[][13] =
+const DetailedResolutionStruct DetailedResolutionClass::AutomaticPC[] =
 {
-	{3840, 2160, 0, 59500, 60500, 176,  88, 296,  8, 10, 72, 1, 1}, // 3840x2160 @ 60 Hz
-	{3840, 2160, 0, 29500, 30500, 176,  88, 296,  8, 10, 72, 1, 1}, // 3840x2160 @ 30 Hz
-	{1920, 1080, 0, 59500, 60500,  88,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 60 Hz
-	{1920, 1080, 0, 47500, 50500, 528,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 50 Hz
-//	{1920, 1080, 0, 47500, 48500, 638,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 48 Hz (non-standard)
-	{1920, 1080, 0, 29500, 30500,  88,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 30 Hz
-	{1920, 1080, 0, 24500, 25500, 528,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 25 Hz
-	{1920, 1080, 0, 23500, 24500, 638,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 24 Hz
-	{1920,  540, 1, 59500, 60500,  88,  44, 148,  2,  5, 15, 1, 1}, // 1920x1080i @ 60 Hz
-	{1920,  540, 1, 47500, 50500, 528,  44, 148,  2,  5, 15, 1, 1}, // 1920x1080i @ 50 Hz
-//	{1920,  540, 1, 47500, 48500, 638,  44, 148,  2,  5, 15, 1, 1}, // 1920x1080i @ 48 Hz (non-standard)
-	{1440,  288, 1, 47500, 50500,  24, 126, 138,  2,  3, 19, 0, 0}, // 1440x576i @ 50 Hz
-	{1440,  240, 1, 59500, 60500,  38, 124, 114,  4,  3, 15, 0, 0}, // 1440x480i @ 60 Hz
-	{1366,  768, 0, 59500, 60500,  70, 143, 213,  3,  3, 24, 1, 1}, // 1366x768 @ 60 Hz
-	{1360,  768, 0, 59500, 60500,  64, 112, 256,  3,  6, 18, 1, 1}, // 1360x768 @ 60 Hz
-	{1280,  720, 0, 59500, 60500, 110,  40, 220,  5,  5, 20, 1, 1}, // 1280x720 @ 60 Hz
-	{1280,  720, 0, 47500, 50500, 440,  40, 220,  5,  5, 20, 1, 1}, // 1280x720 @ 50 Hz
-//	{1280,  720, 0, 47500, 48500, 110,  40, 220,  5,  5, 20, 1, 1}, // 1280x720 @ 48 Hz (non-standard)
-	{ 720,  576, 0, 47500, 50500,  12,  64,  68,  5,  5, 39, 0, 0}, // 720x576 @ 50 Hz
-	{ 720,  480, 0, 59500, 60500,  16,  62,  60,  9,  6, 30, 0, 0}, // 720x480 @ 60 Hz
-	{ 640,  480, 0, 59500, 63500,  16,  96,  48, 10,  2, 33, 0, 0}, // 640x480 @ 60 Hz
+	{ 1920, 1080, 0,  59500,  60500,   88,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 60 Hz
+	{ 1920, 1080, 0,  49500,  50500,  528,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 50 Hz
+	{ 1920, 1080, 0,  47500,  48500,  638,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 48 Hz
+	{ 1920, 1080, 0,  29500,  30500,   88,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 30 Hz
+	{ 1920, 1080, 0,  24500,  25500,  528,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 25 Hz
+	{ 1920, 1080, 0,  23500,  24500,  638,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 24 Hz
+	{ 1920, 1080, 1,  59500,  60500,   88,  44, 148,  4, 10,  31, 1, 1}, // 1920x1080i @ 60 Hz
+	{ 1920, 1080, 1,  49500,  50500,  528,  44, 148,  4, 10,  31, 1, 1}, // 1920x1080i @ 50 Hz
+	{ 1600,  900, 0,  59500,  60500,   24,  80,  96,  1,  3,  96, 1, 1}, // 1600x900 @ 60 Hz
+	{ 1366,  768, 0,  59500,  60500,   70, 143, 213,  3,  3,  24, 1, 1}, // 1366x768 @ 60 Hz
+	{ 1360,  768, 0,  59500,  60500,   64, 112, 256,  3,  6,  18, 1, 1}, // 1360x768 @ 60 Hz
+	{ 1280,  720, 0,  59500,  60500,  110,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 60 Hz
+	{ 1280,  720, 0,  49500,  50500,  440,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 50 Hz
+	{ 1280,  720, 0,  47500,  48500,  960,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 48 Hz
+	{ 1280,  720, 0,  29500,  30500, 1760,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 30 Hz
+	{ 1280,  720, 0,  24500,  25500, 2420,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 25 Hz
+	{ 1280,  720, 0,  23500,  24500, 1760,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 24 Hz
+	{ 1440,  576, 1,  49500,  50500,   24, 126, 138,  4,  6,  39, 0, 0}, // 1440x576i @ 50 Hz
+	{ 1440,  480, 1,  59500,  60500,   38, 124, 114,  8,  6,  31, 0, 0}, // 1440x480i @ 60 Hz
+	{  720,  576, 0,  49500,  50500,   12,  64,  68,  5,  5,  39, 0, 0}, // 720x576 @ 50 Hz
+	{  720,  480, 0,  59500,  60500,   16,  62,  60,  9,  6,  30, 0, 0}, // 720x480 @ 60 Hz
+	{  640,  480, 0,  59500,  60500,   16,  96,  48, 10,  2,  33, 0, 0}, // 640x480 @ 60 Hz
 	{0}
 };
 
-const int DetailedResolutionClass::LCDNative[][12] =
+const DetailedResolutionStruct DetailedResolutionClass::AutomaticHDTV[] =
 {
-	{3840, 2160, 0, 60000, 176,  88, 296,  8, 10, 72, 1, 1}, // 3840x2160 @ 60 Hz
-	{1920, 1080, 0, 60000,  88,  44, 148,  4,  5, 36, 1, 1}, // 1920x1080 @ 60 Hz
-	{1920,  540, 1, 60000,  88,  44, 148,  2,  5, 15, 1, 1}, // 1920x1080i @ 60 Hz
-	{1440,  288, 1, 50000,  24, 126, 138,  2,  3, 19, 0, 0}, // 1440x576i @ 50 Hz
-	{1440,  240, 1, 59940,  38, 124, 114,  4,  3, 15, 0, 0}, // 1440x480i @ 60 Hz
-	{1366,  768, 0, 59789,  70, 143, 213,  3,  3, 24, 1, 1}, // 1366x768 @ 60 Hz
-	{1360,  768, 0, 60015,  64, 112, 256,  3,  6, 18, 1, 1}, // 1360x768 @ 60 Hz
-	{1280,  720, 0, 60000, 110,  40, 220,  5,  5, 20, 1, 1}, // 1280x720 @ 60 Hz
-	{ 720,  576, 0, 50000,  12,  64,  68,  5,  5, 39, 0, 0}, // 720x576 @ 50 Hz
-	{ 720,  480, 0, 59940,  16,  62,  60,  9,  6, 30, 0, 0}, // 720x480 @ 60 Hz
-	{ 640,  480, 0, 60000,  16,  96,  48, 10,  2, 33, 0, 0}, // 640x480 @ 60 Hz
+	{10240, 4320, 0, 119500, 120500,  288, 176, 296, 16, 20, 144, 1, 1}, // 10240x4320 @ 120 Hz
+	{10240, 4320, 0,  99500, 100500, 2192, 176, 592, 16, 20, 144, 1, 1}, // 10240x4320 @ 100 Hz
+	{10240, 4320, 0,  59500,  60500,  288, 176, 296, 16, 20, 144, 1, 1}, // 10240x4320 @ 60 Hz
+	{10240, 4320, 0,  49500,  50500, 2492, 176, 592, 16, 20,  44, 1, 1}, // 10240x4320 @ 50 Hz
+	{10240, 4320, 0,  47500,  48500, 1492, 176, 592, 16, 20, 594, 1, 1}, // 10240x4320 @ 48 Hz
+	{10240, 4320, 0,  29500,  30500,  288, 176, 296, 16, 20, 144, 1, 1}, // 10240x4320 @ 30 Hz
+	{10240, 4320, 0,  24500,  25500, 2492, 176, 592, 16, 20,  44, 1, 1}, // 10240x4320 @ 25 Hz
+	{10240, 4320, 0,  23500,  24500, 1492, 176, 592, 16, 20, 594, 1, 1}, // 10240x4320 @ 24 Hz
+	{ 7680, 4320, 0, 119500, 120500,  352, 176, 592, 16, 20, 144, 1, 1}, // 7680x4320 @ 120 Hz
+	{ 7680, 4320, 0,  99500, 100500, 2112, 176, 592, 16, 20, 144, 1, 1}, // 7680x4320 @ 100 Hz
+	{ 7680, 4320, 0,  59500,  60500,  552, 176, 592, 16, 20,  44, 1, 1}, // 7680x4320 @ 60 Hz
+	{ 7680, 4320, 0,  49500,  50500, 2352, 176, 592, 16, 20,  44, 1, 1}, // 7680x4320 @ 50 Hz
+	{ 7680, 4320, 0,  47500,  48500, 2552, 176, 592, 16, 20, 144, 1, 1}, // 7680x4320 @ 48 Hz
+	{ 7680, 4320, 0,  29500,  30500,  552, 176, 592, 16, 20,  44, 1, 1}, // 7680x4320 @ 30 Hz
+	{ 7680, 4320, 0,  24500,  25500, 2352, 176, 592, 16, 20,  44, 1, 1}, // 7680x4320 @ 25 Hz
+	{ 7680, 4320, 0,  23500,  24500, 2552, 176, 592, 16, 20, 144, 1, 1}, // 7680x4320 @ 24 Hz
+	{ 5120, 2160, 0, 119500, 120500,  164,  88, 128,  8, 10,  72, 1, 1}, // 5120x2160 @ 120 Hz
+	{ 5120, 2160, 0,  99500, 100500, 1096,  88, 296,  8, 10,  72, 1, 1}, // 5120x2160 @ 100 Hz
+	{ 5120, 2160, 0,  59500,  60500,  164,  88, 128,  8, 10,  72, 1, 1}, // 5120x2160 @ 60 Hz
+	{ 5120, 2160, 0,  49500,  50500, 1096,  88, 296,  8, 10,  72, 1, 1}, // 5120x2160 @ 50 Hz
+	{ 5120, 2160, 0,  47500,  48500,  746,  88, 296,  8, 10, 297, 1, 1}, // 5120x2160 @ 48 Hz
+	{ 5120, 2160, 0,  29500,  30500,  664,  88, 128,  8, 10,  22, 1, 1}, // 5120x2160 @ 30 Hz
+	{ 5120, 2160, 0,  24500,  25500, 1696,  88, 296,  8, 10,  22, 1, 1}, // 5120x2160 @ 25 Hz
+	{ 5120, 2160, 0,  23500,  24500, 1996,  88, 296,  8, 10,  22, 1, 1}, // 5120x2160 @ 24 Hz
+	{ 4096, 2160, 0, 119500, 120500,   88,  88, 128,  8, 10,  72, 1, 1}, // 4096x2160 @ 120 Hz
+	{ 4096, 2160, 0,  99500, 100500,  800,  88, 296,  8, 10,  72, 1, 1}, // 4096x2160 @ 100 Hz
+	{ 4096, 2160, 0,  59500,  60500,   88,  88, 128,  8, 10,  72, 1, 1}, // 4096x2160 @ 60 Hz
+	{ 4096, 2160, 0,  49500,  50500,  968,  88, 128,  8, 10,  72, 1, 1}, // 4096x2160 @ 50 Hz
+	{ 4096, 2160, 0,  47500,  48500, 1020,  88, 296,  8, 10,  72, 1, 1}, // 4096x2160 @ 48 Hz
+	{ 4096, 2160, 0,  29500,  30500,   88,  88, 128,  8, 10,  72, 1, 1}, // 4096x2160 @ 30 Hz
+	{ 4096, 2160, 0,  24500,  25500,  968,  88, 128,  8, 10,  72, 1, 1}, // 4096x2160 @ 25 Hz
+	{ 4096, 2160, 0,  23500,  24500, 1020,  88, 296,  8, 10,  72, 1, 1}, // 4096x2160 @ 24 Hz
+	{ 3840, 2160, 0, 119500, 120500,  176,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 120 Hz
+	{ 3840, 2160, 0,  99500, 100500, 1056,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 100 Hz
+	{ 3840, 2160, 0,  59500,  60500,  176,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 60 Hz
+	{ 3840, 2160, 0,  49500,  50500, 1056,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 50 Hz
+	{ 3840, 2160, 0,  47500,  48500, 1276,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 48 Hz
+	{ 3840, 2160, 0,  29500,  30500,  176,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 30 Hz
+	{ 3840, 2160, 0,  24500,  25500, 1056,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 25 Hz
+	{ 3840, 2160, 0,  23500,  24500, 1276,  88, 296,  8, 10,  72, 1, 1}, // 3840x2160 @ 24 Hz
+	{ 2560, 1080, 0, 119500, 120500,  548,  44, 148,  4,  5, 161, 1, 1}, // 2560x1080 @ 120 Hz
+	{ 2560, 1080, 0,  99500, 100500,  218,  44, 148,  4,  5, 161, 1, 1}, // 2560x1080 @ 100 Hz
+	{ 2560, 1080, 0,  59500,  60500,  248,  44, 148,  4,  5,  11, 1, 1}, // 2560x1080 @ 60 Hz
+	{ 2560, 1080, 0,  49500,  50500,  548,  44, 148,  4,  5,  36, 1, 1}, // 2560x1080 @ 50 Hz
+	{ 2560, 1080, 0,  47500,  48500,  998,  44, 148,  4,  5,  11, 1, 1}, // 2560x1080 @ 48 Hz
+	{ 2560, 1080, 0,  29500,  30500,  768,  44, 148,  4,  5,  36, 1, 1}, // 2560x1080 @ 30 Hz
+	{ 2560, 1080, 0,  24500,  25500,  448,  44, 148,  4,  5,  36, 1, 1}, // 2560x1080 @ 25 Hz
+	{ 2560, 1080, 0,  23500,  24500,  998,  44, 148,  4,  5,  11, 1, 1}, // 2560x1080 @ 24 Hz
+	{ 1920, 1080, 0, 119500, 120500,   88,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 120 Hz
+	{ 1920, 1080, 0,  99500, 100500,  528,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 100 Hz
+	{ 1920, 1080, 0,  59500,  60500,   88,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 60 Hz
+	{ 1920, 1080, 0,  49500,  50500,  528,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 50 Hz
+	{ 1920, 1080, 0,  47500,  48500,  638,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 48 Hz
+	{ 1920, 1080, 0,  29500,  30500,   88,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 30 Hz
+	{ 1920, 1080, 0,  24500,  25500,  528,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 25 Hz
+	{ 1920, 1080, 0,  23500,  24500,  638,  44, 148,  4,  5,  36, 1, 1}, // 1920x1080 @ 24 Hz
+	{ 1920, 1080, 1, 119500, 120500,   88,  44, 148,  4, 10,  31, 1, 1}, // 1920x1080i @ 120 Hz
+	{ 1920, 1080, 1,  99500, 100500,  528,  44, 148,  4, 10,  31, 1, 1}, // 1920x1080i @ 100 Hz
+	{ 1920, 1080, 1,  59500,  60500,   88,  44, 148,  4, 10,  31, 1, 1}, // 1920x1080i @ 60 Hz
+	{ 1920, 1080, 1,  49500,  50500,  528,  44, 148,  4, 10,  31, 1, 1}, // 1920x1080i @ 50 Hz
+	{ 1680,  720, 0, 119500, 120500,   60,  40, 220,  5,  5,  95, 1, 1}, // 1680x720 @ 120 Hz
+	{ 1680,  720, 0,  99500, 100500,   60,  40, 220,  5,  5,  95, 1, 1}, // 1680x720 @ 100 Hz
+	{ 1680,  720, 0,  59500,  60500,  260,  40, 220,  5,  5,  20, 1, 1}, // 1680x720 @ 60 Hz
+	{ 1680,  720, 0,  49500,  50500,  260,  40, 220,  5,  5,  20, 1, 1}, // 1680x720 @ 50 Hz
+	{ 1680,  720, 0,  47500,  48500,  810,  40, 220,  5,  5,  20, 1, 1}, // 1680x720 @ 48 Hz
+	{ 1680,  720, 0,  29500,  30500,  700,  40, 220,  5,  5,  20, 1, 1}, // 1680x720 @ 30 Hz
+	{ 1680,  720, 0,  24500,  25500, 1228,  40, 220,  5,  5,  20, 1, 1}, // 1680x720 @ 25 Hz
+	{ 1680,  720, 0,  23500,  24500, 1360,  40, 220,  5,  5,  20, 1, 1}, // 1680x720 @ 24 Hz
+	{ 1600,  900, 0,  59500,  60500,   24,  80,  96,  1,  3,  96, 1, 1}, // 1600x900 @ 60 Hz
+	{ 1366,  768, 0,  59500,  60500,   70, 143, 213,  3,  3,  24, 1, 1}, // 1366x768 @ 60 Hz
+	{ 1360,  768, 0,  59500,  60500,   64, 112, 256,  3,  6,  18, 1, 1}, // 1360x768 @ 60 Hz
+	{ 1280,  720, 0, 119500, 120500,  110,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 120 Hz
+	{ 1280,  720, 0,  99500, 100500,  440,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 100 Hz
+	{ 1280,  720, 0,  59500,  60500,  110,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 60 Hz
+	{ 1280,  720, 0,  49500,  50500,  440,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 50 Hz
+	{ 1280,  720, 0,  47500,  48500,  960,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 48 Hz
+	{ 1280,  720, 0,  29500,  30500, 1760,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 30 Hz
+	{ 1280,  720, 0,  24500,  25500, 2420,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 25 Hz
+	{ 1280,  720, 0,  23500,  24500, 1760,  40, 220,  5,  5,  20, 1, 1}, // 1280x720 @ 24 Hz
+	{ 1440,  576, 1, 199500, 200500,   24, 126, 138,  4,  6,  39, 0, 0}, // 1440x576i @ 200 Hz
+	{ 1440,  576, 1,  99500, 100500,   24, 126, 138,  4,  6,  39, 0, 0}, // 1440x576i @ 100 Hz
+	{ 1440,  576, 1,  49500,  50500,   24, 126, 138,  4,  6,  39, 0, 0}, // 1440x576i @ 50 Hz
+	{ 1440,  480, 1, 239500, 240500,   38, 124, 114,  8,  6,  31, 0, 0}, // 1440x480i @ 240 Hz
+	{ 1440,  480, 1, 119500, 120500,   38, 124, 114,  8,  6,  31, 0, 0}, // 1440x480i @ 120 Hz
+	{ 1440,  480, 1,  59500,  60500,   38, 124, 114,  8,  6,  31, 0, 0}, // 1440x480i @ 60 Hz
+	{  720,  576, 0, 199500, 200500,   12,  64,  68,  5,  5,  39, 0, 0}, // 720x576 @ 200 Hz
+	{  720,  576, 0,  99500, 100500,   12,  64,  68,  5,  5,  39, 0, 0}, // 720x576 @ 100 Hz
+	{  720,  576, 0,  49500,  50500,   12,  64,  68,  5,  5,  39, 0, 0}, // 720x576 @ 50 Hz
+	{  720,  480, 0, 239500, 240500,   16,  62,  60,  9,  6,  30, 0, 0}, // 720x480 @ 240 Hz
+	{  720,  480, 0, 119500, 120500,   16,  62,  60,  9,  6,  30, 0, 0}, // 720x480 @ 120 Hz
+	{  720,  480, 0,  59500,  60500,   16,  62,  60,  9,  6,  30, 0, 0}, // 720x480 @ 60 Hz
+	{  640,  480, 0,  59500,  60500,   16,  96,  48, 10,  2,  33, 0, 0}, // 640x480 @ 60 Hz
 	{0}
 };
 
-const int DetailedResolutionClass::LCDReduced[][13] =
+const DetailedResolutionStruct DetailedResolutionClass::AutomaticCRT[] =
 {
+	{ 1920, 1440, 0,  74500,  75500,  144, 224, 352,  1,  3,  56, 0, 1}, // 1920x1440 @ 75 Hz
+	{ 1920, 1440, 0,  59500,  60500,  128, 208, 344,  1,  3,  56, 0, 1}, // 1920x1440 @ 60 Hz
+	{ 1856, 1392, 0,  74500,  75500,  128, 224, 352,  1,  3, 104, 0, 1}, // 1856x1392 @ 75 Hz
+	{ 1856, 1392, 0,  59500,  60500,   96, 224, 352,  1,  3,  43, 0, 1}, // 1856x1392 @ 60 Hz
+	{ 1792, 1344, 0,  74500,  75500,   96, 216, 352,  1,  3,  69, 0, 1}, // 1792x1344 @ 75 Hz
+	{ 1792, 1344, 0,  59500,  60500,  128, 200, 328,  1,  3,  46, 0, 1}, // 1792x1344 @ 60 Hz
+	{ 1600, 1200, 0,  84500,  85500,   64, 192, 304,  1,  3,  46, 1, 1}, // 1600x1200 @ 85 Hz
+	{ 1600, 1200, 0,  74500,  75500,   64, 192, 304,  1,  3,  46, 1, 1}, // 1600x1200 @ 75 Hz
+	{ 1600, 1200, 0,  69500,  70500,   64, 192, 304,  1,  3,  46, 1, 1}, // 1600x1200 @ 70 Hz
+	{ 1600, 1200, 0,  64500,  65500,   64, 192, 304,  1,  3,  46, 1, 1}, // 1600x1200 @ 65 Hz
+	{ 1600, 1200, 0,  59500,  60500,   64, 192, 304,  1,  3,  46, 1, 1}, // 1600x1200 @ 60 Hz
+	{ 1280, 1024, 0,  84500,  85500,   64, 160, 224,  1,  3,  44, 1, 1}, // 1280x1024 @ 85 Hz
+	{ 1280, 1024, 0,  74500,  75500,   16, 144, 248,  1,  3,  38, 1, 1}, // 1280x1024 @ 75 Hz
+	{ 1280, 1024, 0,  59500,  60500,   48, 112, 248,  1,  3,  38, 1, 1}, // 1280x1024 @ 60 Hz
+	{ 1280,  960, 0,  84500,  85500,   64, 160, 224,  1,  3,  47, 1, 1}, // 1280x960 @ 85 Hz
+	{ 1280,  960, 0,  59500,  60500,   96, 112, 312,  1,  3,  36, 1, 1}, // 1280x960 @ 60 Hz
+	{ 1152,  864, 0,  74500,  75500,   64, 128, 256,  1,  3,  32, 1, 1}, // 1152x864 @ 75 Hz
+	{ 1024,  768, 0,  84500,  85500,   48,  96, 208,  1,  3,  36, 1, 1}, // 1024x768 @ 85 Hz
+	{ 1024,  768, 0,  74500,  75500,   16,  96, 176,  1,  3,  28, 1, 1}, // 1024x768 @ 75 Hz
+	{ 1024,  768, 0,  69500,  70500,   24, 136, 144,  3,  6,  29, 0, 0}, // 1024x768 @ 70 Hz
+	{ 1024,  768, 0,  59500,  60500,   24, 136, 160,  3,  6,  29, 0, 0}, // 1024x768 @ 60 Hz
+	{  800,  600, 0,  84500,  85500,   32,  64, 152,  1,  3,  27, 1, 1}, // 800x600 @ 85 Hz
+	{  800,  600, 0,  74500,  75500,   16,  80, 160,  1,  3,  21, 1, 1}, // 800x600 @ 75 Hz
+	{  800,  600, 0,  71500,  72500,   56, 120,  64, 37,  6,  23, 1, 1}, // 800x600 @ 72 Hz
+	{  800,  600, 0,  59500,  60500,   40, 128,  88,  1,  4,  23, 1, 1}, // 800x600 @ 60 Hz
+	{  800,  600, 0,  55500,  56500,   24,  72, 128,  1,  2,  22, 1, 1}, // 800x600 @ 56 Hz
+	{ 1440,  576, 1,  49500,  50500,   24, 126, 138,  4,  6,  39, 0, 0}, // 1440x576i @ 50 Hz
+	{ 1440,  480, 1,  59500,  60500,   38, 124, 114,  8,  6,  31, 0, 0}, // 1440x480i @ 60 Hz
+	{  720,  576, 0,  49500,  50500,   12,  64,  68,  5,  5,  39, 0, 0}, // 720x576 @ 50 Hz
+	{  720,  480, 0,  59500,  60500,   16,  62,  60,  9,  6,  30, 0, 0}, // 720x480 @ 60 Hz
+	{  640,  480, 0,  84500,  85500,   56,  56,  80,  1,  3,  25, 0, 0}, // 640x480 @ 85 Hz
+	{  640,  480, 0,  74500,  75500,   16,  64, 120,  1,  3,  16, 0, 0}, // 640x480 @ 75 Hz
+	{  640,  480, 0,  71500,  72500,   24,  40, 128,  9,  3,  28, 0, 0}, // 640x480 @ 72 Hz
+	{  640,  480, 0,  59500,  60500,   16,  96,  48, 10,  2,  33, 0, 0}, // 640x480 @ 60 Hz
 	{0}
 };
 
-const int DetailedResolutionClass::CRTStandard[][13] =
+const DetailedResolutionStruct DetailedResolutionClass::Native[] =
 {
-	{0}
-};
-
-const int DetailedResolutionClass::OldStandard[][13] =
-{
+	{ 1920, 1080, 0,  60000}, // 1920x1080 @ 60 Hz
+	{ 1920, 1080, 1,  60000}, // 1920x1080i @ 60 Hz
+	{ 1600,  900, 0,  60000}, // 1600x900 @ 60 Hz
+	{ 1366,  768, 0,  59789}, // 1366x768 @ 60 Hz
+	{ 1360,  768, 0,  60015}, // 1360x768 @ 60 Hz
+	{ 1280,  720, 0,  60000}, // 1280x720 @ 60 Hz
+	{ 1440,  576, 1,  50000}, // 1440x576i @ 50 Hz
+	{ 1440,  480, 1,  59940}, // 1440x480i @ 60 Hz
+	{  720,  576, 0,  50000}, // 720x576 @ 50 Hz
+	{  720,  480, 0,  59940}, // 720x480 @ 60 Hz
+	{  640,  480, 0,  60000}, // 640x480 @ 60 Hz
 	{0}
 };
 
@@ -105,41 +241,35 @@ const int DetailedResolutionClass::M = 600;
 const int DetailedResolutionClass::CPrime = (C - J) * K / 256 + J;
 const int DetailedResolutionClass::MPrime = M * K / 256;
 
-const int DetailedResolutionClass::MinHActive[] = {1, 1};
-const int DetailedResolutionClass::MaxHActive[] = {4095, 65536};
-const int DetailedResolutionClass::MinHFront[] = {1, 1};
-const int DetailedResolutionClass::MaxHFront[] = {1023, 32768};
-const int DetailedResolutionClass::MinHSync[] = {1, 1};
-const int DetailedResolutionClass::MaxHSync[] = {1023, 65536};
-const int DetailedResolutionClass::MinHBack[] = {0, 0};
-const int DetailedResolutionClass::MaxHBack[] = {4093, 65534};
-const int DetailedResolutionClass::MinHBlank[] = {2, 2};
-const int DetailedResolutionClass::MaxHBlank[] = {4095, 65536};
-const int DetailedResolutionClass::MinHTotal[] = {3, 3};
-const int DetailedResolutionClass::MaxHTotal[] = {8190, 131072};
+const int DetailedResolutionClass::MinTimeCVT = 550000000;
+const int DetailedResolutionClass::MinTimeCVTRB = 460000000;
+const int DetailedResolutionClass::MinTimeCVTRB2 = 460000000;
+const int DetailedResolutionClass::MinTimeGTF = 550000000;
 
-const int DetailedResolutionClass::MinVActive[] = {1, 1};
-const int DetailedResolutionClass::MaxVActive[] = {4095, 65536};
-const int DetailedResolutionClass::MinVFront[] = {1, 1};
-const int DetailedResolutionClass::MaxVFront[] = {63, 32768};
-const int DetailedResolutionClass::MinVSync[] = {1, 1};
-const int DetailedResolutionClass::MaxVSync[] = {63, 65536};
-const int DetailedResolutionClass::MinVBack[] = {0, 0};
-const int DetailedResolutionClass::MaxVBack[] = {4093, 65534};
-const int DetailedResolutionClass::MinVBlank[] = {2, 2};
-const int DetailedResolutionClass::MaxVBlank[] = {4095, 65536};
-const int DetailedResolutionClass::MinVTotal[] = {3, 3};
-const int DetailedResolutionClass::MaxVTotal[] = {8190, 131072};
+const int DetailedResolutionClass::MinHActive[] = {1, 1, 1};
+const int DetailedResolutionClass::MaxHActive[] = {4095, 65536, 65536};
+const int DetailedResolutionClass::MinHFront[] = {1, 1, 1};
+const int DetailedResolutionClass::MaxHFront[] = {1023, 32768, 32768};
+const int DetailedResolutionClass::MinHSync[] = {1, 1, 1};
+const int DetailedResolutionClass::MaxHSync[] = {1023, 65536, 65536};
+const int DetailedResolutionClass::MinHBack[] = {0, 0, 0};
+const int DetailedResolutionClass::MaxHBlank[] = {4095, 65536, 65536};
 
-const long long DetailedResolutionClass::MinVRate[] = {1, 1};
-const long long DetailedResolutionClass::MaxVRate[] = {10000000, 10000000};
-const long long DetailedResolutionClass::MinHRate[] = {1, 1};
-const long long DetailedResolutionClass::MaxHRate[] = {10000000, 10000000};
-const long long DetailedResolutionClass::MinPClock[] = {1, 1};
-const long long DetailedResolutionClass::MaxPClock[] = {65535, 16777216};
+const int DetailedResolutionClass::MinVActive[] = {1, 1, 1};
+const int DetailedResolutionClass::MaxVActive[] = {4095, 65536, 65536};
+const int DetailedResolutionClass::MinVFront[] = {1, 1, 1};
+const int DetailedResolutionClass::MaxVFront[] = {63, 32768, 32768};
+const int DetailedResolutionClass::MinVSync[] = {1, 1, 1};
+const int DetailedResolutionClass::MaxVSync[] = {63, 65536, 65536};
+const int DetailedResolutionClass::MinVBack[] = {0, 0, 0};
+const int DetailedResolutionClass::MaxVBlank[] = {4095, 65536, 65536};
 
-const bool DetailedResolutionClass::InterlacedAvailable[] = {true, true};
-const bool DetailedResolutionClass::NativeAvailable[] = {false, true};
+const long long DetailedResolutionClass::MinPClock[] = {1, 1, 1};
+const long long DetailedResolutionClass::MaxPClock[] = {65535, 16777216, 16777216};
+const int DetailedResolutionClass::PClockPrecision[] = {100, 100, 1000};
+
+const bool DetailedResolutionClass::InterlacedAvailable[] = {true, true, true};
+const bool DetailedResolutionClass::PreferredAvailable[] = {false, true, true};
 
 bool DetailedResolutionClass::Copied;
 int DetailedResolutionClass::CopyType;
@@ -156,76 +286,24 @@ bool DetailedResolutionClass::CopyVPolarity;
 int DetailedResolutionClass::CopyStereo;
 long long DetailedResolutionClass::CopyPClock;
 bool DetailedResolutionClass::CopyInterlaced;
-bool DetailedResolutionClass::CopyNative;
+bool DetailedResolutionClass::CopyPreferred;
 //---------------------------------------------------------------------------
 DetailedResolutionClass::DetailedResolutionClass(int NewType)
 {
-	Type = NewType;
+	Type = 0;
 	Timing = 0;
 	Last = 0;
-	HActive = BLANK;
-	HFront = BLANK;
-	HSync = BLANK;
-	HBack = BLANK;
-	HBlank = BLANK;
-	HTotal = BLANK;
-	HPolarity = false;
-	VActive = BLANK;
-	VFront = BLANK;
-	VSync = BLANK;
-	VBack = BLANK;
-	VBlank = BLANK;
-	VTotal = BLANK;
-	VPolarity = false;
+	HActive = 1024;
+	VActive = 768;
 	Stereo = 0;
 	LastRate = 0;
-	VRate = ActualVRate = BLANK;
-	HRate = ActualHRate = BLANK;
-	PClock = BLANK;
+	VRate = 60000;
 	Interlaced = false;
-	Native = false;
-	VActiveI = BLANK;
-	VFrontI = BLANK;
-	VSyncI = BLANK;
-	VBackI = BLANK;
-	VBlankI = BLANK;
-	VTotalI = BLANK;
-	VRateI = BLANK;
-
-	switch (GetACP())
-	{
-		case 874:
-		case 1250:
-		case 1251:
-		case 1252:
-		case 1253:
-		case 1254:
-		case 1255:
-		case 1256:
-		case 1257:
-		case 1258:
-			DASH = "\x96";
-			break;
-
-		default:
-			DASH = "-";
-	}
-
-	ResetAvailable = false;
-	ResetHActive = BLANK;
-	ResetHFront = BLANK;
-	ResetHSync = BLANK;
-	ResetHBlank = BLANK;
-	ResetHPolarity = false;
-	ResetVActive = BLANK;
-	ResetVFront = BLANK;
-	ResetVSync = BLANK;
-	ResetVBlank = BLANK;
-	ResetVPolarity = false;
-	ResetStereo = false;
-	ResetPClock = BLANK;
-	ResetInterlaced = false;
-	ResetNative = false;
+	Fields = Interlaced + 1;
+	Preferred = false;
+	CalculateAutomaticCRT();
+	UpdateReset();
+	SetType(NewType);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::Read(const unsigned char *Data, int MaxSize)
@@ -233,66 +311,76 @@ bool DetailedResolutionClass::Read(const unsigned char *Data, int MaxSize)
 	if (!Data)
 		return false;
 
-	if (Type == 0)
+	switch (Type)
 	{
-		if (MaxSize < 18)
-			return false;
+		case 0:
+			if (MaxSize < 18)
+				return false;
 
-		if (Data[0] == 0 && Data[1] == 0)
-			return false;
+			if (Data[0] == 0 && Data[1] == 0)
+				return false;
 
-		HActive = ((Data[4] << 4) & 3840) | Data[2];
-		HFront = ((Data[11] << 2) & 768) | Data[8];
-		HSync = ((Data[11] << 4) & 768) | Data[9];
-		HBlank = ((Data[4] << 8) & 3840) | Data[3];
-		HPolarity = Data[17] & 2;
-		VActive = ((Data[7] << 4) & 3840) | Data[5];
-		VFront = ((Data[11] << 2) & 48) | ((Data[10] >> 4) & 15);
-		VSync = ((Data[11] << 4) & 48) | (Data[10] & 15);
-		VBlank = ((Data[7] << 8) & 3840) | Data[6];
-		VPolarity = Data[17] & 4;
-		Stereo = Data[17] & 97;
+			HActive = ((Data[4] << 4) & 3840) | Data[2];
+			HFront = ((Data[11] << 2) & 768) | Data[8];
+			HSync = ((Data[11] << 4) & 768) | Data[9];
+			HBlank = ((Data[4] << 8) & 3840) | Data[3];
+			HPolarity = Data[17] & 2;
+			VActive = ((Data[7] << 4) & 3840) | Data[5];
+			VFront = ((Data[11] << 2) & 48) | ((Data[10] >> 4) & 15);
+			VSync = ((Data[11] << 4) & 48) | (Data[10] & 15);
+			VBlank = ((Data[7] << 8) & 3840) | Data[6];
+			VPolarity = Data[17] & 4;
+			Stereo = Data[17] & 97;
 
-		if (Stereo == 1)
-			Stereo = 0;
+			if (Stereo == 1)
+				Stereo = 0;
 
-		PClock = (Data[1] << 8) | Data[0];
-		Interlaced = Data[17] & 128;
-		Native = false;
-	}
-	else if (Type == 1)
-	{
-		if (MaxSize < 20)
-			return false;
+			ActualPClock = (Data[1] << 8) | Data[0];
+			Interlaced = Data[17] & 128;
+			Fields = Interlaced + 1;
+			Preferred = false;
 
-		HActive = ((Data[5] << 8) | Data[4]) + 1;
-		HFront = (((Data[9] & 127) << 8) | Data[8]) + 1;
-		HSync = ((Data[11] << 8) | Data[10]) + 1;
-		HBlank = ((Data[7] << 8) | Data[6]) + 1;
-		HPolarity = Data[9] & 128;
-		VActive = ((Data[13] << 8) | Data[12]) + 1;
-		VFront = (((Data[17] & 127) << 8) | Data[16]) + 1;
-		VSync = ((Data[19] << 8) | Data[18]) + 1;
-		VBlank = ((Data[15] << 8) | Data[14]) + 1;
-		VPolarity = Data[17] & 128;
-		Stereo = Data[3] & 96;
-		PClock = ((Data[2] << 16) | (Data[1] << 8) | Data[0]) + 1;
-		Interlaced = Data[3] & 16;
-		Native = Data[3] & 128;
+			if (Interlaced)
+			{
+				VActive *= 2;
+				VFront *= 2;
+				VSync *= 2;
+				VBlank *= 2;
+				VBlank++;
+			}
+
+			break;
+
+		case 1:
+		case 2:
+			if (MaxSize < 20)
+				return false;
+
+			HActive = ((Data[5] << 8) | Data[4]) + 1;
+			HFront = (((Data[9] & 127) << 8) | Data[8]) + 1;
+			HSync = ((Data[11] << 8) | Data[10]) + 1;
+			HBlank = ((Data[7] << 8) | Data[6]) + 1;
+			HPolarity = Data[9] & 128;
+			VActive = ((Data[13] << 8) | Data[12]) + 1;
+			VFront = (((Data[17] & 127) << 8) | Data[16]) + 1;
+			VSync = ((Data[19] << 8) | Data[18]) + 1;
+			VBlank = ((Data[15] << 8) | Data[14]) + 1;
+			VPolarity = Data[17] & 128;
+			Stereo = Data[3] & 96;
+			ActualPClock = ((Data[2] << 16) | (Data[1] << 8) | Data[0]) + 1;
+			Interlaced = Data[3] & 16;
+			Fields = Interlaced + 1;
+			Preferred = Data[3] & 128;
+			break;
 	}
 
 	Init();
-
-	if (!ResetAvailable)
-		UpdateReset();
-
+	UpdateReset();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::Init()
 {
-	long long OldPClock;
-
 	CalculateHBack();
 	CalculateHTotal();
 	CalculateVBack();
@@ -301,28 +389,28 @@ bool DetailedResolutionClass::Init()
 	CalculateActualHRate();
 	VRate = (ActualVRate + 500) / 1000 * 1000;
 	HRate = ActualHRate;
-	OldPClock = PClock;
-	CalculatePClockFromVRate();
+	PClock = ActualPClock;
+	CalculateActualPClockFromVRate();
 
-	if (PClock != OldPClock)
+	if (ActualPClock != PClock)
 	{
 		if (VRate % 24000 == 0 || VRate % 30000 == 0)
 		{
 			VRate = VRate * 1000 / 1001;
-			CalculatePClockFromVRate();
+			CalculateActualPClockFromVRate();
 		}
 	}
 
-	if (PClock != OldPClock)
+	if (ActualPClock != PClock)
 	{
 		VRate = (ActualVRate + 50) / 100 * 100;
-		CalculatePClockFromVRate();
+		CalculateActualPClockFromVRate();
 	}
 
-	if (PClock != OldPClock)
+	if (ActualPClock != PClock)
 	{
 		VRate = ActualVRate;
-		PClock = OldPClock;
+		ActualPClock = PClock;
 	}
 
 	UpdateInterlaced();
@@ -338,74 +426,118 @@ bool DetailedResolutionClass::Write(unsigned char *Data, int MaxSize)
 	if (!IsValid())
 		return false;
 
-	if (Type == 0)
+	switch (Type)
 	{
-		if (MaxSize < 18)
-			return false;
+		case 0:
+			if (MaxSize < 18)
+				return false;
 
-		Data[0] = PClock & 255;
-		Data[1] = (PClock >> 8) & 255;
-		Data[2] = HActive & 255;
-		Data[3] = HBlank & 255;
-		Data[4] = ((HActive & 3840) >> 4) | ((HBlank & 3840) >> 8);
-		Data[5] = VActive & 255;
-		Data[6] = VBlank & 255;
-		Data[7] = ((VActive & 3840) >> 4) | ((VBlank & 3840) >> 8);
-		Data[8] = HFront & 255;
-		Data[9] = HSync & 255;
-		Data[10] = ((VFront & 15) << 4) | (VSync & 15);
-		Data[11] = ((HFront & 768) >> 2) | ((HSync & 768) >> 4) | ((VFront & 48) >> 2) | ((VSync & 48) >> 4);
-		Data[12] = (HActive / 4) & 255;
-		Data[13] = (VActive / 4) & 255;
-		Data[14] = (((HActive / 4) & 3840) >> 4) | (((VActive / 4) & 3840) >> 8);
-		Data[15] = 0;
-		Data[16] = 0;
-		Data[17] = (HPolarity ? 2 : 0) | (VPolarity ? 4 : 0) | 8 | 16 | Stereo | (Interlaced ? 128 : 0);
-	}
-	else if (Type == 1)
-	{
-		if (MaxSize < 20)
-			return false;
+			if (Interlaced)
+			{
+				VActive /= 2;
+				VFront /= 2;
+				VSync /= 2;
+				VBlank /= 2;
+			}
 
-		Data[0] = --PClock & 255;
-		Data[1] = (PClock >> 8) & 255;
-		Data[2] = (PClock++ >> 16) & 255;
-		Data[3] = (Interlaced ? 16 : 0) | Stereo | (Native ? 128 : 0);
-		Data[4] = --HActive & 255;
-		Data[5] = (HActive++ >> 8) & 255;
-		Data[6] = --HBlank & 255;
-		Data[7] = (HBlank++ >> 8) & 255;
-		Data[8] = --HFront & 255;
-		Data[9] = (HFront++ >> 8) & 127;
-		Data[9] |= HPolarity ? 128 : 0;
-		Data[10] = --HSync & 255;
-		Data[11] = (HSync++ >> 8) & 255;
-		Data[12] = --VActive & 255;
-		Data[13] = (VActive++ >> 8) & 255;
-		Data[14] = --VBlank & 255;
-		Data[15] = (VBlank++ >> 8) & 255;
-		Data[16] = --VFront & 255;
-		Data[17] = (VFront++ >> 8) & 127;
-		Data[17] |= VPolarity ? 128 : 0;
-		Data[18] = --VSync & 255;
-		Data[19] = (VSync++ >> 8) & 255;
+			Data[0] = ActualPClock & 255;
+			Data[1] = (ActualPClock >> 8) & 255;
+			Data[2] = HActive & 255;
+			Data[3] = HBlank & 255;
+			Data[4] = ((HActive & 3840) >> 4) | ((HBlank & 3840) >> 8);
+			Data[5] = VActive & 255;
+			Data[6] = VBlank & 255;
+			Data[7] = ((VActive & 3840) >> 4) | ((VBlank & 3840) >> 8);
+			Data[8] = HFront & 255;
+			Data[9] = HSync & 255;
+			Data[10] = ((VFront & 15) << 4) | (VSync & 15);
+			Data[11] = ((HFront & 768) >> 2) | ((HSync & 768) >> 4) | ((VFront & 48) >> 2) | ((VSync & 48) >> 4);
+			Data[12] = (HActive >> 2) & 255;
+			Data[13] = (VActive >> 2) & 255;
+			Data[14] = (((HActive >> 2) & 3840) >> 4) | (((VActive >> 2) & 3840) >> 8);
+			Data[15] = 0;
+			Data[16] = 0;
+			Data[17] = (HPolarity ? 2 : 0) | (VPolarity ? 4 : 0) | 8 | 16 | Stereo | (Interlaced ? 128 : 0);
+
+			if (Interlaced)
+			{
+				VActive *= 2;
+				VFront *= 2;
+				VSync *= 2;
+				VBlank *= 2;
+				VBlank++;
+			}
+
+			break;
+
+		case 1:
+		case 2:
+			if (MaxSize < 20)
+				return false;
+
+			Data[0] = --ActualPClock & 255;
+			Data[1] = (ActualPClock >> 8) & 255;
+			Data[2] = (ActualPClock++ >> 16) & 255;
+			Data[3] = (Interlaced ? 16 : 0) | Stereo | (Preferred ? 128 : 0);
+			Data[4] = --HActive & 255;
+			Data[5] = (HActive++ >> 8) & 255;
+			Data[6] = --HBlank & 255;
+			Data[7] = (HBlank++ >> 8) & 255;
+			Data[8] = --HFront & 255;
+			Data[9] = (HFront++ >> 8) & 127;
+			Data[9] |= HPolarity ? 128 : 0;
+			Data[10] = --HSync & 255;
+			Data[11] = (HSync++ >> 8) & 255;
+			Data[12] = --VActive & 255;
+			Data[13] = (VActive++ >> 8) & 255;
+			Data[14] = --VBlank & 255;
+			Data[15] = (VBlank++ >> 8) & 255;
+			Data[16] = --VFront & 255;
+			Data[17] = (VFront++ >> 8) & 127;
+			Data[17] |= VPolarity ? 128 : 0;
+			Data[18] = --VSync & 255;
+			Data[19] = (VSync++ >> 8) & 255;
+			break;
 	}
 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::GetText(char *Text, int TextSize)
+bool DetailedResolutionClass::GetText(char *Text, int TextSize, const char *Dash)
 {
 	if (!IsValid())
 		return false;
 
-	std::snprintf(Text, TextSize, "%dx%d%s @ %lld.%03lld Hz (%lld.%02lld MHz) [%s/%s]%s%s", HActive, Interlaced ? VActive * 2 : VActive, Interlaced ? "i" : "", ActualVRate / 1000, ActualVRate % 1000, PClock / 100, PClock % 100, HPolarity ? "+" : DASH, VPolarity ? "+" : DASH, Stereo ? " (3D)" : "", Native ? "*" : "");
+	std::snprintf(Text, TextSize, "%dx%d%s @ %lld.%03lld Hz (%lld.%0*lld MHz) [%s/%s]%s%s", HActive, VActive, Interlaced ? "i" : "", ActualVRate / 1000, ActualVRate % 1000, ActualPClock / PClockPrecision[Type], GetPClockDigits(), ActualPClock % PClockPrecision[Type], HPolarity ? "+" : Dash, VPolarity ? "+" : Dash, Stereo ? " (3D)" : "", Preferred ? "*" : "");
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetType(int NewType)
 {
-	Type = NewType;
+	int OldType = Type;
+
+	switch (NewType)
+	{
+		case 1:
+			Type = 1;
+			break;
+
+		case 7:
+			Type = 2;
+			break;
+
+		default:
+			Type = 0;
+			break;
+	}
+
+	if (ActualPClock != DECIMAL_BLANK)
+	{
+		ActualPClock = ActualPClock * PClockPrecision[Type] / PClockPrecision[OldType];
+		ResetPClock = ResetPClock * PClockPrecision[Type] / PClockPrecision[OldType];
+	}
+
+	Init();
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -428,6 +560,9 @@ int DetailedResolutionClass::GetTiming()
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetTiming(int Value)
 {
+	if (Timing == TIMING_MANUAL_VTOTAL && Value == TIMING_MANUAL)
+		PClock = ActualPClock;
+
 	Timing = Value;
 	Update();
 	UpdateInterlaced();
@@ -454,9 +589,9 @@ bool DetailedResolutionClass::CopyPossible()
 	if (CopyVBlank == VBlank)
 	if (CopyVPolarity == VPolarity)
 	if (CopyType == Type && CopyStereo == Stereo || CopyType != Type && !CopyStereo && !Stereo)
-	if (CopyPClock == PClock)
+	if (CopyPClock == ActualPClock * 1000 / PClockPrecision[Type])
 	if (CopyInterlaced == Interlaced)
-	if (CopyNative == Native)
+	if (CopyPreferred == Preferred)
 		return false;
 
 	return true;
@@ -480,10 +615,34 @@ bool DetailedResolutionClass::Copy()
 	CopyVBlank = VBlank;
 	CopyVPolarity = VPolarity;
 	CopyStereo = Stereo;
-	CopyPClock = PClock;
+	CopyPClock = ActualPClock * 1000 / PClockPrecision[Type];
 	CopyInterlaced = Interlaced;
-	CopyNative = Native;
+	CopyPreferred = Preferred;
 	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::PasteInterlacedPossible()
+{
+	if (Type == CopyType)
+		return true;
+
+	if (CopyVActive % 2 == 0)
+	if (CopyVSync % 2 == 0)
+	if (CopyVBlank % 2 != 0)
+		return true;
+
+	return false;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::PasteStereoPossible()
+{
+	if (Type == CopyType)
+		return true;
+
+	if (!CopyStereo)
+		return true;
+
+	return false;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::PastePossible()
@@ -491,20 +650,23 @@ bool DetailedResolutionClass::PastePossible()
 	if (!Copied)
 		return false;
 
+	if (CopyInterlaced && !PasteInterlacedPossible())
+		return false;
+
 	if (HActive == CopyHActive)
 	if (HFront == CopyHFront)
 	if (HSync == CopyHSync)
 	if (HBlank == CopyHBlank)
 	if (HPolarity == CopyHPolarity)
-	if (VActive == CopyVActive)
-	if (VFront == CopyVFront)
-	if (VSync == CopyVSync)
-	if (VBlank == CopyVBlank)
+	if (GetValue(VActive) == GetValue(CopyVActive))
+	if (GetValue(VFront) == GetValue(CopyVFront))
+	if (GetValue(VSync) == GetValue(CopyVSync))
+	if (GetValue(VBlank) == GetValue(CopyVBlank))
 	if (VPolarity == CopyVPolarity)
-	if (Type == CopyType && Stereo == CopyStereo || Type != CopyType && (!Stereo || CopyStereo))
-	if (PClock == CopyPClock)
+	if (Stereo == CopyStereo || !PasteStereoPossible())
+	if (ActualPClock == (CopyPClock * PClockPrecision[Type] + 999) / 1000)
 	if (Interlaced == CopyInterlaced || !InterlacedAvailable[Type])
-	if (Native == CopyNative || !NativeAvailable[Type])
+	if (Preferred == CopyPreferred || !PreferredAvailable[Type])
 		return false;
 
 	return true;
@@ -521,22 +683,34 @@ bool DetailedResolutionClass::Paste()
 	HSync = CopyHSync;
 	HBlank = CopyHBlank;
 	HPolarity = CopyHPolarity;
-	VActive = CopyVActive;
-	VFront = CopyVFront;
-	VSync = CopyVSync;
-	VBlank = CopyVBlank;
+
+	if (CopyInterlaced && Type == 0)
+	{
+		VActive = CopyVActive / 2 * 2;
+		VFront = CopyVFront / 2 * 2;
+		VSync = CopyVSync / 2 * 2;
+		VBlank = CopyVBlank / 2 * 2 + 1;
+	}
+	else
+	{
+		VActive = CopyVActive;
+		VFront = CopyVFront;
+		VSync = CopyVSync;
+		VBlank = CopyVBlank;
+	}
+
 	VPolarity = CopyVPolarity;
-	Stereo = Type == CopyType || Stereo && !CopyStereo ? CopyStereo : Stereo;
-	PClock = CopyPClock;
+	Stereo = PasteStereoPossible() ? CopyStereo : Stereo;
+	ActualPClock = (CopyPClock * PClockPrecision[Type] + 999) / 1000;
 	Interlaced = InterlacedAvailable[Type] ? CopyInterlaced : Interlaced;
-	Native = NativeAvailable[Type] ? CopyNative : Native;
+	Fields = Interlaced + 1;
+	Preferred = PreferredAvailable[Type] ? CopyPreferred : Preferred;
 	Init();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::UpdateReset()
 {
-	ResetAvailable = true;
 	ResetHActive = HActive;
 	ResetHFront = HFront;
 	ResetHSync = HSync;
@@ -548,17 +722,14 @@ bool DetailedResolutionClass::UpdateReset()
 	ResetVBlank = VBlank;
 	ResetVPolarity = VPolarity;
 	ResetStereo = Stereo;
-	ResetPClock = PClock;
+	ResetPClock = ActualPClock;
 	ResetInterlaced = Interlaced;
-	ResetNative = Native;
+	ResetPreferred = Preferred;
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::ResetPossible()
 {
-	if (!ResetAvailable)
-		return false;
-
 	if (HActive == ResetHActive)
 	if (HFront == ResetHFront)
 	if (HSync == ResetHSync)
@@ -570,9 +741,9 @@ bool DetailedResolutionClass::ResetPossible()
 	if (VBlank == ResetVBlank)
 	if (VPolarity == ResetVPolarity)
 	if (Stereo == ResetStereo)
-	if (PClock == ResetPClock)
+	if (ActualPClock == ResetPClock)
 	if (Interlaced == ResetInterlaced)
-	if (Native == ResetNative)
+	if (Preferred == ResetPreferred)
 		return false;
 
 	return true;
@@ -580,9 +751,6 @@ bool DetailedResolutionClass::ResetPossible()
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::Reset()
 {
-	if (!ResetAvailable)
-		return false;
-
 	Timing = 0;
 	HActive = ResetHActive;
 	HFront = ResetHFront;
@@ -595,16 +763,17 @@ bool DetailedResolutionClass::Reset()
 	VBlank = ResetVBlank;
 	VPolarity = ResetVPolarity;
 	Stereo = ResetStereo;
-	PClock = ResetPClock;
+	ActualPClock = ResetPClock;
 	Interlaced = ResetInterlaced;
-	Native = ResetNative;
+	Fields = Interlaced + 1;
+	Preferred = ResetPreferred;
 	Init();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsLast(int Value)
 {
-	return Last == Value;
+	return Value == Last;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetHActive()
@@ -642,34 +811,47 @@ bool DetailedResolutionClass::GetHPolarity()
 	return HPolarity;
 }
 //---------------------------------------------------------------------------
+bool DetailedResolutionClass::Positive(int Value)
+{
+	return Value != BLANK && Value != INVALID && Value >= 0;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetValue(int Value)
+{
+	if (Interlaced && Type == 0 && Positive(Value))
+		return Value / 2;
+
+	return Value;
+}
+//---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVActive()
 {
-	return VActive;
+	return GetValue(VActive);
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVFront()
 {
-	return VFront;
+	return GetValue(VFront);
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVSync()
 {
-	return VSync;
+	return GetValue(VSync);
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVBack()
 {
-	return VBack;
+	return GetValue(VBack);
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVBlank()
 {
-	return VBlank;
+	return GetValue(VBlank);
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVTotal()
 {
-	return VTotal;
+	return GetValue(VTotal);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVPolarity()
@@ -679,8 +861,8 @@ bool DetailedResolutionClass::GetVPolarity()
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVActiveLinesText(char *Text, int TextSize)
 {
-	if (IsSupportedVActive() && Interlaced)
-		std::snprintf(Text, TextSize, "lines = %d", VActive * 2);
+	if (Interlaced && Type == 0 && IsSupportedVActive())
+		std::snprintf(Text, TextSize, "lines = %d", VActive);
 	else
 		std::snprintf(Text, TextSize, "lines");
 
@@ -689,8 +871,8 @@ bool DetailedResolutionClass::GetVActiveLinesText(char *Text, int TextSize)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVFrontLinesText(char *Text, int TextSize)
 {
-	if (IsSupportedVFront() && Interlaced)
-		std::snprintf(Text, TextSize, "lines = %d.5", VFront * 2);
+	if (Interlaced && Type == 0 && IsSupportedVFront())
+		std::snprintf(Text, TextSize, "lines = %d.5", VFront);
 	else
 		std::snprintf(Text, TextSize, "lines");
 
@@ -699,8 +881,8 @@ bool DetailedResolutionClass::GetVFrontLinesText(char *Text, int TextSize)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVSyncLinesText(char *Text, int TextSize)
 {
-	if (IsSupportedVSync() && Interlaced)
-		std::snprintf(Text, TextSize, "lines = %d", VSync * 2);
+	if (Interlaced && Type == 0 && IsSupportedVSync())
+		std::snprintf(Text, TextSize, "lines = %d", VSync);
 	else
 		std::snprintf(Text, TextSize, "lines");
 
@@ -709,8 +891,8 @@ bool DetailedResolutionClass::GetVSyncLinesText(char *Text, int TextSize)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVBackLinesText(char *Text, int TextSize)
 {
-	if (IsSupportedVBack() && Interlaced)
-		std::snprintf(Text, TextSize, "lines = %d.5", VBack * 2);
+	if (Interlaced && Type == 0 && IsSupportedVBack())
+		std::snprintf(Text, TextSize, "lines = %d.5", VBack - 1);
 	else
 		std::snprintf(Text, TextSize, "lines");
 
@@ -719,8 +901,8 @@ bool DetailedResolutionClass::GetVBackLinesText(char *Text, int TextSize)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVBlankLinesText(char *Text, int TextSize)
 {
-	if (IsSupportedVBlank() && Interlaced)
-		std::snprintf(Text, TextSize, "lines = %d", VBlank * 2 + 1);
+	if (Interlaced && Type == 0 && IsSupportedVBlank())
+		std::snprintf(Text, TextSize, "lines = %d", VBlank);
 	else
 		std::snprintf(Text, TextSize, "lines");
 
@@ -729,8 +911,8 @@ bool DetailedResolutionClass::GetVBlankLinesText(char *Text, int TextSize)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVTotalLinesText(char *Text, int TextSize)
 {
-	if (IsSupportedVTotal() && Interlaced)
-		std::snprintf(Text, TextSize, "lines = %d", VTotal * 2 + 1);
+	if (Interlaced && Type == 0 && IsSupportedVTotal())
+		std::snprintf(Text, TextSize, "lines = %d", VTotal);
 	else
 		std::snprintf(Text, TextSize, "lines");
 
@@ -739,7 +921,25 @@ bool DetailedResolutionClass::GetVTotalLinesText(char *Text, int TextSize)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsLastRate(int Value)
 {
-	return LastRate == Value;
+	if (Timing == TIMING_MANUAL_VTOTAL && LastRate == 1)
+		return Value == 2;
+
+	return Value == LastRate;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetVRateDigits()
+{
+	return 3;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetHRateDigits()
+{
+	return 3;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetPClockDigits()
+{
+	return PClockPrecision[Type] == 100 ? 2 : 3;
 }
 //---------------------------------------------------------------------------
 long long DetailedResolutionClass::GetVRate()
@@ -757,22 +957,47 @@ long long DetailedResolutionClass::GetPClock()
 	return PClock;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::GetActualVRateText(char *Text, int TextSize)
+long long DetailedResolutionClass::GetActualVRate()
 {
-	if (ActualVRate != BLANK)
+	return ActualVRate;
+}
+//---------------------------------------------------------------------------
+long long DetailedResolutionClass::GetActualHRate()
+{
+	return ActualHRate;
+}
+//---------------------------------------------------------------------------
+long long DetailedResolutionClass::GetActualPClock()
+{
+	return ActualPClock;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::GetActualVRateText(char *Text, int TextSize, const char *Dash)
+{
+	if (ActualVRate != DECIMAL_BLANK)
 		std::snprintf(Text, TextSize, "Actual: %lld.%03lld Hz", ActualVRate / 1000, ActualVRate % 1000);
 	else
-		std::snprintf(Text, TextSize, "Actual: %s Hz", DASH);
+		std::snprintf(Text, TextSize, "Actual: %s Hz", Dash);
 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::GetActualHRateText(char *Text, int TextSize)
+bool DetailedResolutionClass::GetActualHRateText(char *Text, int TextSize, const char *Dash)
 {
-	if (ActualHRate != BLANK)
+	if (ActualHRate != DECIMAL_BLANK)
 		std::snprintf(Text, TextSize, "Actual: %lld.%03lld kHz", ActualHRate / 1000, ActualHRate % 1000);
 	else
-		std::snprintf(Text, TextSize, "Actual: %s kHz", DASH);
+		std::snprintf(Text, TextSize, "Actual: %s kHz", Dash);
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::GetActualPClockText(char *Text, int TextSize, const char *Dash)
+{
+	if (IsSupportedActualPClock())
+		std::snprintf(Text, TextSize, "Actual: %lld.%0*lld MHz", ActualPClock / PClockPrecision[Type], GetPClockDigits(), ActualPClock % PClockPrecision[Type]);
+	else
+		std::snprintf(Text, TextSize, "Actual: %s MHz", Dash);
 
 	return true;
 }
@@ -780,7 +1005,6 @@ bool DetailedResolutionClass::GetActualHRateText(char *Text, int TextSize)
 bool DetailedResolutionClass::SetLast(int Value)
 {
 	Last = Value;
-	Timing = 0;
 	UpdateInterlaced();
 	return true;
 }
@@ -796,7 +1020,6 @@ bool DetailedResolutionClass::SetHActive(int Value)
 bool DetailedResolutionClass::SetHFront(int Value)
 {
 	HFront = Value;
-	Timing = 0;
 	Update();
 	UpdateInterlaced();
 	return true;
@@ -805,7 +1028,6 @@ bool DetailedResolutionClass::SetHFront(int Value)
 bool DetailedResolutionClass::SetHSync(int Value)
 {
 	HSync = Value;
-	Timing = 0;
 	Update();
 	UpdateInterlaced();
 	return true;
@@ -814,7 +1036,6 @@ bool DetailedResolutionClass::SetHSync(int Value)
 bool DetailedResolutionClass::SetHBack(int Value)
 {
 	HBack = Value;
-	Timing = 0;
 	Last = 0;
 	Update();
 	UpdateInterlaced();
@@ -824,7 +1045,6 @@ bool DetailedResolutionClass::SetHBack(int Value)
 bool DetailedResolutionClass::SetHBlank(int Value)
 {
 	HBlank = Value;
-	Timing = 0;
 	Last = 1;
 	Update();
 	UpdateInterlaced();
@@ -834,7 +1054,6 @@ bool DetailedResolutionClass::SetHBlank(int Value)
 bool DetailedResolutionClass::SetHTotal(int Value)
 {
 	HTotal = Value;
-	Timing = 0;
 	Last = 2;
 	Update();
 	UpdateInterlaced();
@@ -844,13 +1063,16 @@ bool DetailedResolutionClass::SetHTotal(int Value)
 bool DetailedResolutionClass::SetHPolarity(bool Value)
 {
 	HPolarity = Value;
-	Timing = 0;
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVActive(int Value)
 {
-	VActive = Value;
+	if (Interlaced && Type == 0 && Positive(Value))
+		VActive = Value * 2;
+	else
+		VActive = Value;
+
 	Update();
 	UpdateInterlaced();
 	return true;
@@ -858,8 +1080,11 @@ bool DetailedResolutionClass::SetVActive(int Value)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVFront(int Value)
 {
-	VFront = Value;
-	Timing = 0;
+	if (Interlaced && Type == 0 && Positive(Value))
+		VFront = Value * 2;
+	else
+		VFront = Value;
+
 	Update();
 	UpdateInterlaced();
 	return true;
@@ -867,8 +1092,11 @@ bool DetailedResolutionClass::SetVFront(int Value)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVSync(int Value)
 {
-	VSync = Value;
-	Timing = 0;
+	if (Interlaced && Type == 0 && Positive(Value))
+		VSync = Value * 2;
+	else
+		VSync = Value;
+
 	Update();
 	UpdateInterlaced();
 	return true;
@@ -876,8 +1104,11 @@ bool DetailedResolutionClass::SetVSync(int Value)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVBack(int Value)
 {
-	VBack = Value;
-	Timing = 0;
+	if (Interlaced && Type == 0 && Positive(Value))
+		VBack = Value * 2 + 1;
+	else
+		VBack = Value;
+
 	Last = 0;
 	Update();
 	UpdateInterlaced();
@@ -886,8 +1117,11 @@ bool DetailedResolutionClass::SetVBack(int Value)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVBlank(int Value)
 {
-	VBlank = Value;
-	Timing = 0;
+	if (Interlaced && Type == 0 && Positive(Value))
+		VBlank = Value * 2 + 1;
+	else
+		VBlank = Value;
+
 	Last = 1;
 	Update();
 	UpdateInterlaced();
@@ -896,8 +1130,11 @@ bool DetailedResolutionClass::SetVBlank(int Value)
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVTotal(int Value)
 {
-	VTotal = Value;
-	Timing = 0;
+	if (Interlaced && Type == 0 && Positive(Value))
+		VTotal = Value * 2 + 1;
+	else
+		VTotal = Value;
+
 	Last = 2;
 	Update();
 	UpdateInterlaced();
@@ -907,14 +1144,16 @@ bool DetailedResolutionClass::SetVTotal(int Value)
 bool DetailedResolutionClass::SetVPolarity(bool Value)
 {
 	VPolarity = Value;
-	Timing = 0;
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetLastRate(int Value)
 {
 	LastRate = Value;
-	Timing = 0;
+
+	if (Timing == TIMING_MANUAL_VTOTAL)
+		Update();
+
 	UpdateInterlacedRate();
 	return true;
 }
@@ -934,7 +1173,10 @@ bool DetailedResolutionClass::SetVRate(long long Value)
 bool DetailedResolutionClass::SetHRate(long long Value)
 {
 	HRate = Value;
-	LastRate = 1;
+
+	if (Timing == 0)
+		LastRate = 1;
+
 	Update();
 	UpdateInterlacedRate();
 	return true;
@@ -943,7 +1185,10 @@ bool DetailedResolutionClass::SetHRate(long long Value)
 bool DetailedResolutionClass::SetPClock(long long Value)
 {
 	PClock = Value;
-	LastRate = 2;
+
+	if (Timing == 0)
+		LastRate = 2;
+
 	Update();
 	UpdateInterlacedRate();
 	return true;
@@ -961,71 +1206,157 @@ bool DetailedResolutionClass::GetInterlaced()
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetInterlaced(bool Value)
 {
+	if (Interlaced == Value)
+		return true;
+
 	Interlaced = Value;
+	Fields = Interlaced + 1;
 
-	VActive ^= VActiveI;
-	VActiveI ^= VActive;
-	VActive ^= VActiveI;
-
-	VFront ^= VFrontI;
-	VFrontI ^= VFront;
-	VFront ^= VFrontI;
-
-	VSync ^= VSyncI;
-	VSyncI ^= VSync;
-	VSync ^= VSyncI;
-
-	VBack ^= VBackI;
-	VBackI ^= VBack;
-	VBack ^= VBackI;
-
-	VBlank ^= VBlankI;
-	VBlankI ^= VBlank;
-	VBlank ^= VBlankI;
-
-	VTotal ^= VTotalI;
-	VTotalI ^= VTotal;
-	VTotal ^= VTotalI;
-
-	VRate ^= VRateI;
-	VRateI ^= VRate;
-	VRate ^= VRateI;
+	std::swap(VActive, VActiveI);
+	std::swap(VFront, VFrontI);
+	std::swap(VSync, VSyncI);
+	std::swap(VBack, VBackI);
+	std::swap(VBlank, VBlankI);
+	std::swap(VTotal, VTotalI);
+	std::swap(VRate, VRateI);
 
 	Update();
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::NativePossible()
+bool DetailedResolutionClass::PreferredPossible()
 {
-	return NativeAvailable[Type];
+	return PreferredAvailable[Type];
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::GetNative()
+bool DetailedResolutionClass::GetPreferred()
 {
-	return Native;
+	return Preferred;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::SetNative(bool Value)
+bool DetailedResolutionClass::SetPreferred(bool Value)
 {
-	Native = Value;
+	Preferred = Value;
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::Update()
 {
-	if (Timing)
-	{
-		if (!IsValidTiming() || !TimingFunction[Timing] || !(this->*TimingFunction[Timing])())
-		{
-			HFront = HSync = HBack = HBlank = HTotal = BLANK;
-			VFront = VSync = VBack = VBlank = VTotal = BLANK;
-			PClock = ActualVRate = ActualHRate = HRate = BLANK;
-			return false;
-		}
+	if (!IsValidTiming())
+		return CalculateManual();
 
-		return true;
+	if (!(this->*TimingFunction[Timing])())
+	{
+		HFront = BLANK;
+		HSync = BLANK;
+		HBack = BLANK;
+		HBlank = BLANK;
+		HTotal = BLANK;
+		VFront = BLANK;
+		VSync = BLANK;
+		VBack = BLANK;
+		VBlank = BLANK;
+		VTotal = BLANK;
+		HRate = DECIMAL_BLANK;
+		PClock = DECIMAL_BLANK;
+		ActualVRate = DECIMAL_BLANK;
+		ActualHRate = DECIMAL_BLANK;
+		ActualPClock = DECIMAL_BLANK;
+		return false;
 	}
 
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::UpdateInterlaced()
+{
+	VActiveI = VActive;
+	VFrontI = VFront;
+	VSyncI = VSync;
+	VBackI = VBack;
+	VBlankI = VBlank;
+	VTotalI = VTotal;
+
+	if (Interlaced)
+	{
+		if (VActive == 1080 && VFront == 4 && VSync == 10 && VBack == 31)
+		{
+			VFrontI = 4;
+			VSyncI = 5;
+			VBackI = 36;
+		}
+		else
+		{
+			if (Positive(VFront))
+				VFrontI = VFront / 2;
+
+			if (Positive(VSync))
+				VSyncI = VSync / 2;
+
+			if (Positive(VBack))
+				VBackI = VBack / 2;
+
+			if (Positive(VBlank))
+				VBlankI = VBlank / 2;
+
+			if (Positive(VTotal))
+				VTotalI = VTotal / 2;
+		}
+	}
+	else
+	{
+		if (VActive == 1080 && VFront == 4 && VSync == 5 && VBack == 36)
+		{
+			VFrontI = 4;
+			VSyncI = 10;
+			VBackI = 31;
+		}
+		else
+		{
+			if (Type == 0 && Positive(VActive))
+			{
+				if (VActive % 2 != 0 || HActive >= VActive * 2 && VActive != 480 && VActive != 576)
+					VActiveI = VActive * 2;
+			}
+
+			if (Positive(VFront))
+				VFrontI = VFront * 2;
+
+			if (Positive(VSync))
+				VSyncI = VSync * 2;
+
+			if (Positive(VBack))
+				VBackI = VBack * 2 + 1;
+
+			if (Positive(VBlank))
+				VBlankI = VBlank * 2 + 1;
+
+			if (Positive(VTotal))
+				VTotalI = VTotal * 2 + 1;
+		}
+	}
+
+	if (Positive(VFrontI) && Positive(VSyncI) && Positive(VBackI))
+		VBlankI = VFrontI + VSyncI + VBackI;
+
+	if (Positive(VActiveI) && Positive(VBlankI))
+		VTotalI = VActiveI + VBlankI;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::UpdateInterlacedRate()
+{
+	if (IsSupportedVRate() && !Interlaced && VRate < 45000)
+		VRateI = VRate * 2;
+	else
+		VRateI = VRate;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateManual()
+{
 	switch (Last)
 	{
 		case 0:
@@ -1053,20 +1384,23 @@ bool DetailedResolutionClass::Update()
 	switch (LastRate)
 	{
 		case 0:
-			CalculatePClockFromVRate();
+			CalculateActualPClockFromVRate();
 			CalculateActualVRate();
 			CalculateActualHRate();
 			HRate = ActualHRate;
+			PClock = ActualPClock;
 			break;
 
 		case 1:
-			CalculatePClockFromHRate();
+			CalculateActualPClockFromHRate();
 			CalculateActualVRate();
 			CalculateActualHRate();
 			VRate = ActualVRate;
+			PClock = ActualPClock;
 			break;
 
 		case 2:
+			ActualPClock = PClock;
 			CalculateActualVRate();
 			CalculateActualHRate();
 			VRate = ActualVRate;
@@ -1077,107 +1411,75 @@ bool DetailedResolutionClass::Update()
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::UpdateInterlaced()
+bool DetailedResolutionClass::CalculateManualVTotal()
 {
-	VActiveI = VActive;
-	VFrontI = VFront;
-	VSyncI = VSync;
-	VBackI = VBack;
-
-	if (IsSupportedVActive())
+	switch (Last)
 	{
-		if (Interlaced)
-		{
-			if (VActive == 540 && VFront == 2 && VSync == 5 && VBack == 15)
-			{
-				VActiveI = 1080;
-				VFrontI = 4;
-				VSyncI = 5;
-				VBackI = 36;
-			}
-			else
-			{
-				if (VActive <= MaxVActive[Type] / 2)
-					VActiveI = VActive * 2;
-			}
-		}
-		else if (VActive % 2 == 0)
-		{
-			if (VActive == 1080 && VFront == 4 && VSync == 5 && VBack == 36)
-			{
-				VActiveI = 540;
-				VFrontI = 2;
-				VSyncI = 5;
-				VBackI = 15;
-			}
-			else if (IsSupportedHActive())
-			{
-				if (VActive * 125 > HActive * 51 || (HActive == 1440 || HActive == 2880) && (VActive >= 472 && VActive <= 488 || VActive >= 566 && VActive <= 586))
-					VActiveI = VActive / 2;
-			}
-			else
-			{
-				if (VActive >= 472 && VActive <= 488 || VActive >= 566)
-					VActiveI = VActive / 2;
-			}
-		}
+		case 0:
+			CalculateHBlank();
+			CalculateHTotal();
+			break;
+
+		case 1:
+			CalculateHBack();
+			CalculateHTotal();
+			break;
+
+		case 2:
+			CalculateHBackFromHTotal();
+			CalculateHBlank();
+			break;
 	}
 
-	VBlankI = VFrontI + VSyncI + VBackI;
-	VTotalI = VActiveI + VBlankI;
-	return true;
-}
-//---------------------------------------------------------------------------
-bool DetailedResolutionClass::UpdateInterlacedRate()
-{
-	VRateI = VRate;
+	CalculateVTotalFromFrequencies();
+	CalculateVBackFromVTotal();
+	CalculateVBlank();
 
-	if (IsSupportedVRate())
-		if (!Interlaced)
-			if (VRate < 45000)
-				VRateI = VRate * 2;
+	if (LastRate == 0)
+		CalculateActualPClockFromVRate();
+	else
+		ActualPClock = PClock;
 
+	CalculateActualVRate();
+	CalculateActualHRate();
+	HRate = ActualHRate;
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::CalculateNative(bool Digital)
 {
-	int Index;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return false;
 
-	for (Index = 0; LCDNative[Index][0] != 0; Index++)
-		if (HActive == LCDNative[Index][0] && VActive == LCDNative[Index][1] && Interlaced == LCDNative[Index][2])
+	int Index;
+
+	for (Index = 0; Native[Index].HActive != 0; Index++)
+		if (HActive == Native[Index].HActive && VActive == Native[Index].VActive && Interlaced == Native[Index].Interlaced)
 			break;
 
-	if (LCDNative[Index][0] != 0)
+	if (Native[Index].HActive != 0)
 	{
-		VRate = LCDNative[Index][3];
-		HFront = LCDNative[Index][4];
-		HSync = LCDNative[Index][5];
-		HBack = LCDNative[Index][6];
-		VFront = LCDNative[Index][7];
-		VSync = LCDNative[Index][8];
-		VBack = LCDNative[Index][9];
-		HPolarity = LCDNative[Index][10];
-		VPolarity = LCDNative[Index][11];
-		CalculateHBlank();
-		CalculateHTotal();
-		CalculateVBlank();
-		CalculateVTotal();
-		CalculatePClockFromVRate();
+		VRate = Native[Index].MinVRate;
+		CalculateAutomaticPC();
 	}
 	else
 	{
 		VRate = 60000;
 
 		if (Digital || HSync <= 48)
-			CalculateLCDStandard();
+		{
+			if (HFront <= 48 || HSync <= 32 || HBack <= 80)
+				CalculateAutomaticPC();
+			else
+				CalculateAutomaticHDTV();
+		}
 		else
-			CalculateCRTStandard();
+		{
+			CalculateCVTStandard();
+		}
 
-		PClock = PClock / 25 * 25;
+		int Multiple = PClockPrecision[Type] / 4;
+		ActualPClock = ActualPClock / Multiple * Multiple;
 	}
 
 	Stereo = 0;
@@ -1185,481 +1487,427 @@ bool DetailedResolutionClass::CalculateNative(bool Digital)
 	CalculateActualHRate();
 	VRate = ActualVRate;
 	HRate = ActualHRate;
+	PClock = ActualPClock;
 	UpdateInterlaced();
 	UpdateInterlacedRate();
 	UpdateReset();
-	return true;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculateLCDStandard()
+bool DetailedResolutionClass::CalculateAutomaticPC()
 {
-	int Index;
-	long long OldVRate;
-
 	HPolarity = true;
 	VPolarity = false;
 
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return false;
 
-	for (Index = 0; LCDStandard[Index][0] != 0; Index++)
-		if (HActive == LCDStandard[Index][0] && VActive == LCDStandard[Index][1] && Interlaced == LCDStandard[Index][2])
-		if (VRate >= LCDStandard[Index][3] && VRate <= LCDStandard[Index][4])
-			break;
+	int Index;
 
-	if (LCDStandard[Index][0] != 0)
+	for (Index = 0; AutomaticPC[Index].HActive != 0; Index++)
+		if (HActive == AutomaticPC[Index].HActive && VActive == AutomaticPC[Index].VActive && Interlaced == AutomaticPC[Index].Interlaced)
+			if (VRate >= AutomaticPC[Index].MinVRate && VRate <= AutomaticPC[Index].MaxVRate)
+				break;
+
+	if (AutomaticPC[Index].HActive != 0)
 	{
-		HFront = LCDStandard[Index][5];
-		HSync = LCDStandard[Index][6];
-		HBack = LCDStandard[Index][7];
-		VFront = LCDStandard[Index][8];
-		VSync = LCDStandard[Index][9];
-		VBack = LCDStandard[Index][10];
-		HPolarity = LCDStandard[Index][11];
-		VPolarity = LCDStandard[Index][12];
+		HFront = AutomaticPC[Index].HFront;
+		HSync = AutomaticPC[Index].HSync;
+		HBack = AutomaticPC[Index].HBack;
+		VFront = AutomaticPC[Index].VFront;
+		VSync = AutomaticPC[Index].VSync;
+		VBack = AutomaticPC[Index].VBack;
+		HPolarity = AutomaticPC[Index].HPolarity;
+		VPolarity = AutomaticPC[Index].VPolarity;
 		CalculateHBlank();
 		CalculateHTotal();
 		CalculateVBlank();
 		CalculateVTotal();
-		CalculatePClockFromVRate();
-	}
-	else
-	{
-		OldVRate = VRate;
-		CalculateCVTRB();
-		CalculatePClockFromVRate();
+		CalculateActualPClockFromVRate();
 		CalculateActualVRate();
-		VRate = ActualVRate;
-		CalculateCVTRB();
-		CalculatePClockFromVRate();
-		VRate = OldVRate;
+		CalculateActualHRate();
+		HRate = ActualHRate;
+		PClock = ActualPClock;
+
+		if (IsValid() || !IsValidHActive() || !IsValidVActive() || !IsValidActualPClock())
+			return IsSupported();
 	}
 
-	CalculateActualVRate();
-	CalculateActualHRate();
-	HRate = ActualHRate;
-	return IsValidRate();
+	return CalculateCVTRBStandard();
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculateLCDNative()
+bool DetailedResolutionClass::CalculateAutomaticHDTV()
 {
-	int Index;
-	long long OldVRate;
+	HPolarity = true;
+	VPolarity = true;
 
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	int Index;
+
+	for (Index = 0; AutomaticHDTV[Index].HActive != 0; Index++)
+		if (HActive == AutomaticHDTV[Index].HActive && VActive == AutomaticHDTV[Index].VActive && Interlaced == AutomaticHDTV[Index].Interlaced)
+			if (VRate >= AutomaticHDTV[Index].MinVRate && VRate <= AutomaticHDTV[Index].MaxVRate)
+				break;
+
+	if (AutomaticHDTV[Index].HActive != 0)
+	{
+		HFront = AutomaticHDTV[Index].HFront;
+		HSync = AutomaticHDTV[Index].HSync;
+		HBack = AutomaticHDTV[Index].HBack;
+		VFront = AutomaticHDTV[Index].VFront;
+		VSync = AutomaticHDTV[Index].VSync;
+		VBack = AutomaticHDTV[Index].VBack;
+		HPolarity = AutomaticHDTV[Index].HPolarity;
+		VPolarity = AutomaticHDTV[Index].VPolarity;
+		CalculateHBlank();
+		CalculateHTotal();
+		CalculateVBlank();
+		CalculateVTotal();
+		CalculateActualPClockFromVRate();
+		CalculateActualVRate();
+		CalculateActualHRate();
+		HRate = ActualHRate;
+		PClock = ActualPClock;
+
+		if (IsValid() || !IsValidHActive() || !IsValidVActive() || !IsValidActualPClock())
+			return IsSupported();
+	}
+
+	return CalculateCVTRBStandard();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateAutomaticCRT()
+{
+	HPolarity = false;
+	VPolarity = true;
+
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	int Index;
+
+	for (Index = 0; AutomaticCRT[Index].HActive != 0; Index++)
+		if (HActive == AutomaticCRT[Index].HActive && VActive == AutomaticCRT[Index].VActive && Interlaced == AutomaticCRT[Index].Interlaced)
+			if (VRate >= AutomaticCRT[Index].MinVRate && VRate <= AutomaticCRT[Index].MaxVRate)
+				break;
+
+	if (AutomaticCRT[Index].HActive != 0)
+	{
+		HFront = AutomaticCRT[Index].HFront;
+		HSync = AutomaticCRT[Index].HSync;
+		HBack = AutomaticCRT[Index].HBack;
+		VFront = AutomaticCRT[Index].VFront;
+		VSync = AutomaticCRT[Index].VSync;
+		VBack = AutomaticCRT[Index].VBack;
+		HPolarity = AutomaticCRT[Index].HPolarity;
+		VPolarity = AutomaticCRT[Index].VPolarity;
+		CalculateHBlank();
+		CalculateHTotal();
+		CalculateVBlank();
+		CalculateVTotal();
+		CalculateActualPClockFromVRate();
+		CalculateActualVRate();
+		CalculateActualHRate();
+		HRate = ActualHRate;
+		PClock = ActualPClock;
+
+		if (IsValid() || !IsValidHActive() || !IsValidVActive() || !IsValidActualPClock())
+			return IsSupported();
+	}
+
+	return CalculateCVTStandard();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateNativePC()
+{
 	HPolarity = true;
 	VPolarity = false;
 
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return false;
 
-	for (Index = 0; LCDNative[Index][0] != 0; Index++)
-		if (HActive == LCDNative[Index][0] && VActive == LCDNative[Index][1] && Interlaced == LCDNative[Index][2])
+	int Index;
+
+	for (Index = 0; Native[Index].HActive != 0; Index++)
+		if (HActive == Native[Index].HActive && VActive == Native[Index].VActive && Interlaced == Native[Index].Interlaced)
 			break;
 
-	if (LCDNative[Index][0] != 0)
-	{
-		HFront = LCDNative[Index][4];
-		HSync = LCDNative[Index][5];
-		HBack = LCDNative[Index][6];
-		VFront = LCDNative[Index][7];
-		VSync = LCDNative[Index][8];
-		VBack = LCDNative[Index][9];
-		HPolarity = LCDNative[Index][10];
-		VPolarity = LCDNative[Index][11];
-		CalculateHBlank();
-		CalculateHTotal();
-		CalculateVBlank();
-		CalculateVTotal();
-		CalculatePClockFromVRate();
-	}
+	long long OldVRate = VRate;
+
+	if (Native[Index].HActive != 0)
+		VRate = Native[Index].MinVRate;
 	else
-	{
-		OldVRate = VRate;
 		VRate = 60000;
-		CalculateCVTRB();
-		CalculatePClockFromVRate();
-		CalculateActualVRate();
-		VRate = ActualVRate;
-		CalculateCVTRB();
-		VRate = OldVRate;
-		CalculatePClockFromVRate();
+
+	CalculateAutomaticPC();
+	VRate = OldVRate;
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateNativeHDTV()
+{
+	HPolarity = true;
+	VPolarity = true;
+
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	int Index;
+
+	for (Index = 0; Native[Index].HActive != 0; Index++)
+		if (HActive == Native[Index].HActive && VActive == Native[Index].VActive && Interlaced == Native[Index].Interlaced)
+			break;
+
+	long long OldVRate = VRate;
+
+	if (Native[Index].HActive != 0)
+		VRate = Native[Index].MinVRate;
+	else
+		VRate = 60000;
+
+	CalculateAutomaticHDTV();
+	VRate = OldVRate;
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateExact()
+{
+	HPolarity = ResetHPolarity;
+	VPolarity = ResetVPolarity;
+
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	HFront = 48;
+	HSync = 32;
+
+	if (Interlaced)
+		HTotal = (HActive + HFront + HSync + 160) / 160 * 160;
+	else
+		HTotal = (HActive + HFront + HSync + 80) / 80 * 80;
+
+	VFront = GetVFrontForCVT();
+	VSync = GetVSyncForCVT();
+
+	if (Interlaced)
+		VTotal = (VActive + VFront + VSync + 125) / 250 * 250 + 125;
+	else
+		VTotal = (VActive + VFront + VSync + 125) / 125 * 125;
+
+	CalculateHBackFromHTotal();
+	CalculateHBlank();
+	CalculateVBackFromVTotal();
+	CalculateVBlank();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateExactReduced()
+{
+	HPolarity = ResetHPolarity;
+	VPolarity = ResetVPolarity;
+
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	HFront = 48;
+	HSync = 32;
+
+	if (Interlaced)
+		HTotal = (HActive + HFront + HSync + 160) / 160 * 160;
+	else
+		HTotal = (HActive + HFront + HSync + 80) / 80 * 80;
+
+	VFront = GetVFrontForCVT();
+	VSync = GetVSyncForCVT();
+
+	if (HTotal % 400 == 0 || VRate % 5000 == 0)
+	{
+		if (Interlaced)
+			VTotal = (VActive + VFront + VSync + 25) / 50 * 50 + 25;
+		else
+			VTotal = (VActive + VFront + VSync + 25) / 25 * 25;
+	}
+	else
+	{
+		if (Interlaced)
+			VTotal = (VActive + VFront + VSync + 125) / 250 * 250 + 125;
+		else
+			VTotal = (VActive + VFront + VSync + 125) / 125 * 125;
+	}
+
+	CalculateHBackFromHTotal();
+	CalculateHBlank();
+	CalculateVBackFromVTotal();
+	CalculateVBlank();
+	CalculateActualPClockFromVRate();
+
+	if (HActive * VActive <= 2048 * 1200 && ActualPClock > 165 * PClockPrecision[Type] && !Interlaced)
+	{
+		HFront = 24;
+		HSync = 32;
+		HTotal = (HActive + HFront + HSync + 80) / 80 * 80;
+		VFront = GetVFrontForCVT();
+		VSync = GetVSyncForCVT();
+
+		if (HTotal % 400 == 0 || VRate % 5000 == 0)
+			VTotal = (VActive + VFront + VSync + 25) / 25 * 25;
+		else
+			VTotal = (VActive + VFront + VSync + 125) / 125 * 125;
+
+		CalculateHBackFromHTotal();
+		CalculateHBlank();
+		CalculateVBackFromVTotal();
+		CalculateVBlank();
+		CalculateActualPClockFromVRate();
 	}
 
 	CalculateActualVRate();
 	CalculateActualHRate();
 	HRate = ActualHRate;
-	return IsValidRate();
+	PClock = ActualPClock;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculateLCDReduced()
+bool DetailedResolutionClass::CalculateExactCRT()
 {
-	int Index;
-	long long OldVRate;
+	HPolarity = ResetHPolarity;
+	VPolarity = ResetVPolarity;
 
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	CalculateCVTStandard();
+
+	if (Interlaced)
+	{
+		HTotal = (HTotal + 159) / 160 * 160;
+		VTotal = (VTotal + 124) / 250 * 250 + 125;
+	}
+	else
+	{
+		HTotal = (HTotal + 79) / 80 * 80;
+		VTotal = (VTotal + 124) / 125 * 125;
+	}
+
+	CalculateHBackFromHTotal();
+	CalculateHBlank();
+	CalculateVBackFromVTotal();
+	CalculateVBlank();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateCVTStandard()
+{
+	HPolarity = false;
+	VPolarity = true;
+
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	long long OldVRate = VRate;
+	CalculateCVT();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	VRate = ActualVRate;
+	CalculateCVT();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	VRate = OldVRate;
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateCVTRBStandard()
+{
 	HPolarity = true;
 	VPolarity = false;
 
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return false;
 
-	for (Index = 0; LCDReduced[Index][0] != 0; Index++)
-		if (HActive == LCDReduced[Index][0] && VActive == LCDReduced[Index][1] && Interlaced == LCDReduced[Index][2])
-		if (VRate >= LCDReduced[Index][3] && VRate <= LCDReduced[Index][4])
-			break;
-
-	if (LCDReduced[Index][0] != 0)
-	{
-		HFront = LCDReduced[Index][5];
-		HSync = LCDReduced[Index][6];
-		HBack = LCDReduced[Index][7];
-		VFront = LCDReduced[Index][8];
-		VSync = LCDReduced[Index][9];
-		VBack = LCDReduced[Index][10];
-		HPolarity = LCDReduced[Index][11];
-		VPolarity = LCDReduced[Index][12];
-		CalculateHBlank();
-		CalculateHTotal();
-		CalculateVBlank();
-		CalculateVTotal();
-		CalculatePClockFromVRate();
-	}
-	else
-	{
-		OldVRate = VRate;
-		CalculateCVTRB();
-		CalculatePClockFromVRate();
-		CalculateActualVRate();
-		VRate = ActualVRate;
-		CalculateCVTRB();
-		CalculatePClockFromVRate();
-		VRate = OldVRate;
-
-		if (VRate > 60500)
-		{
-			if (HActive * VActive > 2457600)
-			{
-				while (PClock > 33000)
-				{
-					if (VBlank > 15)
-						VBack--;
-					else if (HBack > 48)
-					{
-						HBack -= 8;
-						VBack = GetVBackForCVTRB();
-					}
-					else if (VFront >= VSync && VFront >= VBack - 1 && VFront > 3)
-						VFront--;
-					else if (VSync >= VFront && VSync >= VBack && VSync > 3)
-						VSync--;
-					else if (VBack >= VFront && VBack >= VSync && VBack > 3)
-						VBack--;
-					else
-						break;
-
-					CalculateHBlank();
-					CalculateHTotal();
-					CalculateVBlank();
-					CalculateVTotal();
-					CalculatePClockFromVRate();
-				}
-
-				if (PClock > 33000)
-				{
-					OldVRate = VRate;
-					CalculateCVTRB();
-					CalculatePClockFromVRate();
-					CalculateActualVRate();
-					VRate = ActualVRate;
-					CalculateCVTRB();
-					CalculatePClockFromVRate();
-					VRate = OldVRate;
-				}
-
-				while (PClock > 40000)
-				{
-					if (VBlank > 21)
-						VBack--;
-					else if (HBack > 56)
-					{
-						HBack -= 8;
-						VBack = GetVBackForCVTRB();
-					}
-					else
-						break;
-
-					CalculateHBlank();
-					CalculateHTotal();
-					CalculateVBlank();
-					CalculateVTotal();
-					CalculatePClockFromVRate();
-				}
-
-				if (PClock > 40000)
-				{
-					OldVRate = VRate;
-					CalculateCVTRB();
-					CalculatePClockFromVRate();
-					CalculateActualVRate();
-					VRate = ActualVRate;
-					CalculateCVTRB();
-					CalculatePClockFromVRate();
-					VRate = OldVRate;
-				}
-
-				while (PClock > 40400)
-				{
-					if (VBlank > 21)
-						VBack--;
-					else if (HBack > 56)
-					{
-						HBack -= 8;
-						VBack = GetVBackForCVTRB();
-					}
-					else
-						break;
-
-					CalculateHBlank();
-					CalculateHTotal();
-					CalculateVBlank();
-					CalculateVTotal();
-					CalculatePClockFromVRate();
-				}
-
-				if (HActive * VActive > 3686400)
-				{
-					if (PClock > 40400)
-					{
-						HFront = 48;
-						HSync = 32;
-						HBack = 48;
-						VFront = 3;
-						VSync = 3;
-						VBack = 3;
-						CalculateHBlank();
-						CalculateHTotal();
-						CalculateVBlank();
-						CalculateVTotal();
-						CalculatePClockFromVRate();
-					}
-
-					if (PClock > 54000)
-					{
-						HFront = 16;
-						HSync = 24;
-						HBack = 24;
-						VFront = 3;
-						VSync = 3;
-						VBack = 3;
-						HPolarity = true;
-						VPolarity = true;
-						CalculateHBlank();
-						CalculateHTotal();
-						CalculateVBlank();
-						CalculateVTotal();
-						CalculatePClockFromVRate();
-					}
-				}
-				else
-				{
-					if (PClock > 40400)
-					{
-						HFront = 48;
-						HSync = 32;
-						HBack = 64;
-						VFront = 2;
-						VSync = 2;
-						VBack = 2;
-						CalculateHBlank();
-						CalculateHTotal();
-						CalculateVBlank();
-						CalculateVTotal();
-						CalculatePClockFromVRate();
-					}
-
-					if (PClock > 54000)
-					{
-						HFront = 4;
-						HSync = 16;
-						HBack = 2;
-						VFront = 1;
-						VSync = 1;
-						VBack = 7;
-						HPolarity = true;
-						VPolarity = true;
-						CalculateHBlank();
-						CalculateHTotal();
-						CalculateVBlank();
-						CalculateVTotal();
-						CalculatePClockFromVRate();
-					}
-				}
-			}
-			else if (PClock > 16500)
-			{
-				if (HActive == 1920 && VActive == 1080)
-				{
-					HPolarity = true;
-					VPolarity = true;
-				}
-
-				HFront = 32;
-				HSync = 40;
-				HBack = 48;
-				VFront = GetVFrontForCVT();
-				VSync = GetVSyncForCVT();
-				VBack = GetVSyncForCVT();
-				CalculateHBlank();
-				CalculateHTotal();
-				CalculateVBlank();
-				CalculateVTotal();
-				CalculatePClockFromVRate();
-
-				while (PClock > 16500)
-				{
-					if (HFront >= HSync && HFront >= HBack - 8 && HFront > 8)
-						HFront -= 8;
-					else if (HSync >= HFront && HSync >= HBack && HSync > 8)
-						HSync -= 8;
-					else if (HBack >= HFront && HBack >= HSync && HBack > 8)
-						HBack -= 8;
-					else if (VFront >= VSync && VFront >= VBack - 1 && VFront > 3)
-						VFront--;
-					else if (VSync >= VFront && VSync >= VBack && VSync > 3)
-						VSync--;
-					else if (VBack >= VFront && VBack >= VSync && VBack > 3)
-						VBack--;
-					else
-						break;
-
-					CalculateHBlank();
-					CalculateHTotal();
-					CalculateVBlank();
-					CalculateVTotal();
-					CalculatePClockFromVRate();
-				}
-
-				if (PClock > 16500)
-				{
-					HFront = 24;
-					HSync = 32;
-					HBack = 32;
-					VFront = GetVFrontForCVT();
-					VSync = GetVSyncForCVT();
-					VBack = GetVSyncForCVT() * 2;
-					CalculateHBlank();
-					CalculateHTotal();
-					CalculateVBlank();
-					CalculateVTotal();
-					CalculatePClockFromVRate();
-				}
-			}
-		}
-	}
-
+	long long OldVRate = VRate;
+	CalculateCVTRB();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	VRate = ActualVRate;
+	CalculateCVTRB();
+	CalculateActualPClockFromVRate();
 	CalculateActualVRate();
 	CalculateActualHRate();
+	VRate = OldVRate;
 	HRate = ActualHRate;
-	return IsValidRate();
+	PClock = ActualPClock;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculateCRTStandard()
+bool DetailedResolutionClass::CalculateCVTRB2Standard()
 {
-	int Index;
-	long long OldVRate;
+	HPolarity = true;
+	VPolarity = false;
 
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	long long OldVRate = VRate;
+	CalculateCVTRB2();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	VRate = ActualVRate;
+	CalculateCVTRB2();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	VRate = OldVRate;
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateGTFStandard()
+{
 	HPolarity = false;
 	VPolarity = true;
 
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return false;
 
-	for (Index = 0; CRTStandard[Index][0] != 0; Index++)
-		if (HActive == CRTStandard[Index][0] && VActive == CRTStandard[Index][1] && Interlaced == CRTStandard[Index][2])
-		if (VRate >= CRTStandard[Index][3] && VRate <= CRTStandard[Index][4])
-			break;
-
-	if (CRTStandard[Index][0] != 0)
-	{
-		HFront = CRTStandard[Index][5];
-		HSync = CRTStandard[Index][6];
-		HBack = CRTStandard[Index][7];
-		VFront = CRTStandard[Index][8];
-		VSync = CRTStandard[Index][9];
-		VBack = CRTStandard[Index][10];
-		HPolarity = CRTStandard[Index][11];
-		VPolarity = CRTStandard[Index][12];
-		CalculateHBlank();
-		CalculateHTotal();
-		CalculateVBlank();
-		CalculateVTotal();
-		CalculatePClockFromVRate();
-	}
-	else
-	{
-		OldVRate = VRate;
-		CalculateCVT();
-		CalculatePClockFromVRate();
-		CalculateActualVRate();
-		VRate = ActualVRate;
-		CalculateCVT();
-		CalculatePClockFromVRate();
-		VRate = OldVRate;
-	}
-
+	long long OldVRate = VRate;
+	CalculateGTF();
+	CalculateActualPClockFromVRate();
+	CalculateActualVRate();
+	VRate = ActualVRate;
+	CalculateGTF();
+	CalculateActualPClockFromVRate();
 	CalculateActualVRate();
 	CalculateActualHRate();
+	VRate = OldVRate;
 	HRate = ActualHRate;
-	return IsValidRate();
-}
-//---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculateOldStandard()
-{
-	int Index;
-	long long OldVRate;
-
-	HPolarity = false;
-	VPolarity = true;
-
-	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
-		return false;
-
-	for (Index = 0; OldStandard[Index][0] != 0; Index++)
-		if (HActive == OldStandard[Index][0] && VActive == OldStandard[Index][1] && Interlaced == OldStandard[Index][2])
-		if (VRate >= OldStandard[Index][3] && VRate <= OldStandard[Index][4])
-			break;
-
-	if (OldStandard[Index][0] != 0)
-	{
-		HFront = OldStandard[Index][5];
-		HSync = OldStandard[Index][6];
-		HBack = OldStandard[Index][7];
-		VFront = OldStandard[Index][8];
-		VSync = OldStandard[Index][9];
-		VBack = OldStandard[Index][10];
-		HPolarity = OldStandard[Index][11];
-		VPolarity = OldStandard[Index][12];
-		CalculateHBlank();
-		CalculateHTotal();
-		CalculateVBlank();
-		CalculateVTotal();
-		CalculatePClockFromVRate();
-	}
-	else
-	{
-		OldVRate = VRate;
-		CalculateGTF();
-		CalculatePClockFromVRate();
-		CalculateActualVRate();
-		VRate = ActualVRate;
-		CalculateGTF();
-		CalculatePClockFromVRate();
-		VRate = OldVRate;
-	}
-
-	CalculateActualVRate();
-	CalculateActualHRate();
-	HRate = ActualHRate;
-	return IsValidRate();
+	PClock = ActualPClock;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::CalculateCVT()
@@ -1680,11 +1928,12 @@ bool DetailedResolutionClass::CalculateCVT()
 	CalculateHTotal();
 	CalculateVBlank();
 	CalculateVTotal();
-	CalculatePClockForCVT();
+	CalculateActualPClockForCVT();
 	CalculateActualVRate();
 	CalculateActualHRate();
 	HRate = ActualHRate;
-	return IsValidRate();
+	PClock = ActualPClock;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::CalculateCVTRB()
@@ -1698,18 +1947,45 @@ bool DetailedResolutionClass::CalculateCVTRB()
 	HFront = 48;
 	HSync = 32;
 	HBack = 80;
-	VFront = GetVFrontForCVT();
-	VSync = GetVSyncForCVT();
+	VFront = GetVFrontForCVTRB();
+	VSync = GetVSyncForCVTRB();
 	VBack = GetVBackForCVTRB();
 	CalculateHBlank();
 	CalculateHTotal();
 	CalculateVBlank();
 	CalculateVTotal();
-	CalculatePClockForCVTRB();
+	CalculateActualPClockForCVTRB();
 	CalculateActualVRate();
 	CalculateActualHRate();
 	HRate = ActualHRate;
-	return IsValidRate();
+	PClock = ActualPClock;
+	return IsSupported();
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateCVTRB2()
+{
+	HPolarity = true;
+	VPolarity = false;
+
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return false;
+
+	HFront = 8;
+	HSync = 32;
+	HBack = 40;
+	VFront = GetVFrontForCVTRB2();
+	VSync = GetVSyncForCVTRB2();
+	VBack = GetVBackForCVTRB2();
+	CalculateHBlank();
+	CalculateHTotal();
+	CalculateVBlank();
+	CalculateVTotal();
+	CalculateActualPClockForCVTRB2();
+	CalculateActualVRate();
+	CalculateActualHRate();
+	HRate = ActualHRate;
+	PClock = ActualPClock;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::CalculateGTF()
@@ -1730,35 +2006,56 @@ bool DetailedResolutionClass::CalculateGTF()
 	CalculateHTotal();
 	CalculateVBlank();
 	CalculateVTotal();
-	CalculatePClockForGTF();
+	CalculateActualPClockForGTF();
 	CalculateActualVRate();
 	CalculateActualHRate();
 	HRate = ActualHRate;
-	return IsValidRate();
+	PClock = ActualPClock;
+	return IsSupported();
 }
 //---------------------------------------------------------------------------
 long long DetailedResolutionClass::GetHPeriodForCVT()
 {
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
-		return BLANK;
+		return 0;
 
-	return (1000000000000000000LL * 2 / VRate - 550000000000LL * 2) / (VActive * 2 + GetVFrontForCVT() * 2 + Interlaced);
+	if (VRate == 0)
+		return MinTimeCVT;
+
+	return (1000000000000000LL * Fields / VRate - MinTimeCVT * Fields) / (VActive + GetVFrontForCVT() + Interlaced);
 }
 //---------------------------------------------------------------------------
 long long DetailedResolutionClass::GetHPeriodForCVTRB()
 {
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
-		return BLANK;
+		return 0;
 
-	return (1000000000000000000LL * 2 / VRate - 460000000000LL * 2) / (VActive * 2);
+	if (VRate == 0)
+		return MinTimeCVTRB;
+
+	return (1000000000000000LL * Fields / VRate - MinTimeCVTRB * Fields) / VActive;
+}
+//---------------------------------------------------------------------------
+long long DetailedResolutionClass::GetHPeriodForCVTRB2()
+{
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return 0;
+
+	if (VRate == 0)
+		return MinTimeCVTRB2;
+
+	return (1000000000000000LL * Fields / VRate - MinTimeCVTRB2 * Fields) / VActive;
 }
 //---------------------------------------------------------------------------
 long long DetailedResolutionClass::GetHPeriodForGTF()
 {
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
-		return BLANK;
+		return 0;
 
-	return (1000000000000000000LL * 2 / VRate - 550000000000LL * 2) / (VActive * 2 + GetVFrontForGTF() * 2 + Interlaced);
+	if (VRate == 0)
+		return MinTimeGTF;
+
+	return (1000000000000000LL * Fields / VRate - MinTimeGTF * Fields) / (VActive + GetVFrontForGTF() + Interlaced);
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetHFrontForCVT()
@@ -1811,32 +2108,38 @@ int DetailedResolutionClass::GetHBackForGTF()
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetHBlankForCVT()
 {
-	long long IdealDutyCycle;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	IdealDutyCycle = CPrime * 1000000000000LL - MPrime * GetHPeriodForCVT();
+	long long HPeriod = GetHPeriodForCVT();
 
-	if (IdealDutyCycle < 20000000000000LL)
-		IdealDutyCycle = 20000000000000LL;
+	if (HPeriod <= 0)
+		return BLANK;
 
-	return HActive * IdealDutyCycle / (100000000000000LL - IdealDutyCycle) / 16 * 16;
+	long long IdealDutyCycle = CPrime * 1000000000LL - MPrime * HPeriod;
+
+	if (IdealDutyCycle < 20000000000LL)
+		IdealDutyCycle = 20000000000LL;
+
+	return HActive * IdealDutyCycle / (100000000000LL - IdealDutyCycle) / 16 * 16;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetHBlankForGTF()
 {
-	long long IdealDutyCycle;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	IdealDutyCycle = CPrime * 1000000000000LL - MPrime * GetHPeriodForGTF();
+	long long HPeriod = GetHPeriodForGTF();
+
+	if (HPeriod <= 0)
+		return BLANK;
+
+	long long IdealDutyCycle = CPrime * 1000000000LL - MPrime * HPeriod;
 /*
-	if (IdealDutyCycle < 20000000000000LL)
-		IdealDutyCycle = 20000000000000LL;
+	if (IdealDutyCycle < 20000000000LL)
+		IdealDutyCycle = 20000000000LL;
 */
-	return (HActive * IdealDutyCycle / (100000000000000LL - IdealDutyCycle) + 8) / 16 * 16;
+	return (HActive * IdealDutyCycle / (100000000000LL - IdealDutyCycle) + 8) / 16 * 16;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVFrontForCVT()
@@ -1844,7 +2147,31 @@ int DetailedResolutionClass::GetVFrontForCVT()
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	return 3;
+	return 3 * Fields;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetVFrontForCVTRB()
+{
+	return GetVFrontForCVT();
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetVFrontForCVTRB2()
+{
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return BLANK;
+
+	long long HPeriod = GetHPeriodForCVTRB2();
+
+	if (HPeriod <= 0)
+		return BLANK;
+
+	int VBlank = MinTimeCVTRB2 / HPeriod + 1;
+	int VFront = VBlank * Fields + Interlaced - GetVSyncForCVTRB2() - GetVBackForCVTRB2();
+
+	if (VFront < 1 * Fields)
+		VFront = 1 * Fields;
+
+	return VFront;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVFrontForGTF()
@@ -1852,27 +2179,34 @@ int DetailedResolutionClass::GetVFrontForGTF()
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	return 1;
+	return 1 * Fields;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVSyncForCVT()
 {
-	int Aspect;
-	int Index;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	if (Interlaced)
-		Aspect = VActive * 8000 / HActive;
-	else
-		Aspect = VActive * 4000 / HActive;
+	int Aspect = VActive * 4000 / HActive;
 
-	for (Index = 0; AspectVSync[Index][0] != 0; Index++)
+	for (int Index = 0; AspectVSync[Index][0] != 0; Index++)
 		if (Aspect >= AspectVSync[Index][0] && Aspect <= AspectVSync[Index][1])
-			return AspectVSync[Index][2];
+			return AspectVSync[Index][2] * Fields;
 
-	return 10;
+	return 10 * Fields;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetVSyncForCVTRB()
+{
+	return GetVSyncForCVT();
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetVSyncForCVTRB2()
+{
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return BLANK;
+
+	return 8 * Fields;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVSyncForGTF()
@@ -1880,56 +2214,70 @@ int DetailedResolutionClass::GetVSyncForGTF()
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	return 3;
+	return 3 * Fields;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVBackForCVT()
 {
-	int VSyncVBack;
-	int VBack;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	VSyncVBack = 550000000000LL / GetHPeriodForCVT() + 1;
-	VBack = VSyncVBack - GetVSyncForCVT();
+	long long HPeriod = GetHPeriodForCVT();
 
-	if (VBack < 6)
-		VBack = 6;
+	if (HPeriod <= 0)
+		return BLANK;
+
+	int VSyncVBack = MinTimeCVT / HPeriod + 1;
+	int VBack = VSyncVBack * Fields + Interlaced - GetVSyncForCVT();
+
+	if (VBack < 6 * Fields + Interlaced)
+		VBack = 6 * Fields + Interlaced;
 
 	return VBack;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetVBackForCVTRB()
 {
-	int VBlank;
-	int VBack;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	VBlank = 460000000000LL / GetHPeriodForCVTRB() + 1;
-	VBack = VBlank - GetVFrontForCVT() - GetVSyncForCVT();
+	long long HPeriod = GetHPeriodForCVTRB();
 
-	if (VBack < 6)
-		VBack = 6;
+	if (HPeriod <= 0)
+		return BLANK;
+
+	int VBlank = MinTimeCVTRB / HPeriod + 1;
+	int VBack = VBlank * Fields + Interlaced - GetVFrontForCVTRB() - GetVSyncForCVTRB();
+
+	if (VBack < 6 * Fields + Interlaced)
+		VBack = 6 * Fields + Interlaced;
 
 	return VBack;
 }
 //---------------------------------------------------------------------------
-int DetailedResolutionClass::GetVBackForGTF()
+int DetailedResolutionClass::GetVBackForCVTRB2()
 {
-	int VSyncVBack;
-	int VBack;
-
 	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
 		return BLANK;
 
-	VSyncVBack = (5500000000000LL / GetHPeriodForGTF() + 5) / 10;
-	VBack = VSyncVBack - GetVSyncForGTF();
+	return 6 * Fields + Interlaced;
+}
+//---------------------------------------------------------------------------
+int DetailedResolutionClass::GetVBackForGTF()
+{
+	if (!IsSupportedHActive() || !IsSupportedVActive() || !IsSupportedVRate())
+		return BLANK;
+
+	long long HPeriod = GetHPeriodForGTF();
+
+	if (HPeriod <= 0)
+		return BLANK;
+
+	int VSyncVBack = (MinTimeGTF * 2 / HPeriod + 1) / 2;
+	int VBack = VSyncVBack * Fields + Interlaced - GetVSyncForGTF();
 /*
-	if (VBack < 6)
-		VBack = 6;
+	if (VBack < 6 * Fields + Interlaced)
+		VBack = 6 * Fields + Interlaced;
 */
 	return VBack;
 }
@@ -2086,133 +2434,240 @@ bool DetailedResolutionClass::CalculateVTotal()
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculatePClockForCVT()
+bool DetailedResolutionClass::CalculateVTotalFromFrequencies()
 {
-	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
+	if (!IsSupportedPClock() || !IsSupportedHTotal() || !IsSupportedVRate())
 	{
-		PClock = BLANK;
+		VTotal = BLANK;
 		return false;
 	}
 
-	PClock = HTotal * 100000000000LL / GetHPeriodForCVT() / 25 * 25;
+	long long Value = PClock * GetVRateDivisor() / HTotal / VRate;
 
-	if (!IsSupportedPClock())
+	if (Interlaced && Value % 2 == 0)
+		Value--;
+
+	if (GetValue(Value) < GetMinVTotal(1) || GetValue(Value) > GetMaxVTotal(1))
 	{
-		PClock = BLANK;
+		VTotal = BLANK;
 		return false;
 	}
 
+	VTotal = Value;
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculatePClockForCVTRB()
+int DetailedResolutionClass::GetVRateDivisor()
 {
-	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	PClock = VRate * HTotal * (VTotal * 2 + Interlaced) / 20000000 / 25 * 25;
-
-	if (!IsSupportedPClock())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	return true;
+	return 1000000000 * Fields / PClockPrecision[Type];
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculatePClockForGTF()
+int DetailedResolutionClass::GetHRateDivisor()
 {
-	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	PClock = (VRate * HTotal * (VTotal * 2 + Interlaced) + 10000000) / 20000000;
-
-	if (!IsSupportedPClock())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	return true;
+	return 1000000 / PClockPrecision[Type];
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculatePClockFromVRate()
+long long DetailedResolutionClass::GetVRateLimit(int Subtract)
 {
-	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	PClock = (VRate * HTotal * (VTotal * 2 + Interlaced) + 19999999) / 20000000;
-
-	if (!IsSupportedPClock())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	return true;
+	return (LLONG_MAX - Subtract) / HTotal / VTotal;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::CalculatePClockFromHRate()
+long long DetailedResolutionClass::GetHRateLimit(int Subtract)
 {
-	if (!IsSupportedHRate() || !IsSupportedHTotal())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	PClock = (HRate * HTotal + 9999) / 10000;
-
-	if (!IsSupportedPClock())
-	{
-		PClock = BLANK;
-		return false;
-	}
-
-	return true;
+	return (LLONG_MAX - Subtract) / HTotal;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::CalculateActualVRate()
 {
-	if (!IsSupportedPClock() || !IsSupportedHTotal() || !IsSupportedVTotal())
+	if (!IsSupportedActualPClock() || !IsSupportedHTotal() || !IsSupportedVTotal())
 	{
-		ActualVRate = BLANK;
+		ActualVRate = DECIMAL_BLANK;
 		return false;
 	}
 
-	ActualVRate = PClock * 20000000 / HTotal / (VTotal * 2 + Interlaced);
-
-	if (!IsSupportedActualVRate())
-	{
-		ActualVRate = BLANK;
-		return false;
-	}
-
+	ActualVRate = ActualPClock * GetVRateDivisor() / HTotal / VTotal;
 	return true;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::CalculateActualHRate()
 {
-	if (!IsSupportedPClock() || !IsSupportedHTotal())
+	if (!IsSupportedActualPClock() || !IsSupportedHTotal())
 	{
-		ActualHRate = BLANK;
+		ActualHRate = DECIMAL_BLANK;
 		return false;
 	}
 
-	ActualHRate = PClock * 10000 / HTotal;
-
-	if (!IsSupportedActualHRate())
+	ActualHRate = ActualPClock * GetHRateDivisor() / HTotal;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateActualPClockForCVT()
+{
+	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
 	{
-		ActualHRate = BLANK;
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	long long HPeriod = GetHPeriodForCVT();
+
+	if (HPeriod <= 0)
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	long long Multiplier = 1000000LL * PClockPrecision[Type];
+	int Multiple = PClockPrecision[Type] / 4;
+	ActualPClock = HTotal * Multiplier / HPeriod / Multiple * Multiple;
+
+	if (!IsSupportedActualPClock())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateActualPClockForCVTRB()
+{
+	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	if (VRate > GetVRateLimit())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	int Multiple = PClockPrecision[Type] / 4;
+	ActualPClock = VRate * HTotal * VTotal / GetVRateDivisor() / Multiple * Multiple;
+
+	if (!IsSupportedActualPClock())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateActualPClockForCVTRB2()
+{
+	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	if (VRate > GetVRateLimit())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	ActualPClock = VRate * HTotal * VTotal / GetVRateDivisor();
+
+	if (!IsSupportedActualPClock())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateActualPClockForGTF()
+{
+	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	int Divisor = GetVRateDivisor();
+
+	if (VRate > GetVRateLimit(Divisor / 2))
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	ActualPClock = (VRate * HTotal * VTotal + Divisor / 2) / Divisor;
+
+	if (!IsSupportedActualPClock())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateActualPClockFromVRate()
+{
+	if (!IsSupportedVRate() || !IsSupportedHTotal() || !IsSupportedVTotal())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	if (VRate == 0)
+	{
+		ActualPClock = 1;
+		return true;
+	}
+
+	int Divisor = GetVRateDivisor();
+
+	if (VRate > GetVRateLimit(Divisor - 1))
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	ActualPClock = (VRate * HTotal * VTotal + (Divisor - 1)) / Divisor;
+
+	if (!IsSupportedActualPClock())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::CalculateActualPClockFromHRate()
+{
+	if (!IsSupportedHRate() || !IsSupportedHTotal())
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	if (HRate == 0)
+	{
+		ActualPClock = 1;
+		return true;
+	}
+
+	int Divisor = GetHRateDivisor();
+
+	if (HRate > GetHRateLimit(Divisor - 1))
+	{
+		ActualPClock = DECIMAL_BLANK;
+		return false;
+	}
+
+	ActualPClock = (HRate * HTotal + (Divisor - 1)) / Divisor;
+
+	if (!IsSupportedActualPClock())
+	{
+		ActualPClock = DECIMAL_BLANK;
 		return false;
 	}
 
@@ -2233,11 +2688,7 @@ bool DetailedResolutionClass::IsValid()
 	if (IsValidVBack())
 	if (IsValidVBlank())
 	if (IsValidVTotal())
-	if (IsValidVRate())
-	if (IsValidHRate())
-	if (IsValidPClock())
-	if (IsValidActualVRate())
-	if (IsValidActualHRate())
+	if (IsValidActualPClock())
 		return true;
 
 	return false;
@@ -2280,71 +2731,63 @@ bool DetailedResolutionClass::IsValidHTotal()
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVActive()
 {
-	return VActive >= MinVActive[Type] && VActive <= MaxVActive[Type];
+	return GetValue(VActive) >= MinVActive[Type] && GetValue(VActive) <= MaxVActive[Type];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVFront()
 {
-	return VFront >= MinVFront[Type] && VFront <= MaxVFront[Type];
+	return GetValue(VFront) >= MinVFront[Type] && GetValue(VFront) <= MaxVFront[Type];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVSync()
 {
-	return VSync >= MinVSync[Type] && VSync <= MaxVSync[Type];
+	return GetValue(VSync) >= MinVSync[Type] && GetValue(VSync) <= MaxVSync[Type];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVBack()
 {
-	return VBack >= GetMinVBack(Type) && VBack <= GetMaxVBack(Type);
+	return GetValue(VBack) >= GetMinVBack(Type) && GetValue(VBack) <= GetMaxVBack(Type);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVBlank()
 {
-	return VBlank >= GetMinVBlank(Type) && VBlank <= GetMaxVBlank(Type);
+	return GetValue(VBlank) >= GetMinVBlank(Type) && GetValue(VBlank) <= GetMaxVBlank(Type);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVTotal()
 {
-	return VTotal >= GetMinVTotal(Type) && VTotal <= GetMaxVTotal(Type);
-}
-//---------------------------------------------------------------------------
-bool DetailedResolutionClass::IsValidRate()
-{
-	if (Timing == 0)
-	{
-		if (LastRate == 0)
-		{
-			if (!IsValidHTotal() || !IsValidVTotal())
-				return IsValidVRate();
-		}
-		else if (LastRate == 1)
-		{
-			if (!IsValidHTotal())
-				return IsValidHRate();
-		}
-		else if (LastRate == 2)
-		{
-			if (!IsValidHTotal() || !IsValidVTotal())
-				return IsValidPClock();
-		}
-	}
-	else
-	{
-		if (!IsValidHActive() || !IsValidVActive())
-			return IsValidVRate();
-	}
-
-	return IsValidVRate() && IsValidHRate() && IsValidPClock() && IsValidActualVRate() && IsValidActualHRate();
+	return GetValue(VTotal) >= GetMinVTotal(Type) && GetValue(VTotal) <= GetMaxVTotal(Type);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidVRate()
 {
-	return VRate >= MinVRate[Type] && VRate <= MaxVRate[Type];
+	switch (Timing)
+	{
+		case TIMING_MANUAL:
+			if (!IsSupportedHTotal() || !IsSupportedVTotal())
+				return VRate >= 0;
+
+			return IsValidActualPClock();
+
+		case TIMING_MANUAL_VTOTAL:
+			if (!IsSupportedPClock() || !IsSupportedHTotal())
+				return VRate > 0;
+
+			return IsValidVTotal();
+	}
+
+	if (!IsSupportedHActive() || !IsSupportedVActive())
+		return VRate >= 0;
+
+	return IsValid();
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidHRate()
 {
-	return HRate >= MinHRate[Type] && HRate <= MaxHRate[Type];
+	if (!IsSupportedHTotal())
+		return HRate >= 0;
+
+	return IsValidActualPClock();
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsValidPClock()
@@ -2352,14 +2795,9 @@ bool DetailedResolutionClass::IsValidPClock()
 	return PClock >= MinPClock[Type] && PClock <= MaxPClock[Type];
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::IsValidActualVRate()
+bool DetailedResolutionClass::IsValidActualPClock()
 {
-	return ActualVRate >= MinVRate[Type] && ActualVRate <= MaxVRate[Type];
-}
-//---------------------------------------------------------------------------
-bool DetailedResolutionClass::IsValidActualHRate()
-{
-	return ActualHRate >= MinHRate[Type] && ActualHRate <= MaxHRate[Type];
+	return ActualPClock >= MinPClock[Type] && ActualPClock <= MaxPClock[Type];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupported()
@@ -2376,11 +2814,7 @@ bool DetailedResolutionClass::IsSupported()
 	if (IsSupportedVBack())
 	if (IsSupportedVBlank())
 	if (IsSupportedVTotal())
-	if (IsSupportedVRate())
-	if (IsSupportedHRate())
-	if (IsSupportedPClock())
-	if (IsSupportedActualVRate())
-	if (IsSupportedActualHRate())
+	if (IsSupportedActualPClock())
 		return true;
 
 	return false;
@@ -2418,57 +2852,57 @@ bool DetailedResolutionClass::IsSupportedHTotal()
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVActive()
 {
-	return VActive >= MinVActive[1] && VActive <= MaxVActive[1];
+	return GetValue(VActive) >= MinVActive[1] && GetValue(VActive) <= MaxVActive[1];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVFront()
 {
-	return VFront >= MinVFront[1] && VFront <= MaxVFront[1];
+	return GetValue(VFront) >= MinVFront[1] && GetValue(VFront) <= MaxVFront[1];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVSync()
 {
-	return VSync >= MinVSync[1] && VSync <= MaxVSync[1];
+	return GetValue(VSync) >= MinVSync[1] && GetValue(VSync) <= MaxVSync[1];
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVBack()
 {
-	return VBack >= GetMinVBack(1) && VBack <= GetMaxVBack(1);
+	return GetValue(VBack) >= GetMinVBack(1) && GetValue(VBack) <= GetMaxVBack(1);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVBlank()
 {
-	return VBlank >= GetMinVBlank(1) && VBlank <= GetMaxVBlank(1);
+	return GetValue(VBlank) >= GetMinVBlank(1) && GetValue(VBlank) <= GetMaxVBlank(1);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVTotal()
 {
-	return VTotal >= GetMinVTotal(1) && VTotal <= GetMaxVTotal(1);
+	return GetValue(VTotal) >= GetMinVTotal(1) && GetValue(VTotal) <= GetMaxVTotal(1);
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedVRate()
 {
-	return VRate >= MinVRate[1] && VRate <= MaxVRate[1];
+	if (Timing == TIMING_MANUAL_VTOTAL)
+		return VRate > 0;
+
+	return VRate >= 0;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedHRate()
 {
-	return HRate >= MinHRate[1] && HRate <= MaxHRate[1];
+	return HRate >= 0;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::IsSupportedPClock()
 {
-	return PClock >= MinPClock[1] && PClock <= MaxPClock[1];
+	int Multiplier = PClockPrecision[Type] / PClockPrecision[1];
+	return PClock >= MinPClock[Type] && PClock <= MaxPClock[1] * Multiplier;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::IsSupportedActualVRate()
+bool DetailedResolutionClass::IsSupportedActualPClock()
 {
-	return ActualVRate >= MinVRate[1] && ActualVRate <= MaxVRate[1];
-}
-//---------------------------------------------------------------------------
-bool DetailedResolutionClass::IsSupportedActualHRate()
-{
-	return ActualHRate >= MinHRate[1] && ActualHRate <= MaxHRate[1];
+	int Multiplier = PClockPrecision[Type] / PClockPrecision[1];
+	return ActualPClock >= MinPClock[Type] && ActualPClock <= MaxPClock[1] * Multiplier;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMinHBack(int Type)
@@ -2478,16 +2912,16 @@ int DetailedResolutionClass::GetMinHBack(int Type)
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMaxHBack(int Type)
 {
-	int MinMaxHFront = MinMax(HFront, MinHFront[Type], MaxHFront[Type]);
-	int MinMaxHSync = MinMax(HSync, MinHSync[Type], MaxHSync[Type]);
-	return Min(MaxHBack[Type], MaxHBlank[Type] - MinMaxHFront - MinMaxHSync);
+	int ClampHFront = IsValidHFront() ? HFront : MinHFront[Type];
+	int ClampHSync = IsValidHSync() ? HSync : MinHSync[Type];
+	return MaxHBlank[Type] - ClampHFront - ClampHSync;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMinHBlank(int Type)
 {
-	int MinMaxHFront = MinMax(HFront, MinHFront[Type], MaxHFront[Type]);
-	int MinMaxHSync = MinMax(HSync, MinHSync[Type], MaxHSync[Type]);
-	return Max(MinHBlank[Type], MinMaxHFront + MinMaxHSync + MinHBack[Type]);
+	int ClampHFront = IsValidHFront() ? HFront : MinHFront[Type];
+	int ClampHSync = IsValidHSync() ? HSync : MinHSync[Type];
+	return ClampHFront + ClampHSync + MinHBack[Type];
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMaxHBlank(int Type)
@@ -2497,19 +2931,16 @@ int DetailedResolutionClass::GetMaxHBlank(int Type)
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMinHTotal(int Type)
 {
-	int MinMaxHActive = MinMax(HActive, MinHActive[Type], MaxHActive[Type]);
-	int MinMaxHFront = MinMax(HFront, MinHFront[Type], MaxHFront[Type]);
-	int MinMaxHSync = MinMax(HSync, MinHSync[Type], MaxHSync[Type]);
-	return Max(MinHTotal[Type], MinMaxHActive + MinMaxHFront + MinMaxHSync + MinHBack[Type]);
+	int ClampHActive = IsValidHActive() ? HActive : MinHActive[Type];
+	int ClampHFront = IsValidHFront() ? HFront : MinHFront[Type];
+	int ClampHSync = IsValidHSync() ? HSync : MinHSync[Type];
+	return ClampHActive + ClampHFront + ClampHSync + MinHBack[Type];
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMaxHTotal(int Type)
 {
-	if (HActive < MinHActive[Type] || HActive > MaxHActive[Type])
-		return MaxHTotal[Type];
-
-	int MinMaxHActive = MinMax(HActive, MinHActive[Type], MaxHActive[Type]);
-	return Min(MaxHTotal[Type], MinMaxHActive + MaxHBlank[Type]);
+	int ClampHActive = IsValidHActive() ? HActive : MaxHActive[Type];
+	return ClampHActive + MaxHBlank[Type];
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMinVBack(int Type)
@@ -2519,16 +2950,16 @@ int DetailedResolutionClass::GetMinVBack(int Type)
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMaxVBack(int Type)
 {
-	int MinMaxVFront = MinMax(VFront, MinVFront[Type], MaxVFront[Type]);
-	int MinMaxVSync = MinMax(VSync, MinVSync[Type], MaxVSync[Type]);
-	return Min(MaxVBack[Type], MaxVBlank[Type] - MinMaxVFront - MinMaxVSync);
+	int ClampVFront = IsValidVFront() ? GetValue(VFront) : MinVFront[Type];
+	int ClampVSync = IsValidVSync() ? GetValue(VSync) : MinVSync[Type];
+	return MaxVBlank[Type] - ClampVFront - ClampVSync;
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMinVBlank(int Type)
 {
-	int MinMaxVFront = MinMax(VFront, MinVFront[Type], MaxVFront[Type]);
-	int MinMaxVSync = MinMax(VSync, MinVSync[Type], MaxVSync[Type]);
-	return Max(MinVBlank[Type], MinMaxVFront + MinMaxVSync + MinVBack[Type]);
+	int ClampVFront = IsValidVFront() ? GetValue(VFront) : MinVFront[Type];
+	int ClampVSync = IsValidVSync() ? GetValue(VSync) : MinVSync[Type];
+	return ClampVFront + ClampVSync + MinVBack[Type];
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMaxVBlank(int Type)
@@ -2538,48 +2969,15 @@ int DetailedResolutionClass::GetMaxVBlank(int Type)
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMinVTotal(int Type)
 {
-	int MinMaxVActive = MinMax(VActive, MinVActive[Type], MaxVActive[Type]);
-	int MinMaxVFront = MinMax(VFront, MinVFront[Type], MaxVFront[Type]);
-	int MinMaxVSync = MinMax(VSync, MinVSync[Type], MaxVSync[Type]);
-	return Max(MinVTotal[Type], MinMaxVActive + MinMaxVFront + MinMaxVSync + MinVBack[Type]);
+	int ClampVActive = IsValidVActive() ? GetValue(VActive) : MinVActive[Type];
+	int ClampVFront = IsValidVFront() ? GetValue(VFront) : MinVFront[Type];
+	int ClampVSync = IsValidVSync() ? GetValue(VSync) : MinVSync[Type];
+	return ClampVActive + ClampVFront + ClampVSync + MinVBack[Type];
 }
 //---------------------------------------------------------------------------
 int DetailedResolutionClass::GetMaxVTotal(int Type)
 {
-	if (VActive < MinVActive[Type] || VActive > MaxVActive[Type])
-		return MaxVTotal[Type];
-
-	int MinMaxVActive = MinMax(VActive, MinVActive[Type], MaxVActive[Type]);
-	return Min(MaxVTotal[Type], MinMaxVActive + MaxVBlank[Type]);
-}
-//---------------------------------------------------------------------------
-long long DetailedResolutionClass::Min(long long Value1, long long Value2)
-{
-	if (Value1 <= Value2)
-		return Value1;
-
-	return Value2;
-}
-//---------------------------------------------------------------------------
-long long DetailedResolutionClass::Max(long long Value1, long long Value2)
-{
-	if (Value1 >= Value2)
-		return Value1;
-
-	return Value2;
-}
-//---------------------------------------------------------------------------
-long long DetailedResolutionClass::MinMax(long long Value, long long Min, long long Max)
-{
-	if (Value == BLANK)
-		return Min;
-
-	if (Value <= Min)
-		return Min;
-
-	if (Value >= Max)
-		return Max;
-
-	return Value;
+	int ClampVActive = IsValidVActive() ? GetValue(VActive) : MaxVActive[Type];
+	return ClampVActive + MaxVBlank[Type];
 }
 //---------------------------------------------------------------------------

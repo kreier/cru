@@ -31,7 +31,7 @@ public:
 	void Delete();
 	ListClass(const ListClass &);
 	ListClass &operator=(const ListClass &);
-	~ListClass();
+	virtual ~ListClass();
 	virtual int GetCount();
 	virtual int GetMaxCount();
 	virtual int GetSize();

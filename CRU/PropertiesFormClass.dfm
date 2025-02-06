@@ -3,7 +3,7 @@ object PropertiesForm: TPropertiesForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Display Properties'
-  ClientHeight = 395
+  ClientHeight = 507
   ClientWidth = 170
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,14 +17,111 @@ object PropertiesForm: TPropertiesForm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object NameGroupBox: TGroupBox
+  object DeviceIDGroupBox: TGroupBox
+    Left = 8
+    Top = 6
+    Width = 154
+    Height = 75
+    Caption = ' Device ID '
+    ParentBackground = False
+    TabOrder = 0
+    object DeviceIDLabel: TLabel
+      Left = 9
+      Top = 22
+      Width = 15
+      Height = 13
+      Caption = 'ID:'
+    end
+    object SerialIDLabel: TLabel
+      Left = 9
+      Top = 47
+      Width = 54
+      Height = 13
+      Caption = 'ID serial #:'
+    end
+    object DeviceID: TEdit
+      Left = 28
+      Top = 19
+      Width = 69
+      Height = 21
+      CharCase = ecUpperCase
+      MaxLength = 7
+      TabOrder = 0
+      OnChange = DeviceIDChange
+      OnExit = DeviceIDExit
+    end
+    object DeviceIDResetButton: TButton
+      Left = 104
+      Top = 19
+      Width = 42
+      Height = 21
+      Caption = 'Reset'
+      TabOrder = 1
+      OnClick = DeviceIDResetButtonClick
+    end
+    object SerialID: TEdit
+      Left = 67
+      Top = 44
+      Width = 79
+      Height = 21
+      MaxLength = 10
+      TabOrder = 2
+      OnChange = SerialIDChange
+      OnExit = SerialIDExit
+    end
+  end
+  object ColorFormatsGroupBox: TGroupBox
     Left = 8
     Top = 86
+    Width = 154
+    Height = 107
+    Caption = ' Color formats '
+    TabOrder = 1
+    object ColorDepthLabel: TLabel
+      Left = 9
+      Top = 57
+      Width = 105
+      Height = 13
+      Caption = 'Maximum color depth:'
+    end
+    object YCbCr422: TCheckBox
+      Left = 9
+      Top = 17
+      Width = 77
+      Height = 17
+      Caption = 'YCbCr 4:2:2'
+      TabOrder = 0
+      OnClick = YCbCr422Click
+    end
+    object YCbCr444: TCheckBox
+      Left = 9
+      Top = 34
+      Width = 77
+      Height = 17
+      Caption = 'YCbCr 4:4:4'
+      TabOrder = 1
+      OnClick = YCbCr444Click
+    end
+    object ColorDepthComboBox: TComboBox
+      Left = 9
+      Top = 76
+      Width = 136
+      Height = 21
+      Style = csDropDownList
+      DropDownCount = 25
+      ItemHeight = 13
+      TabOrder = 2
+      OnChange = ColorDepthComboBoxChange
+    end
+  end
+  object NameGroupBox: TGroupBox
+    Left = 8
+    Top = 198
     Width = 154
     Height = 71
     Caption = ' Name (13 characters max) '
     ParentBackground = False
-    TabOrder = 1
+    TabOrder = 2
     object Name: TEdit
       Left = 9
       Top = 19
@@ -45,87 +142,14 @@ object PropertiesForm: TPropertiesForm
       OnClick = IncludeNameClick
     end
   end
-  object ProductIDGroupBox: TGroupBox
-    Left = 8
-    Top = 6
-    Width = 154
-    Height = 75
-    Caption = ' Product ID '
-    ParentBackground = False
-    TabOrder = 0
-    object ProductIDLabel: TLabel
-      Left = 9
-      Top = 22
-      Width = 15
-      Height = 13
-      Caption = 'ID:'
-    end
-    object SerialIDLabel: TLabel
-      Left = 9
-      Top = 47
-      Width = 54
-      Height = 13
-      Caption = 'ID serial #:'
-    end
-    object ProductID: TEdit
-      Left = 28
-      Top = 19
-      Width = 69
-      Height = 21
-      CharCase = ecUpperCase
-      MaxLength = 7
-      TabOrder = 0
-      OnChange = ProductIDChange
-      OnExit = ProductIDExit
-    end
-    object ProductIDResetButton: TButton
-      Left = 104
-      Top = 19
-      Width = 42
-      Height = 21
-      Caption = 'Reset'
-      TabOrder = 1
-      OnClick = ProductIDResetButtonClick
-    end
-    object SerialID: TEdit
-      Left = 67
-      Top = 44
-      Width = 79
-      Height = 21
-      MaxLength = 10
-      TabOrder = 2
-      OnChange = SerialIDChange
-      OnExit = SerialIDExit
-    end
-  end
-  object FormOKButton: TButton
-    Left = 7
-    Top = 365
-    Width = 75
-    Height = 23
-    Caption = 'OK'
-    Default = True
-    ModalResult = 1
-    TabOrder = 4
-  end
-  object FormCancelButton: TButton
-    Left = 88
-    Top = 365
-    Width = 75
-    Height = 23
-    Cancel = True
-    Caption = 'Cancel'
-    ModalResult = 2
-    TabOrder = 5
-  end
   object SerialNumberGroupBox: TGroupBox
     Left = 8
-    Top = 162
+    Top = 274
     Width = 154
     Height = 71
     Caption = ' Serial number '
     ParentBackground = False
-    TabOrder = 2
+    TabOrder = 3
     object SerialNumber: TEdit
       Left = 9
       Top = 19
@@ -148,11 +172,11 @@ object PropertiesForm: TPropertiesForm
   end
   object RangeLimitsGroupBox: TGroupBox
     Left = 8
-    Top = 238
+    Top = 350
     Width = 154
     Height = 121
     Caption = ' Range limits '
-    TabOrder = 3
+    TabOrder = 4
     object VRateLabel: TLabel
       Left = 9
       Top = 22
@@ -270,5 +294,25 @@ object PropertiesForm: TPropertiesForm
       TabOrder = 5
       OnClick = IncludeRangeLimitsClick
     end
+  end
+  object FormOKButton: TButton
+    Left = 7
+    Top = 477
+    Width = 75
+    Height = 23
+    Caption = 'OK'
+    Default = True
+    ModalResult = 1
+    TabOrder = 5
+  end
+  object FormCancelButton: TButton
+    Left = 88
+    Top = 477
+    Width = 75
+    Height = 23
+    Cancel = True
+    Caption = 'Cancel'
+    ModalResult = 2
+    TabOrder = 6
   end
 end

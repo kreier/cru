@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "TVResolutionFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TTVResolutionForm *TVResolutionForm;
@@ -17,14 +16,6 @@ bool TTVResolutionForm::Connect(TVResolutionClass &NewTVResolution)
 {
 	TVResolution = &NewTVResolution;
 	return true;
-}
-//---------------------------------------------------------------------------
-TColor TTVResolutionForm::GetTextColor(bool Valid)
-{
-	if (!Valid)
-		return (TColor)RGB(255, 0, 0);
-
-	return clWindowText;
 }
 //---------------------------------------------------------------------------
 bool TTVResolutionForm::Refresh(void *Value)
@@ -56,7 +47,7 @@ bool TTVResolutionForm::Refresh(void *Value)
 	if (Value != FormatComboBox)
 		FormatComboBox->ItemIndex = TVResolution->GetFormat();
 
-	if (Value != Code && Common::IntegerToText(TVResolution->GetCode(), Text, TEXTSIZE))
+	if (Value != Code && IntegerToText(TVResolution->GetCode(), Text, TEXTSIZE))
 		Code->Text = Text;
 
 	Code->Font->Color = GetTextColor(TVResolution->IsValidCode());
@@ -81,8 +72,8 @@ bool TTVResolutionForm::InitModeComboBox()
 	char Text[TEXTSIZE];
 
 	ItemIndex = ModeComboBox->ItemIndex;
-	ModeComboBox->Clear();
 	ModeComboBox->Items->BeginUpdate();
+	ModeComboBox->Clear();
 
 	for (Index = 0; TVResolution->GetModeText(Index, Text, TEXTSIZE); Index++)
 		ModeComboBox->Items->Add(Text);
@@ -99,8 +90,8 @@ bool TTVResolutionForm::InitFormatComboBox()
 	char Text[TEXTSIZE];
 
 	ItemIndex = FormatComboBox->ItemIndex;
-	FormatComboBox->Clear();
 	FormatComboBox->Items->BeginUpdate();
+	FormatComboBox->Clear();
 
 	for (Index = 0; TVResolution->GetFormatText(Index, Text, TEXTSIZE); Index++)
 		FormatComboBox->Items->Add(Text);
@@ -151,12 +142,12 @@ bool TTVResolutionForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = ResolutionGroupBox->Top + ResolutionGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = ResolutionGroupBox->Left + ResolutionGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -202,7 +193,7 @@ void __fastcall TTVResolutionForm::CodeChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	TVResolution->SetCode(Common::TextToInteger(Code->Text.c_str()));
+	TVResolution->SetCode(TextToInteger(Code->Text.c_str()));
 	Refresh(Code);
 }
 //---------------------------------------------------------------------------

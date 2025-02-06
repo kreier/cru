@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "FreeSyncRangeClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 const int FreeSyncRangeClass::MinVRange = 1;
 const int FreeSyncRangeClass::MaxVRange = 255;
@@ -12,12 +11,18 @@ FreeSyncRangeClass::FreeSyncRangeClass()
 {
 	MinVRate = BLANK;
 	MaxVRate = BLANK;
+	Version[0] = 1;
+	Version[1] = 1;
+	OtherSize = 1;
+	MaxOtherSize = sizeof OtherData;
+	std::memset(OtherData, 0, MaxOtherSize);
 }
 //---------------------------------------------------------------------------
 bool FreeSyncRangeClass::Read(const unsigned char *Data, int MaxSize)
 {
 	int Type;
 	int Size;
+	int Index;
 
 	if (!Data)
 		return false;
@@ -34,8 +39,11 @@ bool FreeSyncRangeClass::Read(const unsigned char *Data, int MaxSize)
 	if (Size < 8)
 		return false;
 
-	if (std::memcmp(&Data[1], "\x1A\x00\x00\x01\x01", 5) != 0)
+	if (Data[1] != 0x1A || Data[2] != 0x00 || Data[3] != 0x00)
 		return false;
+
+	Version[0] = Data[4];
+	Version[1] = Data[5];
 
 	if (Data[6] != 0)
 		MinVRate = Data[6];
@@ -47,11 +55,24 @@ bool FreeSyncRangeClass::Read(const unsigned char *Data, int MaxSize)
 	else
 		MaxVRate = BLANK;
 
+	Index = 8;
+	OtherSize = Size - Index + 1;
+
+	if (OtherSize < 0 || OtherSize > MaxOtherSize)
+		OtherSize = 0;
+
+	std::memset(OtherData, 0, MaxOtherSize);
+
+	if (OtherSize > 0)
+		std::memcpy(OtherData, &Data[Index], OtherSize);
+
 	return true;
 }
 //---------------------------------------------------------------------------
 bool FreeSyncRangeClass::Write(unsigned char *Data, int MaxSize)
 {
+	int Size;
+
 	if (!Data)
 		return false;
 
@@ -59,9 +80,11 @@ bool FreeSyncRangeClass::Write(unsigned char *Data, int MaxSize)
 		return false;
 
 	std::memset(Data, 0, MaxSize);
-	Data[0] = 3 << 5;
-	Data[0] |= 8;
-	std::memcpy(&Data[1], "\x1A\x00\x00\x01\x01", 5);
+	Data[1] = 0x1A;
+	Data[2] = 0x00;
+	Data[3] = 0x00;
+	Data[4] = Version[0];
+	Data[5] = Version[1];
 
 	if (MinVRate != BLANK)
 		Data[6] = MinVRate;
@@ -69,6 +92,16 @@ bool FreeSyncRangeClass::Write(unsigned char *Data, int MaxSize)
 	if (MaxVRate != BLANK)
 		Data[7] = MaxVRate;
 
+	Size = 7;
+
+	if (OtherSize > 0)
+	{
+		std::memcpy(&Data[Size + 1], OtherData, OtherSize);
+		Size += OtherSize;
+	}
+
+	Data[0] = 3 << 5;
+	Data[0] |= Size;
 	return true;
 }
 //---------------------------------------------------------------------------

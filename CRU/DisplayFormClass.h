@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "DisplayListClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -117,7 +118,11 @@ __published:	// IDE-managed Components
 	void __fastcall FormOKButtonClick(TObject *Sender);
 	void __fastcall FormCancelButtonClick(TObject *Sender);
 private:	// User declarations
+	static const int DetailedRows = 4;
+	static const int StandardRows = 8;
+	static const int ExtensionRows = 7;
 	DisplayListClass DisplayList;
+	DisplayClass *Display;
 	bool Refreshing;
 	int DetailedLastItemIndex;
 	int DetailedLastClickedItemIndex;
@@ -129,7 +134,6 @@ public:		// User declarations
 	__fastcall TDisplayForm(TComponent *Owner);
 	void FatalError(const char *);
 	bool Refresh(void *, int);
-	bool InitDisplayComboBox();
 	bool RefreshDisplayComboBox();
 	bool RefreshDisplayButtons();
 	bool RefreshEstablishedCheckBoxes();

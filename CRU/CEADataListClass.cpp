@@ -1,10 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "CEADataListClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 CEADataListClass::CEADataListClass(int Slots) : ListClass(Slots, 32)
 {
@@ -17,22 +15,32 @@ const char *CEADataListClass::SlotTypeText[] =
 	"TV resolutions",
 	"HDMI support",
 	"HDMI 2.0 support",
+	"HDMI 2.1 support",
 	"FreeSync range",
 	"Vendor-specific data",
 	"Speaker setup",
 	"Video capability",
 	"Vendor-specific video",
+	"HDR10+ video",
+	"Dolby video",
 	"HDMI video",
 	"Colorimetry",
-	"Video preference",
 	"HDR static metadata",
 	"HDR dynamic metadata",
+	"Video preference",
 	"4:2:0 resolutions",
 	"4:2:0 capability map",
 	"Vendor-specific audio",
+	"Dolby audio",
 	"HDMI audio",
 	"Room configuration",
 	"Speaker location",
+	"InfoFrame data",
+	"Detailed resolution",
+	"Type 8 resolutions",
+	"Type 10 resolutions",
+	"Extension override",
+	"Sink capability",
 	"Extended",
 	"Other",
 };
@@ -124,9 +132,14 @@ int CEADataListClass::GetSlotType(int Slot)
 				return CEA_HDMI;
 
 			if (Size >= 8 && std::memcmp(&Byte[1], "\xD8\x5D\xC4", 3) == 0)
-				return CEA_HDMI2;
+			{
+				if (Size >= 9 || Byte[7] >> 4)
+					return CEA_HDMI21;
 
-			if (Size >= 9 && std::memcmp(&Byte[1], "\x1A\x00\x00\x01\x01", 5) == 0 && Byte[6] != 0 && Byte[7] != 0 && Byte[6] <= Byte[7])
+				return CEA_HDMI2;
+			}
+
+			if (Size >= 9 && std::memcmp(&Byte[1], "\x1A\x00\x00", 3) == 0 && Byte[6] != 0 && Byte[7] != 0 && Byte[6] <= Byte[7])
 				return CEA_FREESYNC;
 
 			return CEA_VENDOR_SPECIFIC_DATA;
@@ -153,6 +166,12 @@ int CEADataListClass::GetSlotType(int Slot)
 					if (Size < 5)
 						return CEA_EXTENDED;
 
+					if (std::memcmp(&Byte[2], "\x8B\x84\x90", 3) == 0)
+						return CEA_HDR10_VIDEO;
+
+					if (std::memcmp(&Byte[2], "\x46\xD0\x00", 3) == 0)
+						return CEA_DOLBY_VIDEO;
+
 					return CEA_VENDOR_SPECIFIC_VIDEO;
 
 				case 4:
@@ -165,10 +184,13 @@ int CEADataListClass::GetSlotType(int Slot)
 					return CEA_COLORIMETRY;
 
 				case 6:
-					return CEA_HDR_STATIC;
+					if (Size < 4)
+						return CEA_EXTENDED;
+
+					return CEA_HDR_STATIC_METADATA;
 
 				case 7:
-					return CEA_HDR_DYNAMIC;
+					return CEA_HDR_DYNAMIC_METADATA;
 
 				case 13:
 					return CEA_VIDEO_FORMAT_PREFERENCE;
@@ -183,6 +205,9 @@ int CEADataListClass::GetSlotType(int Slot)
 					if (Size < 5)
 						return CEA_EXTENDED;
 
+					if (std::memcmp(&Byte[2], "\x46\xD0\x00", 3) == 0)
+						return CEA_DOLBY_AUDIO;
+
 					return CEA_VENDOR_SPECIFIC_AUDIO;
 
 				case 18:
@@ -192,7 +217,25 @@ int CEADataListClass::GetSlotType(int Slot)
 					return CEA_ROOM_CONFIGURATION;
 
 				case 20:
-                	return CEA_SPEAKER_LOCATION;
+					return CEA_SPEAKER_LOCATION;
+
+				case 32:
+					return CEA_INFOFRAME_DATA;
+
+				case 34:
+					return CEA_DETAILED_RESOLUTION;
+
+				case 35:
+					return CEA_TYPE_8_RESOLUTIONS;
+
+				case 42:
+					return CEA_TYPE_10_RESOLUTIONS;
+
+				case 120:
+					return CEA_EXTENSION_OVERRIDE;
+
+				case 121:
+					return CEA_SINK_CAPABILITY;
 			}
 
 			return CEA_EXTENDED;
@@ -286,6 +329,7 @@ bool CEADataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 	Byte = &SlotData[Slot * SlotSize];
 	Type = GetSlotType(Slot);
 	Size = GetSlotSize(Slot);
+	Text[0] = 0;
 
 	switch (Type)
 	{
@@ -311,40 +355,54 @@ bool CEADataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 				std::snprintf(Text, TextSize, "5.1 surround");
 			else if (Byte[1] == 79 && Byte[2] == 0 && Byte[3] == 0)
 				std::snprintf(Text, TextSize, "7.1 surround");
-			else
-				Text[0] = 0;
 
 			break;
 
 		case CEA_HDMI:
 			if (Size > 7 && Byte[7] != 0)
 				std::snprintf(Text, TextSize, "Max: %d MHz", Byte[7] * 5);
-			else
-				Text[0] = 0;
 
 			break;
 
 		case CEA_HDMI2:
-			if (Size > 5 && Byte[5] != 0)
-				std::snprintf(Text, TextSize, "Max: %d Mcsc", Byte[5] * 5);
-			else
-				Text[0] = 0;
+		case CEA_HDMI21:
+			if (Size > 7)
+			{
+				int Rate = Byte[7] >> 4;
+
+				switch (Rate)
+				{
+					case 0:
+						if (Byte[5] != 0)
+							std::snprintf(Text, TextSize, "Max: %d Mcsc", Byte[5] * 5);
+
+						break;
+
+					case 1:
+					case 2:
+						std::snprintf(Text, TextSize, "Max: %d Gbps", Rate * 9);
+						break;
+
+					case 3:
+					case 4:
+					case 5:
+					case 6:
+						std::snprintf(Text, TextSize, "Max: %d Gbps", Rate * 8);
+						break;
+				}
+			}
 
 			break;
 
 		case CEA_FREESYNC:
 			if (Size > 7)
 				std::snprintf(Text, TextSize, "%d-%d Hz", Byte[6], Byte[7]);
-			else
-				Text[0] = 0;
 
 			break;
 
 		case CEA_VENDOR_SPECIFIC_DATA:
 			if (Size > 3)
 				std::snprintf(Text, TextSize, "ID: 0x%02X%02X%02X", Byte[3], Byte[2], Byte[1]);
-			else
-				Text[0] = 0;
 
 			break;
 
@@ -352,13 +410,8 @@ bool CEADataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 		case CEA_VENDOR_SPECIFIC_AUDIO:
 			if (Size > 4)
 				std::snprintf(Text, TextSize, "ID: 0x%02X%02X%02X", Byte[4], Byte[3], Byte[2]);
-			else
-				Text[0] = 0;
 
 			break;
-
-		default:
-			Text[0] = 0;
 	}
 
 	return true;
@@ -379,10 +432,12 @@ bool CEADataListClass::EditPossible(int Slot)
 		case CEA_VIDEO:
 		case CEA_HDMI:
 		case CEA_HDMI2:
+		case CEA_HDMI21:
 		case CEA_FREESYNC:
 		case CEA_SPEAKER_ALLOCATION:
 		case CEA_VIDEO_CAPABILITY:
 		case CEA_COLORIMETRY:
+		case CEA_HDR_STATIC_METADATA:
 		case CEA_YCC420_VIDEO:
 			return true;
 	}
@@ -416,6 +471,22 @@ bool CEADataListClass::HDMI2Supported()
 		Type = GetSlotType(Slot);
 
 		if (Type == CEA_HDMI2)
+			return true;
+	}
+
+	return false;
+}
+//---------------------------------------------------------------------------
+bool CEADataListClass::HDMI21Supported()
+{
+	int Slot;
+	int Type;
+
+	for (Slot = 0; Slot < SlotCount; Slot++)
+	{
+		Type = GetSlotType(Slot);
+
+		if (Type == CEA_HDMI21)
 			return true;
 	}
 

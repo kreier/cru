@@ -4,24 +4,29 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "TiledDisplayTopologyClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
 #include <Forms.hpp>
+#include <ExtCtrls.hpp>
 //---------------------------------------------------------------------------
 class TTiledDisplayTopologyForm : public TCommonForm
 {
 __published:	// IDE-managed Components
+	TLabel *VendorIDLabel;
+	TLabel *ProductIDLabel;
+	TLabel *SerialIDLabel;
 	TLabel *TilesLabel;
 	TLabel *LocationLabel;
 	TLabel *SizeLabel;
 	TLabel *MultiplierLabel;
-	TLabel *TopLabel;
-	TLabel *BottomLabel;
-	TLabel *RightLabel;
-	TLabel *LeftLabel;
-	TLabel *ProductIDLabel;
-	TLabel *SerialIDLabel;
+	TLabel *MultiplierDivisorLabel;
+	TShape *Rectangle;
+	TGroupBox *TopologyIDGroupBox;
+	TEdit *VendorID;
+	TEdit *ProductID;
+	TEdit *SerialID;
 	TGroupBox *PhysicalEnclosuresGroupBox;
 	TRadioButton *PhysicalEnclosuresRadioButton1;
 	TRadioButton *PhysicalEnclosuresRadioButton0;
@@ -45,17 +50,19 @@ __published:	// IDE-managed Components
 	TGroupBox *BezelGroupBox;
 	TEdit *PixelMultiplier;
 	TEdit *TopBezelSize;
-	TEdit *BottomBezelSize;
-	TEdit *RightBezelSize;
 	TEdit *LeftBezelSize;
-	TGroupBox *TopologyIDGroupBox;
-	TEdit *ProductID;
-	TEdit *SerialID;
+	TEdit *RightBezelSize;
+	TEdit *BottomBezelSize;
 	TButton *FormOKButton;
 	TButton *FormCancelButton;
-	TButton *ProductIDResetButton;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
+	void __fastcall VendorIDChange(TObject *Sender);
+	void __fastcall VendorIDExit(TObject *Sender);
+	void __fastcall ProductIDChange(TObject *Sender);
+	void __fastcall ProductIDExit(TObject *Sender);
+	void __fastcall SerialIDChange(TObject *Sender);
+	void __fastcall SerialIDExit(TObject *Sender);
 	void __fastcall EnclosuresRadioButtonClick(TObject *Sender);
 	void __fastcall SingleTileBehaviorRadioButtonClick(TObject *Sender);
 	void __fastcall MultipleTileBehaviorRadioButtonClick(TObject *Sender);
@@ -75,26 +82,20 @@ __published:	// IDE-managed Components
 	void __fastcall PixelMultiplierExit(TObject *Sender);
 	void __fastcall TopBezelSizeChange(TObject *Sender);
 	void __fastcall TopBezelSizeExit(TObject *Sender);
-	void __fastcall BottomBezelSizeChange(TObject *Sender);
-	void __fastcall BottomBezelSizeExit(TObject *Sender);
-	void __fastcall RightBezelSizeChange(TObject *Sender);
-	void __fastcall RightBezelSizeExit(TObject *Sender);
 	void __fastcall LeftBezelSizeChange(TObject *Sender);
 	void __fastcall LeftBezelSizeExit(TObject *Sender);
-	void __fastcall ProductIDChange(TObject *Sender);
-	void __fastcall ProductIDExit(TObject *Sender);
-	void __fastcall ProductIDKeyPress(TObject *Sender, char &Key);
-	void __fastcall ProductIDResetButtonClick(TObject *Sender);
-	void __fastcall SerialIDChange(TObject *Sender);
-	void __fastcall SerialIDExit(TObject *Sender);
+	void __fastcall RightBezelSizeChange(TObject *Sender);
+	void __fastcall RightBezelSizeExit(TObject *Sender);
+	void __fastcall BottomBezelSizeChange(TObject *Sender);
+	void __fastcall BottomBezelSizeExit(TObject *Sender);
 private:	// User declarations
 	TiledDisplayTopologyClass *TiledDisplayTopology;
 	bool Refreshing;
 public:		// User declarations
 	__fastcall TTiledDisplayTopologyForm(TComponent *Owner);
 	bool Connect(TiledDisplayTopologyClass &);
-	TColor GetTextColor(bool);
 	bool Refresh(void *);
+	bool RefreshTopologyIDTextBoxes();
 	bool RefreshPhysicalEnclosuresRadioButtons();
 	bool RefreshSingleTileBehaviorRadioButtons();
 	bool RefreshMultipleTileBehaviorRadioButtons();
@@ -102,7 +103,6 @@ public:		// User declarations
 	bool RefreshLocationTextBoxes();
 	bool RefreshSizeTextBoxes();
 	bool RefreshBezelTextBoxes();
-	bool RefreshTopologyIDTextBoxes();
 	bool ScaleControls();
 };
 //---------------------------------------------------------------------------

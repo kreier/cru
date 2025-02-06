@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "DetailedResolutionClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -73,9 +74,10 @@ __published:	// IDE-managed Components
 	TEdit *HRate;
 	TEdit *PClock;
 	TCheckBox *Interlaced;
+	TCheckBox *Preferred;
 	TButton *FormOKButton;
 	TButton *FormCancelButton;
-	TCheckBox *Native;
+	TLabel *ActualPClock;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall TimingComboBoxChange(TObject *Sender);
@@ -121,9 +123,12 @@ __published:	// IDE-managed Components
 	void __fastcall PClockChange(TObject *Sender);
 	void __fastcall PClockExit(TObject *Sender);
 	void __fastcall InterlacedClick(TObject *Sender);
-	void __fastcall NativeClick(TObject *Sender);
+	void __fastcall PreferredClick(TObject *Sender);
 private:	// User declarations
 	DetailedResolutionClass *DetailedResolution;
+	int VRateDigits;
+	int HRateDigits;
+	int PClockDigits;
 	bool Refreshing;
 public:		// User declarations
 	__fastcall TDetailedResolutionForm(TComponent *Owner);
@@ -141,8 +146,7 @@ public:		// User declarations
 	bool RefreshFrequencyRadioButtons();
 	bool RefreshFrequencyTextBoxes();
 	bool RefreshFrequencyLabels();
-	bool RefreshInterlacedCheckBox();
-	bool RefreshNativeCheckBox();
+	bool RefreshFrequencyCheckBoxes();
 	bool ScaleControls();
 };
 //---------------------------------------------------------------------------

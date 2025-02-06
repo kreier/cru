@@ -1,11 +1,10 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "SpeakerSetupClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
-SpeakerSetupClass::SpeakerSetupClass() : BitListClass(3, "\xFF\x07\x00")
+SpeakerSetupClass::SpeakerSetupClass() : BitListClass(3, "\xFF\xFF\x0F")
 {
 	BitData[0] = true;
 	UndoBitData[0] = true;

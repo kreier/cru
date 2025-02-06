@@ -18,9 +18,7 @@ private:
 	static const int ModLatency;
 
 	int MaxDataSize;
-	int MaxMaxDataSize;
-
-	char *PhysicalAddress;
+	char PhysicalAddress[12];
 	bool DeepColorYCbCr444;
 	bool DeepColor30bit;
 	bool DeepColor36bit;
@@ -41,22 +39,16 @@ private:
 	bool InterlacedAudioSupported;
 	int InterlacedAudioLatency;
 	int OtherFlags;
-	HDMIResolutionListClass *HDMIResolutionList;
+	HDMIResolutionListClass HDMIResolutionList;
 	int HDMI_3D_Length;
 	int OtherSize;
 	int MaxOtherSize;
-	unsigned char *OtherData;
+	unsigned char OtherData[23];
 
 public:
-	HDMISupportClass(int Bytes = 31);
-	void Copy(const HDMISupportClass &);
-	void Delete();
-	HDMISupportClass(const HDMISupportClass &);
-	HDMISupportClass &operator=(const HDMISupportClass &);
-	~HDMISupportClass();
+	HDMISupportClass(int = 31);
 	bool Read(const unsigned char *, int);
 	bool Write(unsigned char *, int);
-	bool SetMaxSize(int);
 	bool ReadPhysicalAddress(const unsigned char *);
 	bool WritePhysicalAddress(unsigned char *);
 	bool GetPhysicalAddressText(char *, int);

@@ -7,7 +7,7 @@
 class HDMIResolutionListClass : public ListClass
 {
 public:
-	HDMIResolutionListClass(int);
+	HDMIResolutionListClass(int = 7);
 	bool Read(const unsigned char *, int);
 	bool Write(unsigned char *, int);
 };

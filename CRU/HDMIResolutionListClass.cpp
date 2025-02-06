@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "HDMIResolutionListClass.h"
 #include "HDMIResolutionClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 HDMIResolutionListClass::HDMIResolutionListClass(int Slots) : ListClass(Slots, 1)
 {
@@ -14,7 +13,6 @@ bool HDMIResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 {
 	int Slots;
 	int Slot;
-	HDMIResolutionClass HDMIResolution;
 
 	if (!Data)
 		return false;
@@ -25,6 +23,7 @@ bool HDMIResolutionListClass::Read(const unsigned char *Data, int MaxSize)
 		return false;
 
 	Slots = MaxSize / SlotSize;
+	HDMIResolutionClass HDMIResolution;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
 	{

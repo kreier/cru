@@ -3,7 +3,7 @@ object AddCEADataForm: TAddCEADataForm
   Top = 0
   BorderStyle = bsDialog
   Caption = 'Add Data Block'
-  ClientHeight = 203
+  ClientHeight = 220
   ClientWidth = 170
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,7 +21,7 @@ object AddCEADataForm: TAddCEADataForm
     Left = 8
     Top = 6
     Width = 154
-    Height = 161
+    Height = 178
     Caption = ' Type '
     TabOrder = 0
     object TVRadioButton: TRadioButton
@@ -65,7 +65,7 @@ object AddCEADataForm: TAddCEADataForm
       Top = 85
       Width = 103
       Height = 17
-      Caption = 'HDMI 2.0 support'
+      Caption = 'HDMI 2.x support'
       TabOrder = 4
       OnClick = HDMI2RadioButtonClick
     end
@@ -96,10 +96,19 @@ object AddCEADataForm: TAddCEADataForm
       TabOrder = 7
       OnClick = VideoCapabilityRadioButtonClick
     end
+    object HDRStaticRadioButton: TRadioButton
+      Left = 9
+      Top = 153
+      Width = 117
+      Height = 17
+      Caption = 'HDR static metadata'
+      TabOrder = 8
+      OnClick = HDRStaticRadioButtonClick
+    end
   end
   object FormOKButton: TButton
     Left = 7
-    Top = 173
+    Top = 190
     Width = 75
     Height = 23
     Caption = 'OK'
@@ -109,7 +118,7 @@ object AddCEADataForm: TAddCEADataForm
   end
   object FormCancelButton: TButton
     Left = 88
-    Top = 173
+    Top = 190
     Width = 75
     Height = 23
     Cancel = True

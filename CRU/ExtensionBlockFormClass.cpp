@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "ExtensionBlockFormClass.h"
@@ -13,12 +13,11 @@
 #include "FreeSyncRangeFormClass.h"
 #include "ColorimetryFormClass.h"
 #include "VideoCapabilityFormClass.h"
+#include "HDRStaticMetadataFormClass.h"
 #include "StandardResolutionFormClass.h"
 #include "AddDIDDataFormClass.h"
 #include "DIDDetailedResolutionListFormClass.h"
 #include "TiledDisplayTopologyFormClass.h"
-#include "Common.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TExtensionBlockForm *ExtensionBlockForm;
@@ -52,7 +51,7 @@ bool TExtensionBlockForm::Refresh(void *Value, int ItemIndex)
 
 	switch (ExtensionBlock->GetType())
 	{
-		case CEA_861:
+		case CEA_EXT:
 			DetailedGroupBox->Visible = true;
 			CEADataGroupBox->Visible = true;
 			StandardGroupBox->Visible = false;
@@ -73,6 +72,7 @@ bool TExtensionBlockForm::Refresh(void *Value, int ItemIndex)
 			break;
 
 		case DISPLAYID_EXT:
+		case DISPLAYID2_EXT:
 			DetailedGroupBox->Visible = false;
 			CEADataGroupBox->Visible = false;
 			StandardGroupBox->Visible = false;
@@ -145,8 +145,8 @@ bool TExtensionBlockForm::InitExtensionTypeComboBox()
 	char Text[TEXTSIZE];
 
 	ItemIndex = ExtensionTypeComboBox->ItemIndex;
-	ExtensionTypeComboBox->Clear();
 	ExtensionTypeComboBox->Items->BeginUpdate();
+	ExtensionTypeComboBox->Clear();
 
 	for (Index = 0; ExtensionBlock->GetTypeText(Index, Text, TEXTSIZE); Index++)
 		ExtensionTypeComboBox->Items->Add(Text);
@@ -183,7 +183,6 @@ bool TExtensionBlockForm::RefreshDetailedCaption()
 bool TExtensionBlockForm::RefreshDetailedListBox(int ItemIndex)
 {
 	int Index;
-	DetailedResolutionClass DetailedResolution;
 	char Text[TEXTSIZE];
 
 	if (ExtensionBlock->DetailedResolutions()->GetMaxCount() > 0)
@@ -200,11 +199,13 @@ bool TExtensionBlockForm::RefreshDetailedListBox(int ItemIndex)
 		ItemIndex = -1;
 	}
 
-	DetailedListBox->Clear();
+	int TopIndex = DetailedListBox->TopIndex;
 	DetailedListBox->Items->BeginUpdate();
+	DetailedListBox->Clear();
+	DetailedResolutionClass DetailedResolution;
 
 	for (Index = 0; ExtensionBlock->DetailedResolutions()->Get(Index, DetailedResolution); Index++)
-		if (DetailedResolution.GetText(Text, TEXTSIZE))
+		if (DetailedResolution.GetText(Text, TEXTSIZE, Dash()))
 			DetailedListBox->Items->Add(Text);
 
 	if (Index == 0 && ExtensionBlock->DetailedResolutions()->GetMaxCount() > 0)
@@ -213,7 +214,12 @@ bool TExtensionBlockForm::RefreshDetailedListBox(int ItemIndex)
 	for (Index = 0; ExtensionBlock->DetailedGetExtensionText(Index, Text, TEXTSIZE); Index++)
 		DetailedListBox->Items->Add(Text);
 
-	DetailedListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		DetailedListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < ExtensionBlock->DetailedResolutions()->GetCount())
+		DetailedListBox->ItemIndex = ItemIndex;
+
 	DetailedListBox->Items->EndUpdate();
 	return true;
 }
@@ -245,8 +251,9 @@ bool TExtensionBlockForm::RefreshCEADataListBox(int ItemIndex)
 {
 	int Index;
 
-	CEADataListBox->Clear();
+	int TopIndex = CEADataListBox->TopIndex;
 	CEADataListBox->Items->BeginUpdate();
+	CEADataListBox->Clear();
 
 	for (Index = 0; Index < ExtensionBlock->CEAData()->GetCount(); Index++)
 		CEADataListBox->Items->Add("Text");
@@ -254,7 +261,12 @@ bool TExtensionBlockForm::RefreshCEADataListBox(int ItemIndex)
 	if (Index == 0)
 		CEADataListBox->Items->Add("No data blocks");
 
-	CEADataListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		CEADataListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < ExtensionBlock->CEAData()->GetCount())
+		CEADataListBox->ItemIndex = ItemIndex;
+
 	CEADataListBox->Items->EndUpdate();
 	return true;
 }
@@ -285,11 +297,22 @@ bool TExtensionBlockForm::RefreshStandardCaption()
 bool TExtensionBlockForm::RefreshStandardListBox(int ItemIndex)
 {
 	int Index;
-	StandardResolutionClass StandardResolution;
 	char Text[TEXTSIZE];
 
-	StandardListBox->Clear();
-	StandardListBox->Items->BeginUpdate();
+	int TopIndex = StandardListBox->TopIndex;
+
+	if (ExtensionBlock->StandardResolutions()->GetCount() <= StandardRows * StandardListBox->Columns)
+	{
+		StandardListBox->Clear();
+		StandardListBox->Items->BeginUpdate();
+	}
+	else
+	{
+		StandardListBox->Items->BeginUpdate();
+		StandardListBox->Clear();
+	}
+
+	StandardResolutionClass StandardResolution;
 
 	for (Index = 0; ExtensionBlock->StandardResolutions()->Get(Index, StandardResolution); Index++)
 		if (StandardResolution.GetText(Text, TEXTSIZE))
@@ -298,7 +321,12 @@ bool TExtensionBlockForm::RefreshStandardListBox(int ItemIndex)
 	if (Index == 0)
 		StandardListBox->Items->Add("No standard resolutions");
 
-	StandardListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		StandardListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < ExtensionBlock->StandardResolutions()->GetCount())
+		StandardListBox->ItemIndex = ItemIndex;
+
 	StandardListBox->Items->EndUpdate();
 	return true;
 }
@@ -330,8 +358,9 @@ bool TExtensionBlockForm::RefreshDIDDataListBox(int ItemIndex)
 {
 	int Index;
 
-	DIDDataListBox->Clear();
+	int TopIndex = DIDDataListBox->TopIndex;
 	DIDDataListBox->Items->BeginUpdate();
+	DIDDataListBox->Clear();
 
 	for (Index = 0; Index < ExtensionBlock->DIDData()->GetCount(); Index++)
 		DIDDataListBox->Items->Add("Text");
@@ -339,7 +368,12 @@ bool TExtensionBlockForm::RefreshDIDDataListBox(int ItemIndex)
 	if (Index == 0)
 		DIDDataListBox->Items->Add("No data blocks");
 
-	DIDDataListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		DIDDataListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < ExtensionBlock->DIDData()->GetCount())
+		DIDDataListBox->ItemIndex = ItemIndex;
+
 	DIDDataListBox->Items->EndUpdate();
 	return true;
 }
@@ -369,20 +403,20 @@ bool TExtensionBlockForm::ScaleControls()
 	ExtensionCopyButton->Width = ButtonWidth;
 	ExtensionCopyButton->Height = ButtonHeight;
 	ExtensionCopyButton->Top = ExtensionTypeComboBox->Top;
-	Common::FixButtonCaption(ExtensionCopyButton, Canvas->TextWidth(ExtensionCopyButton->Caption));
+	FixButtonCaption(ExtensionCopyButton, Canvas->TextWidth(ExtensionCopyButton->Caption));
 
 	ExtensionPasteButton->Width = ButtonWidth;
 	ExtensionPasteButton->Height = ButtonHeight;
 	ExtensionPasteButton->Top = ExtensionCopyButton->Top;
-	Common::FixButtonCaption(ExtensionPasteButton, Canvas->TextWidth(ExtensionPasteButton->Caption));
+	FixButtonCaption(ExtensionPasteButton, Canvas->TextWidth(ExtensionPasteButton->Caption));
 
 	ExtensionResetButton->Width = ButtonWidth;
 	ExtensionResetButton->Height = ButtonHeight;
 	ExtensionResetButton->Top = ExtensionPasteButton->Top;
-	Common::FixButtonCaption(ExtensionResetButton, Canvas->TextWidth(ExtensionResetButton->Caption));
+	FixButtonCaption(ExtensionResetButton, Canvas->TextWidth(ExtensionResetButton->Caption));
 
 	DetailedListBox->Width = ListBoxWidth;
-	DetailedListBox->Height = Text.tmHeight * 6 + 4;
+	DetailedListBox->Height = Text.tmHeight * DetailedRows + 4;
 	DetailedListBox->ItemHeight = Text.tmHeight;
 	DetailedListBox->Left = PaddingWidth;
 	DetailedListBox->Top = PaddingTop;
@@ -391,45 +425,45 @@ bool TExtensionBlockForm::ScaleControls()
 	DetailedAddButton->Height = ButtonHeight;
 	DetailedAddButton->Left = DetailedListBox->Left + ButtonLeft;
 	DetailedAddButton->Top = DetailedListBox->Top + DetailedListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(DetailedAddButton, Canvas->TextWidth(DetailedAddButton->Caption));
+	FixButtonCaption(DetailedAddButton, Canvas->TextWidth(DetailedAddButton->Caption));
 
 	DetailedEditButton->Width = ButtonWidth;
 	DetailedEditButton->Height = ButtonHeight;
 	DetailedEditButton->Left = DetailedAddButton->Left + DetailedAddButton->Width;
 	DetailedEditButton->Top = DetailedAddButton->Top;
-	Common::FixButtonCaption(DetailedEditButton, Canvas->TextWidth(DetailedEditButton->Caption));
+	FixButtonCaption(DetailedEditButton, Canvas->TextWidth(DetailedEditButton->Caption));
 
 	DetailedDeleteButton->Width = ButtonWidth;
 	DetailedDeleteButton->Height = ButtonHeight;
 	DetailedDeleteButton->Left = DetailedEditButton->Left + DetailedEditButton->Width;
 	DetailedDeleteButton->Top = DetailedEditButton->Top;
-	Common::FixButtonCaption(DetailedDeleteButton, Canvas->TextWidth(DetailedDeleteButton->Caption));
+	FixButtonCaption(DetailedDeleteButton, Canvas->TextWidth(DetailedDeleteButton->Caption));
 
 	DetailedDeleteAllButton->Width = LongButtonWidth;
 	DetailedDeleteAllButton->Height = LongButtonHeight;
 	DetailedDeleteAllButton->Left = DetailedDeleteButton->Left + DetailedDeleteButton->Width;
 	DetailedDeleteAllButton->Top = DetailedDeleteButton->Top;
-	Common::FixButtonCaption(DetailedDeleteAllButton, Canvas->TextWidth(DetailedDeleteAllButton->Caption));
+	FixButtonCaption(DetailedDeleteAllButton, Canvas->TextWidth(DetailedDeleteAllButton->Caption));
 
 	DetailedResetButton->Width = ButtonWidth;
 	DetailedResetButton->Height = ButtonHeight;
 	DetailedResetButton->Left = DetailedDeleteAllButton->Left + DetailedDeleteAllButton->Width;
 	DetailedResetButton->Top = DetailedDeleteAllButton->Top;
-	Common::FixButtonCaption(DetailedResetButton, Canvas->TextWidth(DetailedResetButton->Caption));
+	FixButtonCaption(DetailedResetButton, Canvas->TextWidth(DetailedResetButton->Caption));
 
 	DetailedUpButton->Width = ArrowButtonWidth;
 	DetailedUpButton->Height = ArrowButtonHeight;
 	DetailedUpButton->Top = DetailedResetButton->Top;
 	DetailedUpButton->Enabled = false;
 	DetailedUpButton->NumGlyphs = NumGlyphs;
-	DetailedUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	DetailedUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	DetailedDownButton->Width = ArrowButtonWidth;
 	DetailedDownButton->Height = ArrowButtonHeight;
 	DetailedDownButton->Top = DetailedUpButton->Top;
 	DetailedDownButton->Enabled = false;
 	DetailedDownButton->NumGlyphs = NumGlyphs;
-	DetailedDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	DetailedDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	DetailedDownButton->Left = DetailedListBox->Left + DetailedListBox->Width - ButtonRight - DetailedDownButton->Width;
 	DetailedUpButton->Left = DetailedDownButton->Left - DetailedUpButton->Width;
@@ -440,7 +474,7 @@ bool TExtensionBlockForm::ScaleControls()
 	DetailedGroupBox->Top = ExtensionTypeComboBox->Top + ExtensionTypeComboBox->Height + GroupBoxTop;
 
 	CEADataListBox->Width = DetailedListBox->Width;
-	CEADataListBox->Height = Text.tmHeight * 8 + 4;
+	CEADataListBox->Height = Text.tmHeight * CEADataRows + 4;
 	CEADataListBox->ItemHeight = Text.tmHeight;
 	CEADataListBox->Left = PaddingWidth;
 	CEADataListBox->Top = PaddingTop;
@@ -449,45 +483,45 @@ bool TExtensionBlockForm::ScaleControls()
 	CEADataAddButton->Height = ButtonHeight;
 	CEADataAddButton->Left = CEADataListBox->Left + ButtonLeft;
 	CEADataAddButton->Top = CEADataListBox->Top + CEADataListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(CEADataAddButton, Canvas->TextWidth(CEADataAddButton->Caption));
+	FixButtonCaption(CEADataAddButton, Canvas->TextWidth(CEADataAddButton->Caption));
 
 	CEADataEditButton->Width = ButtonWidth;
 	CEADataEditButton->Height = ButtonHeight;
 	CEADataEditButton->Left = CEADataAddButton->Left + CEADataAddButton->Width;
 	CEADataEditButton->Top = CEADataAddButton->Top;
-	Common::FixButtonCaption(CEADataEditButton, Canvas->TextWidth(CEADataEditButton->Caption));
+	FixButtonCaption(CEADataEditButton, Canvas->TextWidth(CEADataEditButton->Caption));
 
 	CEADataDeleteButton->Width = ButtonWidth;
 	CEADataDeleteButton->Height = ButtonHeight;
 	CEADataDeleteButton->Left = CEADataEditButton->Left + CEADataEditButton->Width;
 	CEADataDeleteButton->Top = CEADataEditButton->Top;
-	Common::FixButtonCaption(CEADataDeleteButton, Canvas->TextWidth(CEADataDeleteButton->Caption));
+	FixButtonCaption(CEADataDeleteButton, Canvas->TextWidth(CEADataDeleteButton->Caption));
 
 	CEADataDeleteAllButton->Width = LongButtonWidth;
 	CEADataDeleteAllButton->Height = LongButtonHeight;
 	CEADataDeleteAllButton->Left = CEADataDeleteButton->Left + CEADataDeleteButton->Width;
 	CEADataDeleteAllButton->Top = CEADataDeleteButton->Top;
-	Common::FixButtonCaption(CEADataDeleteAllButton, Canvas->TextWidth(CEADataDeleteAllButton->Caption));
+	FixButtonCaption(CEADataDeleteAllButton, Canvas->TextWidth(CEADataDeleteAllButton->Caption));
 
 	CEADataResetButton->Width = ButtonWidth;
 	CEADataResetButton->Height = ButtonHeight;
 	CEADataResetButton->Left = CEADataDeleteAllButton->Left + CEADataDeleteAllButton->Width;
 	CEADataResetButton->Top = CEADataDeleteAllButton->Top;
-	Common::FixButtonCaption(CEADataResetButton, Canvas->TextWidth(CEADataResetButton->Caption));
+	FixButtonCaption(CEADataResetButton, Canvas->TextWidth(CEADataResetButton->Caption));
 
 	CEADataUpButton->Width = ArrowButtonWidth;
 	CEADataUpButton->Height = ArrowButtonHeight;
 	CEADataUpButton->Top = CEADataResetButton->Top;
 	CEADataUpButton->Enabled = false;
 	CEADataUpButton->NumGlyphs = NumGlyphs;
-	CEADataUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	CEADataUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	CEADataDownButton->Width = ArrowButtonWidth;
 	CEADataDownButton->Height = ArrowButtonHeight;
 	CEADataDownButton->Top = CEADataUpButton->Top;
 	CEADataDownButton->Enabled = false;
 	CEADataDownButton->NumGlyphs = NumGlyphs;
-	CEADataDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	CEADataDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	CEADataDownButton->Left = CEADataListBox->Left + CEADataListBox->Width - ButtonRight - CEADataDownButton->Width;
 	CEADataUpButton->Left = CEADataDownButton->Left - CEADataUpButton->Width;
@@ -497,8 +531,8 @@ bool TExtensionBlockForm::ScaleControls()
 	CEADataGroupBox->Left = DetailedGroupBox->Left;
 	CEADataGroupBox->Top = DetailedGroupBox->Top + DetailedGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
-	StandardListBox->Width = CEADataListBox->Width;
-	StandardListBox->Height = CEADataListBox->Height;
+	StandardListBox->Width = DetailedListBox->Width;
+	StandardListBox->Height = Text.tmHeight * StandardRows + 4;
 	StandardListBox->ItemHeight = Text.tmHeight;
 	StandardListBox->Left = PaddingWidth;
 	StandardListBox->Top = PaddingTop;
@@ -507,45 +541,45 @@ bool TExtensionBlockForm::ScaleControls()
 	StandardAddButton->Height = ButtonHeight;
 	StandardAddButton->Left = StandardListBox->Left + ButtonLeft;
 	StandardAddButton->Top = StandardListBox->Top + StandardListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(StandardAddButton, Canvas->TextWidth(StandardAddButton->Caption));
+	FixButtonCaption(StandardAddButton, Canvas->TextWidth(StandardAddButton->Caption));
 
 	StandardEditButton->Width = ButtonWidth;
 	StandardEditButton->Height = ButtonHeight;
 	StandardEditButton->Left = StandardAddButton->Left + StandardAddButton->Width;
 	StandardEditButton->Top = StandardAddButton->Top;
-	Common::FixButtonCaption(StandardEditButton, Canvas->TextWidth(StandardEditButton->Caption));
+	FixButtonCaption(StandardEditButton, Canvas->TextWidth(StandardEditButton->Caption));
 
 	StandardDeleteButton->Width = ButtonWidth;
 	StandardDeleteButton->Height = ButtonHeight;
 	StandardDeleteButton->Left = StandardEditButton->Left + StandardEditButton->Width;
 	StandardDeleteButton->Top = StandardEditButton->Top;
-	Common::FixButtonCaption(StandardDeleteButton, Canvas->TextWidth(StandardDeleteButton->Caption));
+	FixButtonCaption(StandardDeleteButton, Canvas->TextWidth(StandardDeleteButton->Caption));
 
 	StandardDeleteAllButton->Width = LongButtonWidth;
 	StandardDeleteAllButton->Height = LongButtonHeight;
 	StandardDeleteAllButton->Left = StandardDeleteButton->Left + StandardDeleteButton->Width;
 	StandardDeleteAllButton->Top = StandardDeleteButton->Top;
-	Common::FixButtonCaption(StandardDeleteAllButton, Canvas->TextWidth(StandardDeleteAllButton->Caption));
+	FixButtonCaption(StandardDeleteAllButton, Canvas->TextWidth(StandardDeleteAllButton->Caption));
 
 	StandardResetButton->Width = ButtonWidth;
 	StandardResetButton->Height = ButtonHeight;
 	StandardResetButton->Left = StandardDeleteAllButton->Left + StandardDeleteAllButton->Width;
 	StandardResetButton->Top = StandardDeleteAllButton->Top;
-	Common::FixButtonCaption(StandardResetButton, Canvas->TextWidth(StandardResetButton->Caption));
+	FixButtonCaption(StandardResetButton, Canvas->TextWidth(StandardResetButton->Caption));
 
 	StandardUpButton->Width = ArrowButtonWidth;
 	StandardUpButton->Height = ArrowButtonHeight;
 	StandardUpButton->Top = StandardResetButton->Top;
 	StandardUpButton->Enabled = false;
 	StandardUpButton->NumGlyphs = NumGlyphs;
-	StandardUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	StandardUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	StandardDownButton->Width = ArrowButtonWidth;
 	StandardDownButton->Height = ArrowButtonHeight;
 	StandardDownButton->Top = StandardUpButton->Top;
 	StandardDownButton->Enabled = false;
 	StandardDownButton->NumGlyphs = NumGlyphs;
-	StandardDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	StandardDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	StandardDownButton->Left = StandardListBox->Left + StandardListBox->Width - ButtonRight - StandardDownButton->Width;
 	StandardUpButton->Left = StandardDownButton->Left - StandardUpButton->Width;
@@ -565,45 +599,45 @@ bool TExtensionBlockForm::ScaleControls()
 	DIDDataAddButton->Height = ButtonHeight;
 	DIDDataAddButton->Left = DIDDataListBox->Left + ButtonLeft;
 	DIDDataAddButton->Top = DIDDataListBox->Top + DIDDataListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(DIDDataAddButton, Canvas->TextWidth(DIDDataAddButton->Caption));
+	FixButtonCaption(DIDDataAddButton, Canvas->TextWidth(DIDDataAddButton->Caption));
 
 	DIDDataEditButton->Width = ButtonWidth;
 	DIDDataEditButton->Height = ButtonHeight;
 	DIDDataEditButton->Left = DIDDataAddButton->Left + DIDDataAddButton->Width;
 	DIDDataEditButton->Top = DIDDataAddButton->Top;
-	Common::FixButtonCaption(DIDDataEditButton, Canvas->TextWidth(DIDDataEditButton->Caption));
+	FixButtonCaption(DIDDataEditButton, Canvas->TextWidth(DIDDataEditButton->Caption));
 
 	DIDDataDeleteButton->Width = ButtonWidth;
 	DIDDataDeleteButton->Height = ButtonHeight;
 	DIDDataDeleteButton->Left = DIDDataEditButton->Left + DIDDataEditButton->Width;
 	DIDDataDeleteButton->Top = DIDDataEditButton->Top;
-	Common::FixButtonCaption(DIDDataDeleteButton, Canvas->TextWidth(DIDDataDeleteButton->Caption));
+	FixButtonCaption(DIDDataDeleteButton, Canvas->TextWidth(DIDDataDeleteButton->Caption));
 
 	DIDDataDeleteAllButton->Width = LongButtonWidth;
 	DIDDataDeleteAllButton->Height = LongButtonHeight;
 	DIDDataDeleteAllButton->Left = DIDDataDeleteButton->Left + DIDDataDeleteButton->Width;
 	DIDDataDeleteAllButton->Top = DIDDataDeleteButton->Top;
-	Common::FixButtonCaption(DIDDataDeleteAllButton, Canvas->TextWidth(DIDDataDeleteAllButton->Caption));
+	FixButtonCaption(DIDDataDeleteAllButton, Canvas->TextWidth(DIDDataDeleteAllButton->Caption));
 
 	DIDDataResetButton->Width = ButtonWidth;
 	DIDDataResetButton->Height = ButtonHeight;
 	DIDDataResetButton->Left = DIDDataDeleteAllButton->Left + DIDDataDeleteAllButton->Width;
 	DIDDataResetButton->Top = DIDDataDeleteAllButton->Top;
-	Common::FixButtonCaption(DIDDataResetButton, Canvas->TextWidth(DIDDataResetButton->Caption));
+	FixButtonCaption(DIDDataResetButton, Canvas->TextWidth(DIDDataResetButton->Caption));
 
 	DIDDataUpButton->Width = ArrowButtonWidth;
 	DIDDataUpButton->Height = ArrowButtonHeight;
 	DIDDataUpButton->Top = DIDDataResetButton->Top;
 	DIDDataUpButton->Enabled = false;
 	DIDDataUpButton->NumGlyphs = NumGlyphs;
-	DIDDataUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	DIDDataUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	DIDDataDownButton->Width = ArrowButtonWidth;
 	DIDDataDownButton->Height = ArrowButtonHeight;
 	DIDDataDownButton->Top = DIDDataUpButton->Top;
 	DIDDataDownButton->Enabled = false;
 	DIDDataDownButton->NumGlyphs = NumGlyphs;
-	DIDDataDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	DIDDataDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	DIDDataDownButton->Left = DIDDataListBox->Left + DIDDataListBox->Width - ButtonRight - DIDDataDownButton->Width;
 	DIDDataUpButton->Left = DIDDataDownButton->Left - DIDDataUpButton->Width;
@@ -630,12 +664,12 @@ bool TExtensionBlockForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = CEADataGroupBox->Top + CEADataGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = CEADataGroupBox->Left + CEADataGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -685,7 +719,7 @@ void __fastcall TExtensionBlockForm::ExtensionResetButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::DetailedListBoxDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
-	Common::ListBoxDrawItem(DetailedListBox, Rect, State, DetailedListBox->Items->Strings[Index].c_str(), ExtensionBlock->DetailedResolutions()->EditPossible(Index), false);
+	ListBoxDrawItem(DetailedListBox, Rect, State, DetailedListBox->Items->Strings[Index].c_str(), ExtensionBlock->DetailedResolutions()->EditPossible(Index), false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::DetailedListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -751,10 +785,6 @@ void __fastcall TExtensionBlockForm::DetailedEditButtonClick(TObject *Sender)
 void __fastcall TExtensionBlockForm::DetailedDeleteButtonClick(TObject *Sender)
 {
 	ExtensionBlock->DetailedResolutions()->Delete(DetailedListBox->ItemIndex);
-
-	if (DetailedListBox->ItemIndex >= ExtensionBlock->DetailedResolutions()->GetCount())
-		DetailedListBox->ItemIndex = -1;
-
 	Refresh(DetailedGroupBox, DetailedListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -784,31 +814,32 @@ void __fastcall TExtensionBlockForm::DetailedDownButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::CEADataListBoxDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
-	Common::Column Columns[4];
-
 	if (Index < ExtensionBlock->CEAData()->GetCount())
 	{
+		Column Columns[4];
+
 		ExtensionBlock->CEAData()->GetSlotTypeText(Index, Columns[0].Text, TEXTSIZE);
-		Columns[0].Width = CEADataListBox->Width / 12 * 4 + 4;
-		Columns[0].Format = DT_LEFT;
-
 		std::snprintf(Columns[1].Text, TEXTSIZE, "%d", ExtensionBlock->CEAData()->GetSlotSize(Index));
-		Columns[1].Width = CEADataListBox->Width / 12 - 4;
-		Columns[1].Format = DT_RIGHT;
-
 		std::snprintf(Columns[2].Text, TEXTSIZE, " byte%s", ExtensionBlock->CEAData()->GetSlotSize(Index) != 1 ? "s" : "");
-		Columns[2].Width = CEADataListBox->Width / 12 * 3;
-		Columns[2].Format = DT_LEFT;
-
 		ExtensionBlock->CEAData()->GetSlotInfoText(Index, Columns[3].Text, TEXTSIZE);
-		Columns[3].Width = CEADataListBox->Width / 12 * 4;
+
+		Columns[0].Width = Canvas->TextWidth("HDR dynamic metadata");
+		Columns[1].Width = Canvas->TextWidth("999");
+		Columns[2].Width = Canvas->TextWidth(" bytes");
+		Columns[3].Width = CEADataListBox->Width / 3;
+
+		Columns[2].Width += CEADataListBox->Width - Columns[0].Width - Columns[1].Width - Columns[2].Width - Columns[3].Width;
+
+		Columns[0].Format = DT_LEFT;
+		Columns[1].Format = DT_RIGHT;
+		Columns[2].Format = DT_LEFT;
 		Columns[3].Format = DT_LEFT;
 
-		Common::ListBoxDrawItems(CEADataListBox, Rect, State, Columns, 4, ExtensionBlock->CEAData()->EditPossible(Index), false);
+		ListBoxDrawItems(CEADataListBox, Rect, State, Columns, 4, ExtensionBlock->CEAData()->EditPossible(Index), false);
 		return;
 	}
 
-	Common::ListBoxDrawItem(CEADataListBox, Rect, State, CEADataListBox->Items->Strings[Index].c_str(), false, false);
+	ListBoxDrawItem(CEADataListBox, Rect, State, CEADataListBox->Items->Strings[Index].c_str(), false, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::CEADataListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -946,11 +977,12 @@ bool TExtensionBlockForm::CEADataEditSpeakerSetup(int Slot)
 //---------------------------------------------------------------------------
 bool TExtensionBlockForm::CEADataAddHDMISupport()
 {
-	HDMISupportClass HDMISupport;
+	HDMISupportClass HDMISupport(ExtensionBlock->ExtensionGetBytesLeft() - 1);
 	ColorFormatListClass ColorFormatList;
 	THDMISupportForm *HDMISupportForm = new THDMISupportForm(this);
 
-	HDMISupport.SetMaxSize(ExtensionBlock->ExtensionGetBytesLeft() - 1);
+	ColorFormatList.SetYCbCr422(true);
+	ColorFormatList.SetYCbCr444(true);
 	HDMISupportForm->Connect(HDMISupport, ColorFormatList);
 
 	if (HDMISupportForm->ShowModal() == mrOk)
@@ -987,7 +1019,7 @@ bool TExtensionBlockForm::CEADataEditHDMISupport(int Slot)
 //---------------------------------------------------------------------------
 bool TExtensionBlockForm::CEADataAddHDMI2Support()
 {
-	HDMI2SupportClass HDMI2Support;
+	HDMI2SupportClass HDMI2Support(ExtensionBlock->ExtensionGetBytesLeft() - 1);
 	THDMI2SupportForm *HDMI2SupportForm = new THDMI2SupportForm(this);
 
 	HDMI2SupportForm->Connect(HDMI2Support);
@@ -1125,6 +1157,41 @@ bool TExtensionBlockForm::CEADataEditVideoCapability(int Slot)
 	return true;
 }
 //---------------------------------------------------------------------------
+bool TExtensionBlockForm::CEADataAddHDRStaticMetadata()
+{
+	HDRStaticMetadataClass HDRStaticMetadata(ExtensionBlock->ExtensionGetBytesLeft() - 1);
+	THDRStaticMetadataForm *HDRStaticMetadataForm = new THDRStaticMetadataForm(this);
+
+	HDRStaticMetadataForm->Connect(HDRStaticMetadata);
+
+	if (HDRStaticMetadataForm->ShowModal() == mrOk)
+	{
+		ExtensionBlock->CEAData()->Add(HDRStaticMetadata);
+		Refresh(CEADataGroupBox, ExtensionBlock->CEAData()->GetCount() - 1);
+	}
+
+	delete HDRStaticMetadataForm;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool TExtensionBlockForm::CEADataEditHDRStaticMetadata(int Slot)
+{
+	HDRStaticMetadataClass HDRStaticMetadata;
+	THDRStaticMetadataForm *HDRStaticMetadataForm = new THDRStaticMetadataForm(this);
+
+	ExtensionBlock->CEAData()->Get(Slot, HDRStaticMetadata);
+	HDRStaticMetadataForm->Connect(HDRStaticMetadata);
+
+	if (HDRStaticMetadataForm->ShowModal() == mrOk)
+	{
+		ExtensionBlock->CEAData()->Set(Slot, HDRStaticMetadata);
+		Refresh(CEADataGroupBox, Slot);
+	}
+
+	delete HDRStaticMetadataForm;
+	return true;
+}
+//---------------------------------------------------------------------------
 bool TExtensionBlockForm::CEADataAdd(int Type)
 {
 	switch (Type)
@@ -1152,6 +1219,9 @@ bool TExtensionBlockForm::CEADataAdd(int Type)
 
 		case ADD_CEA_VIDEO_CAPABILITY:
 			return CEADataAddVideoCapability();
+
+		case ADD_CEA_HDR_STATIC:
+			return CEADataAddHDRStaticMetadata();
 	}
 
 	return false;
@@ -1175,6 +1245,7 @@ bool TExtensionBlockForm::CEADataEdit(int Slot)
 			return CEADataEditHDMISupport(Slot);
 
 		case CEA_HDMI2:
+		case CEA_HDMI21:
 			return CEADataEditHDMI2Support(Slot);
 
 		case CEA_FREESYNC:
@@ -1185,6 +1256,9 @@ bool TExtensionBlockForm::CEADataEdit(int Slot)
 
 		case CEA_VIDEO_CAPABILITY:
 			return CEADataEditVideoCapability(Slot);
+
+		case CEA_HDR_STATIC_METADATA:
+			return CEADataEditHDRStaticMetadata(Slot);
 	}
 
 	return false;
@@ -1218,9 +1292,6 @@ void __fastcall TExtensionBlockForm::CEADataDeleteButtonClick(TObject *Sender)
 		ExtensionBlock->ColorFormats()->SetYCbCr422(false);
 		ExtensionBlock->ColorFormats()->SetYCbCr444(false);
 	}
-
-	if (CEADataListBox->ItemIndex >= ExtensionBlock->CEAData()->GetCount())
-		CEADataListBox->ItemIndex = -1;
 
 	Refresh(CEADataGroupBox, CEADataListBox->ItemIndex);
 }
@@ -1260,7 +1331,7 @@ void __fastcall TExtensionBlockForm::StandardListBoxDrawItem(TWinControl *Contro
 	if (ExtensionBlock->StandardResolutions()->Get(Index, StandardResolution))
 		Supported = StandardResolution.IsSupported();
 
-	Common::ListBoxDrawItem(StandardListBox, Rect, State, StandardListBox->Items->Strings[Index].c_str(), Supported, false);
+	ListBoxDrawItem(StandardListBox, Rect, State, StandardListBox->Items->Strings[Index].c_str(), Supported, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::StandardListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -1325,10 +1396,6 @@ void __fastcall TExtensionBlockForm::StandardEditButtonClick(TObject *Sender)
 void __fastcall TExtensionBlockForm::StandardDeleteButtonClick(TObject *Sender)
 {
 	ExtensionBlock->StandardResolutions()->Delete(StandardListBox->ItemIndex);
-
-	if (StandardListBox->ItemIndex >= ExtensionBlock->StandardResolutions()->GetCount())
-		StandardListBox->ItemIndex = -1;
-
 	Refresh(StandardGroupBox, StandardListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -1358,31 +1425,32 @@ void __fastcall TExtensionBlockForm::StandardDownButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::DIDDataListBoxDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
-	Common::Column Columns[4];
-
 	if (Index < ExtensionBlock->DIDData()->GetCount())
 	{
+		Column Columns[4];
+
 		ExtensionBlock->DIDData()->GetSlotTypeText(Index, Columns[0].Text, TEXTSIZE);
-		Columns[0].Width = DIDDataListBox->Width / 24 * 9;
-		Columns[0].Format = DT_LEFT;
-
 		std::snprintf(Columns[1].Text, TEXTSIZE, "%d", ExtensionBlock->DIDData()->GetSlotSize(Index));
-		Columns[1].Width = DIDDataListBox->Width / 24 * 2;
-		Columns[1].Format = DT_RIGHT;
-
 		std::snprintf(Columns[2].Text, TEXTSIZE, " byte%s", ExtensionBlock->DIDData()->GetSlotSize(Index) != 1 ? "s" : "");
-		Columns[2].Width = DIDDataListBox->Width / 24 * 5;
-		Columns[2].Format = DT_LEFT;
-
 		ExtensionBlock->DIDData()->GetSlotInfoText(Index, Columns[3].Text, TEXTSIZE);
-		Columns[3].Width = DIDDataListBox->Width / 24 * 8;
+
+		Columns[0].Width = Canvas->TextWidth("Tiled display topology (9.x)");
+		Columns[1].Width = Canvas->TextWidth("999");
+		Columns[2].Width = Canvas->TextWidth(" bytes");
+		Columns[3].Width = DIDDataListBox->Width / 3;
+
+		Columns[2].Width += DIDDataListBox->Width - Columns[0].Width - Columns[1].Width - Columns[2].Width - Columns[3].Width;
+
+		Columns[0].Format = DT_LEFT;
+		Columns[1].Format = DT_RIGHT;
+		Columns[2].Format = DT_LEFT;
 		Columns[3].Format = DT_LEFT;
 
-		Common::ListBoxDrawItems(DIDDataListBox, Rect, State, Columns, 4, ExtensionBlock->DIDData()->EditPossible(Index), false);
+		ListBoxDrawItems(DIDDataListBox, Rect, State, Columns, 4, ExtensionBlock->DIDData()->EditPossible(Index), false);
 		return;
 	}
 
-	Common::ListBoxDrawItem(DIDDataListBox, Rect, State, DIDDataListBox->Items->Strings[Index].c_str(), false, false);
+	ListBoxDrawItem(DIDDataListBox, Rect, State, DIDDataListBox->Items->Strings[Index].c_str(), false, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TExtensionBlockForm::DIDDataListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -1411,9 +1479,9 @@ void __fastcall TExtensionBlockForm::DIDDataListBoxSelect(TObject *Sender)
 	RefreshDIDDataButtons();
 }
 //---------------------------------------------------------------------------
-bool TExtensionBlockForm::DIDDataAddDetailedResolutions()
+bool TExtensionBlockForm::DIDDataAddDetailedResolutions(int Type)
 {
-	DIDDetailedResolutionListClass DIDDetailedResolutionList;
+	DIDDetailedResolutionListClass DIDDetailedResolutionList(Type);
 	TDIDDetailedResolutionListForm *DIDDetailedResolutionListForm = new TDIDDetailedResolutionListForm(this);
 
 	DIDDetailedResolutionList.SetMaxSize(ExtensionBlock->ExtensionGetBytesLeft() - 3);
@@ -1429,9 +1497,9 @@ bool TExtensionBlockForm::DIDDataAddDetailedResolutions()
 	return true;
 }
 //---------------------------------------------------------------------------
-bool TExtensionBlockForm::DIDDataEditDetailedResolutions(int Slot)
+bool TExtensionBlockForm::DIDDataEditDetailedResolutions(int Type, int Slot)
 {
-	DIDDetailedResolutionListClass DIDDetailedResolutionList;
+	DIDDetailedResolutionListClass DIDDetailedResolutionList(Type);
 	TDIDDetailedResolutionListForm *DIDDetailedResolutionListForm = new TDIDDetailedResolutionListForm(this);
 
 	ExtensionBlock->DIDData()->Get(Slot, DIDDetailedResolutionList);
@@ -1447,18 +1515,17 @@ bool TExtensionBlockForm::DIDDataEditDetailedResolutions(int Slot)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool TExtensionBlockForm::DIDDataAddTiledDisplayTopology()
+bool TExtensionBlockForm::DIDDataAddTiledDisplayTopology(int Version)
 {
-	char ProductID[TEXTSIZE];
-	TiledDisplayTopologyClass TiledDisplayTopology;
+	TiledDisplayTopologyClass TiledDisplayTopology(Version);
 	TTiledDisplayTopologyForm *TiledDisplayTopologyForm = new TTiledDisplayTopologyForm(this);
 
+	char DeviceID[TEXTSIZE];
+	Properties.GetDeviceID(DeviceID, TEXTSIZE);
+	TiledDisplayTopology.SetDeviceID(DeviceID);
+	TiledDisplayTopology.SetSerialID(Properties.GetSerialID());
 	TiledDisplayTopology.SetHSize(NativeResolution.GetHActive());
 	TiledDisplayTopology.SetVSize(NativeResolution.GetVActive());
-	Properties.GetProductID(ProductID, TEXTSIZE);
-	TiledDisplayTopology.SetProductID(ProductID);
-	TiledDisplayTopology.SetResetID(ProductID);
-	TiledDisplayTopology.SetSerialID(Properties.GetSerialID());
 	TiledDisplayTopologyForm->Connect(TiledDisplayTopology);
 
 	if (TiledDisplayTopologyForm->ShowModal() == mrOk)
@@ -1471,15 +1538,12 @@ bool TExtensionBlockForm::DIDDataAddTiledDisplayTopology()
 	return true;
 }
 //---------------------------------------------------------------------------
-bool TExtensionBlockForm::DIDDataEditTiledDisplayTopology(int Slot)
+bool TExtensionBlockForm::DIDDataEditTiledDisplayTopology(int Version, int Slot)
 {
-	char ProductID[TEXTSIZE];
-	TiledDisplayTopologyClass TiledDisplayTopology;
+	TiledDisplayTopologyClass TiledDisplayTopology(Version);
 	TTiledDisplayTopologyForm *TiledDisplayTopologyForm = new TTiledDisplayTopologyForm(this);
 
 	ExtensionBlock->DIDData()->Get(Slot, TiledDisplayTopology);
-	Properties.GetProductID(ProductID, TEXTSIZE);
-	TiledDisplayTopology.SetResetID(ProductID);
 	TiledDisplayTopologyForm->Connect(TiledDisplayTopology);
 
 	if (TiledDisplayTopologyForm->ShowModal() == mrOk)
@@ -1494,13 +1558,31 @@ bool TExtensionBlockForm::DIDDataEditTiledDisplayTopology(int Slot)
 //---------------------------------------------------------------------------
 bool TExtensionBlockForm::DIDDataAdd(int Type)
 {
-	switch (Type)
+	switch (ExtensionBlock->GetType())
 	{
-		case ADD_DID_DETAILED_RESOLUTIONS:
-			return DIDDataAddDetailedResolutions();
+		case DISPLAYID_EXT:
+			switch (Type)
+			{
+				case ADD_DID_DETAILED_RESOLUTIONS:
+					return DIDDataAddDetailedResolutions(1);
 
-		case ADD_DID_TILED_DISPLAY_TOPOLOGY:
-			return DIDDataAddTiledDisplayTopology();
+				case ADD_DID_TILED_DISPLAY_TOPOLOGY:
+					return DIDDataAddTiledDisplayTopology(1);
+			}
+
+			break;
+
+		case DISPLAYID2_EXT:
+			switch (Type)
+			{
+				case ADD_DID_DETAILED_RESOLUTIONS:
+					return DIDDataAddDetailedResolutions(7);
+
+				case ADD_DID_TILED_DISPLAY_TOPOLOGY:
+					return DIDDataAddTiledDisplayTopology(2);
+			}
+
+			break;
 	}
 
 	return false;
@@ -1511,10 +1593,16 @@ bool TExtensionBlockForm::DIDDataEdit(int Slot)
 	switch (ExtensionBlock->DIDData()->GetSlotType(Slot))
 	{
 		case DID_DETAILED_RESOLUTIONS:
-			return DIDDataEditDetailedResolutions(Slot);
+			return DIDDataEditDetailedResolutions(1, Slot);
 
 		case DID_TILED_DISPLAY_TOPOLOGY:
-			return DIDDataEditTiledDisplayTopology(Slot);
+			return DIDDataEditTiledDisplayTopology(1, Slot);
+
+		case DID2_DETAILED_RESOLUTIONS:
+			return DIDDataEditDetailedResolutions(7, Slot);
+
+		case DID2_TILED_DISPLAY_TOPOLOGY:
+			return DIDDataEditTiledDisplayTopology(2, Slot);
 	}
 
 	return false;
@@ -1542,10 +1630,6 @@ void __fastcall TExtensionBlockForm::DIDDataEditButtonClick(TObject *Sender)
 void __fastcall TExtensionBlockForm::DIDDataDeleteButtonClick(TObject *Sender)
 {
 	ExtensionBlock->DIDData()->Delete(DIDDataListBox->ItemIndex);
-
-	if (DIDDataListBox->ItemIndex >= ExtensionBlock->DIDData()->GetCount())
-		DIDDataListBox->ItemIndex = -1;
-
 	Refresh(DIDDataGroupBox, DIDDataListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
@@ -1573,4 +1657,3 @@ void __fastcall TExtensionBlockForm::DIDDataDownButtonClick(TObject *Sender)
 	Refresh(DIDDataGroupBox, DIDDataListBox->ItemIndex + 1);
 }
 //---------------------------------------------------------------------------
-

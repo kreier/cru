@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "StandardResolutionClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -39,7 +40,6 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TStandardResolutionForm(TComponent *Owner);
 	bool Connect(StandardResolutionClass &);
-	TColor GetTextColor(bool);
 	bool Refresh(void *);
 	bool InitModeComboBox();
 	bool ScaleControls();

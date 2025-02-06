@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "PropertiesClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -14,7 +15,7 @@
 class TPropertiesForm : public TCommonForm
 {
 __published:	// IDE-managed Components
-	TLabel *ProductIDLabel;
+	TLabel *DeviceIDLabel;
 	TLabel *SerialIDLabel;
 	TLabel *VRateLabel;
 	TShape *VRateDash;
@@ -24,10 +25,15 @@ __published:	// IDE-managed Components
 	TLabel *kHzLabel;
 	TLabel *MaxPClockLabel;
 	TLabel *MHzLabel;
-	TGroupBox *ProductIDGroupBox;
-	TEdit *ProductID;
-	TButton *ProductIDResetButton;
+	TGroupBox *DeviceIDGroupBox;
+	TEdit *DeviceID;
+	TButton *DeviceIDResetButton;
 	TEdit *SerialID;
+	TGroupBox *ColorFormatsGroupBox;
+	TCheckBox *YCbCr422;
+	TCheckBox *YCbCr444;
+	TLabel *ColorDepthLabel;
+	TComboBox *ColorDepthComboBox;
 	TGroupBox *NameGroupBox;
 	TEdit *Name;
 	TCheckBox *IncludeName;
@@ -45,11 +51,14 @@ __published:	// IDE-managed Components
 	TButton *FormCancelButton;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
-	void __fastcall ProductIDChange(TObject *Sender);
-	void __fastcall ProductIDExit(TObject *Sender);
-	void __fastcall ProductIDResetButtonClick(TObject *Sender);
+	void __fastcall DeviceIDChange(TObject *Sender);
+	void __fastcall DeviceIDExit(TObject *Sender);
+	void __fastcall DeviceIDResetButtonClick(TObject *Sender);
 	void __fastcall SerialIDChange(TObject *Sender);
 	void __fastcall SerialIDExit(TObject *Sender);
+	void __fastcall YCbCr422Click(TObject *Sender);
+	void __fastcall YCbCr444Click(TObject *Sender);
+	void __fastcall ColorDepthComboBoxChange(TObject *Sender);
 	void __fastcall NameChange(TObject *Sender);
 	void __fastcall NameExit(TObject *Sender);
 	void __fastcall IncludeNameClick(TObject *Sender);
@@ -73,8 +82,8 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TPropertiesForm(TComponent *Owner);
 	bool Connect(PropertiesClass &);
-	TColor GetTextColor(bool);
 	bool Refresh(void *);
+	bool InitColorDepthComboBox();
 	bool ScaleControls();
 };
 //---------------------------------------------------------------------------

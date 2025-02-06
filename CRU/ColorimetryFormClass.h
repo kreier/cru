@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "ColorimetryClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -21,7 +22,8 @@ __published:	// IDE-managed Components
 	TCheckBox *ColorimetryCheckBox5;
 	TCheckBox *ColorimetryCheckBox6;
 	TCheckBox *ColorimetryCheckBox7;
-	TCheckBox *ColorimetryCheckBox8;
+	TCheckBox *ColorimetryCheckBox15;
+	TCheckBox *ColorimetryCheckBox14;
 	TGroupBox *MetadataGroupBox;
 	TCheckBox *MetadataCheckBox0;
 	TCheckBox *MetadataCheckBox1;
@@ -29,6 +31,8 @@ __published:	// IDE-managed Components
 	TCheckBox *MetadataCheckBox3;
 	TButton *FormOKButton;
 	TButton *FormCancelButton;
+	TCheckBox *ColorimetryCheckBox13;
+	TCheckBox *ColorimetryCheckBox12;
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall FormShow(TObject *Sender);
 	void __fastcall ColorimetryCheckBoxClick(TObject *Sender);

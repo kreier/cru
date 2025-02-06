@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "DisplayFormClass.h"
@@ -7,9 +7,7 @@
 #include "DetailedResolutionFormClass.h"
 #include "StandardResolutionFormClass.h"
 #include "ExtensionBlockFormClass.h"
-#include "Common.h"
 #include "VistaAltFixUnit.hpp"
-#include <cstring>
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TDisplayForm *DisplayForm;
@@ -35,7 +33,6 @@ void TDisplayForm::FatalError(const char *Message)
 bool TDisplayForm::Refresh(void *Value, int ItemIndex)
 {
 	Refreshing = true;
-	RefreshDisplayComboBox();
 	RefreshDisplayButtons();
 
 	if (Value == NULL || Value == EstablishedGroupBox)
@@ -77,15 +74,15 @@ bool TDisplayForm::Refresh(void *Value, int ItemIndex)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool TDisplayForm::InitDisplayComboBox()
+bool TDisplayForm::RefreshDisplayComboBox()
 {
 	int ItemIndex;
 	int Index;
 	char Text[TEXTSIZE];
 
 	ItemIndex = DisplayComboBox->ItemIndex;
-	DisplayComboBox->Clear();
 	DisplayComboBox->Items->BeginUpdate();
+	DisplayComboBox->Clear();
 
 	for (Index = 0; DisplayList.GetItemText(Index, Text, TEXTSIZE); Index++)
 		DisplayComboBox->Items->Add(Text);
@@ -95,19 +92,13 @@ bool TDisplayForm::InitDisplayComboBox()
 	return true;
 }
 //---------------------------------------------------------------------------
-bool TDisplayForm::RefreshDisplayComboBox()
-{
-	DisplayComboBox->ItemIndex = DisplayList.GetCurrent();
-	return true;
-}
-//---------------------------------------------------------------------------
 bool TDisplayForm::RefreshDisplayButtons()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		DisplayEditButton->Enabled = true;
-		DisplayCopyButton->Enabled = DisplayList.Current()->DisplayCopyPossible();
-		DisplayPasteButton->Enabled = DisplayList.Current()->DisplayPastePossible();
+		DisplayCopyButton->Enabled = Display->DisplayCopyPossible();
+		DisplayPasteButton->Enabled = Display->DisplayPastePossible();
 		DisplayDeleteButton->Caption = "Delete";
 	}
 	else
@@ -118,13 +109,13 @@ bool TDisplayForm::RefreshDisplayButtons()
 		DisplayDeleteButton->Caption = "Keep";
 	}
 
-	Common::FixButtonCaption(DisplayDeleteButton, Canvas->TextWidth(DisplayDeleteButton->Caption));
+	FixButtonCaption(DisplayDeleteButton, Canvas->TextWidth(DisplayDeleteButton->Caption));
 	return true;
 }
 //---------------------------------------------------------------------------
 bool TDisplayForm::RefreshEstablishedCheckBoxes()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		EstablishedLabel1->Font->Color = clWindowText;
 		EstablishedLabel2->Font->Color = clWindowText;
@@ -143,17 +134,17 @@ bool TDisplayForm::RefreshEstablishedCheckBoxes()
 		EstablishedCheckBox14->Enabled = true;
 		EstablishedCheckBox15->Enabled = true;
 
-		EstablishedCheckBox2->Checked = DisplayList.Current()->EstablishedResolutions()->Get(2);
-		EstablishedCheckBox4->Checked = DisplayList.Current()->EstablishedResolutions()->Get(4);
-		EstablishedCheckBox5->Checked = DisplayList.Current()->EstablishedResolutions()->Get(5);
-		EstablishedCheckBox6->Checked = DisplayList.Current()->EstablishedResolutions()->Get(6);
-		EstablishedCheckBox7->Checked = DisplayList.Current()->EstablishedResolutions()->Get(7);
-		EstablishedCheckBox8->Checked = DisplayList.Current()->EstablishedResolutions()->Get(8);
-		EstablishedCheckBox9->Checked = DisplayList.Current()->EstablishedResolutions()->Get(9);
-		EstablishedCheckBox12->Checked = DisplayList.Current()->EstablishedResolutions()->Get(12);
-		EstablishedCheckBox13->Checked = DisplayList.Current()->EstablishedResolutions()->Get(13);
-		EstablishedCheckBox14->Checked = DisplayList.Current()->EstablishedResolutions()->Get(14);
-		EstablishedCheckBox15->Checked = DisplayList.Current()->EstablishedResolutions()->Get(15);
+		EstablishedCheckBox2->Checked = Display->EstablishedResolutions()->Get(2);
+		EstablishedCheckBox4->Checked = Display->EstablishedResolutions()->Get(4);
+		EstablishedCheckBox5->Checked = Display->EstablishedResolutions()->Get(5);
+		EstablishedCheckBox6->Checked = Display->EstablishedResolutions()->Get(6);
+		EstablishedCheckBox7->Checked = Display->EstablishedResolutions()->Get(7);
+		EstablishedCheckBox8->Checked = Display->EstablishedResolutions()->Get(8);
+		EstablishedCheckBox9->Checked = Display->EstablishedResolutions()->Get(9);
+		EstablishedCheckBox12->Checked = Display->EstablishedResolutions()->Get(12);
+		EstablishedCheckBox13->Checked = Display->EstablishedResolutions()->Get(13);
+		EstablishedCheckBox14->Checked = Display->EstablishedResolutions()->Get(14);
+		EstablishedCheckBox15->Checked = Display->EstablishedResolutions()->Get(15);
 	}
 	else
 	{
@@ -192,11 +183,11 @@ bool TDisplayForm::RefreshEstablishedCheckBoxes()
 //---------------------------------------------------------------------------
 bool TDisplayForm::RefreshEstablishedButtons()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
-		EstablishedAllButton->Enabled = DisplayList.Current()->EstablishedResolutions()->AllPossible();
-		EstablishedNoneButton->Enabled = DisplayList.Current()->EstablishedResolutions()->NonePossible();
-		EstablishedResetButton->Enabled = DisplayList.Current()->EstablishedResolutions()->UndoPossible();
+		EstablishedAllButton->Enabled = Display->EstablishedResolutions()->AllPossible();
+		EstablishedNoneButton->Enabled = Display->EstablishedResolutions()->NonePossible();
+		EstablishedResetButton->Enabled = Display->EstablishedResolutions()->UndoPossible();
 	}
 	else
 	{
@@ -213,9 +204,9 @@ bool TDisplayForm::RefreshDetailedCaption()
 	const char *Caption = " Detailed resolutions ";
 	char Text[TEXTSIZE];
 
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
-		DisplayList.Current()->DetailedResolutions()->GetSlotsLeftText(Caption, Text, TEXTSIZE);
+		Display->DetailedResolutions()->GetSlotsLeftText(Caption, Text, TEXTSIZE);
 		DetailedGroupBox->Caption = Text;
 		return true;
 	}
@@ -227,12 +218,11 @@ bool TDisplayForm::RefreshDetailedCaption()
 bool TDisplayForm::RefreshDetailedListBox(int ItemIndex)
 {
 	int Index;
-	DetailedResolutionClass DetailedResolution;
 	char Text[TEXTSIZE];
 
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
-		if (DisplayList.Current()->DetailedResolutions()->GetMaxCount() > 0)
+		if (Display->DetailedResolutions()->GetMaxCount() > 0)
 		{
 			DetailedListBox->Enabled = true;
 			DetailedListBox->Color = clWindow;
@@ -255,40 +245,47 @@ bool TDisplayForm::RefreshDetailedListBox(int ItemIndex)
 		return true;
 	}
 
-	DetailedListBox->Clear();
+	int TopIndex = DetailedListBox->TopIndex;
 	DetailedListBox->Items->BeginUpdate();
+	DetailedListBox->Clear();
+	DetailedResolutionClass DetailedResolution;
 
-	for (Index = 0; DisplayList.Current()->DetailedResolutions()->Get(Index, DetailedResolution); Index++)
-		if (DetailedResolution.GetText(Text, TEXTSIZE))
+	for (Index = 0; Display->DetailedResolutions()->Get(Index, DetailedResolution); Index++)
+		if (DetailedResolution.GetText(Text, TEXTSIZE, Dash()))
 			DetailedListBox->Items->Add(Text);
 
-	if (Index == 0 && DisplayList.Current()->DetailedResolutions()->GetMaxCount() > DisplayList.Current()->Properties()->GetCount())
+	if (Index == 0 && Display->DetailedResolutions()->GetMaxCount() > Display->Properties()->GetCount())
 		DetailedListBox->Items->Add("No detailed resolutions");
 
-	for (Index = 0; DisplayList.Current()->DetailedGetStandardText(Index, Text, TEXTSIZE); Index++)
+	for (Index = 0; Display->DetailedGetStandardText(Index, Text, TEXTSIZE); Index++)
 		DetailedListBox->Items->Add(Text);
 
 	for (Index = 0; Index < 4 && DetailedListBox->Count < 4; Index++)
-		if (DisplayList.Current()->Properties()->GetText(Index, Text, TEXTSIZE))
+		if (Display->Properties()->GetText(Index, Text, TEXTSIZE))
 			DetailedListBox->Items->Add(Text);
 
-	DetailedListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		DetailedListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < Display->DetailedResolutions()->GetCount())
+		DetailedListBox->ItemIndex = ItemIndex;
+
 	DetailedListBox->Items->EndUpdate();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool TDisplayForm::RefreshDetailedButtons()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		DetailedLastItemIndex = DetailedListBox->ItemIndex;
-		DetailedAddButton->Enabled = DisplayList.Current()->DetailedResolutions()->AddPossible();
-		DetailedEditButton->Enabled = DisplayList.Current()->DetailedResolutions()->EditPossible(DetailedListBox->ItemIndex);
-		DetailedDeleteButton->Enabled = DisplayList.Current()->DetailedResolutions()->DeletePossible(DetailedListBox->ItemIndex);
-		DetailedDeleteAllButton->Enabled = DisplayList.Current()->DetailedResolutions()->DeleteAllPossible();
-		DetailedResetButton->Enabled = DisplayList.Current()->DetailedResolutions()->UndoPossible();
-		DetailedUpButton->Enabled = DisplayList.Current()->DetailedResolutions()->ExchangePossible(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex - 1);
-		DetailedDownButton->Enabled = DisplayList.Current()->DetailedResolutions()->ExchangePossible(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex + 1);
+		DetailedAddButton->Enabled = Display->DetailedResolutions()->AddPossible();
+		DetailedEditButton->Enabled = Display->DetailedResolutions()->EditPossible(DetailedListBox->ItemIndex);
+		DetailedDeleteButton->Enabled = Display->DetailedResolutions()->DeletePossible(DetailedListBox->ItemIndex);
+		DetailedDeleteAllButton->Enabled = Display->DetailedResolutions()->DeleteAllPossible();
+		DetailedResetButton->Enabled = Display->DetailedResolutions()->UndoPossible();
+		DetailedUpButton->Enabled = Display->DetailedResolutions()->ExchangePossible(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex - 1);
+		DetailedDownButton->Enabled = Display->DetailedResolutions()->ExchangePossible(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex + 1);
 	}
 	else
 	{
@@ -309,9 +306,9 @@ bool TDisplayForm::RefreshStandardCaption()
 	const char *Caption = " Standard resolutions ";
 	char Text[TEXTSIZE];
 
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
-		DisplayList.Current()->StandardResolutions()->GetSlotsLeftText(Caption, Text, TEXTSIZE);
+		Display->StandardResolutions()->GetSlotsLeftText(Caption, Text, TEXTSIZE);
 		StandardGroupBox->Caption = Text;
 		return true;
 	}
@@ -323,10 +320,9 @@ bool TDisplayForm::RefreshStandardCaption()
 bool TDisplayForm::RefreshStandardListBox(int ItemIndex)
 {
 	int Index;
-	StandardResolutionClass StandardResolution;
 	char Text[TEXTSIZE];
 
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		StandardListBox->Enabled = true;
 		StandardListBox->Color = clWindow;
@@ -341,33 +337,50 @@ bool TDisplayForm::RefreshStandardListBox(int ItemIndex)
 		return true;
 	}
 
-	StandardListBox->Clear();
-	StandardListBox->Items->BeginUpdate();
+	int TopIndex = StandardListBox->TopIndex;
 
-	for (Index = 0; DisplayList.Current()->StandardResolutions()->Get(Index, StandardResolution); Index++)
+	if (Display->StandardResolutions()->GetCount() <= StandardRows * StandardListBox->Columns)
+	{
+		StandardListBox->Clear();
+		StandardListBox->Items->BeginUpdate();
+	}
+	else
+	{
+		StandardListBox->Items->BeginUpdate();
+		StandardListBox->Clear();
+	}
+
+	StandardResolutionClass StandardResolution;
+
+	for (Index = 0; Display->StandardResolutions()->Get(Index, StandardResolution); Index++)
 		if (StandardResolution.GetText(Text, TEXTSIZE))
 			StandardListBox->Items->Add(Text);
 
 	if (Index == 0)
 		StandardListBox->Items->Add("No standard resolutions");
 
-	StandardListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		StandardListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < Display->StandardResolutions()->GetCount())
+		StandardListBox->ItemIndex = ItemIndex;
+
 	StandardListBox->Items->EndUpdate();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool TDisplayForm::RefreshStandardButtons()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		StandardLastItemIndex = StandardListBox->ItemIndex;
-		StandardAddButton->Enabled = DisplayList.Current()->StandardResolutions()->AddPossible();
-		StandardEditButton->Enabled = DisplayList.Current()->StandardResolutions()->EditPossible(StandardListBox->ItemIndex);
-		StandardDeleteButton->Enabled = DisplayList.Current()->StandardResolutions()->DeletePossible(StandardListBox->ItemIndex);
-		StandardDeleteAllButton->Enabled = DisplayList.Current()->StandardResolutions()->DeleteAllPossible();
-		StandardResetButton->Enabled = DisplayList.Current()->StandardResolutions()->UndoPossible();
-		StandardUpButton->Enabled = DisplayList.Current()->StandardResolutions()->ExchangePossible(StandardListBox->ItemIndex, StandardListBox->ItemIndex - 1);
-		StandardDownButton->Enabled = DisplayList.Current()->StandardResolutions()->ExchangePossible(StandardListBox->ItemIndex, StandardListBox->ItemIndex + 1);
+		StandardAddButton->Enabled = Display->StandardResolutions()->AddPossible();
+		StandardEditButton->Enabled = Display->StandardResolutions()->EditPossible(StandardListBox->ItemIndex);
+		StandardDeleteButton->Enabled = Display->StandardResolutions()->DeletePossible(StandardListBox->ItemIndex);
+		StandardDeleteAllButton->Enabled = Display->StandardResolutions()->DeleteAllPossible();
+		StandardResetButton->Enabled = Display->StandardResolutions()->UndoPossible();
+		StandardUpButton->Enabled = Display->StandardResolutions()->ExchangePossible(StandardListBox->ItemIndex, StandardListBox->ItemIndex - 1);
+		StandardDownButton->Enabled = Display->StandardResolutions()->ExchangePossible(StandardListBox->ItemIndex, StandardListBox->ItemIndex + 1);
 	}
 	else
 	{
@@ -388,9 +401,9 @@ bool TDisplayForm::RefreshExtensionCaption()
 	const char *Caption = " Extension blocks ";
 	char Text[TEXTSIZE];
 
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
-		DisplayList.Current()->ExtensionBlocks()->GetSlotsLeftText(Caption, Text, TEXTSIZE);
+		Display->ExtensionBlocks()->GetSlotsLeftText(Caption, Text, TEXTSIZE);
 		ExtensionGroupBox->Caption = Text;
 		return true;
 	}
@@ -402,10 +415,9 @@ bool TDisplayForm::RefreshExtensionCaption()
 bool TDisplayForm::RefreshExtensionListBox(int ItemIndex)
 {
 	int Index;
-	ExtensionBlockClass ExtensionBlock;
 	char Text[TEXTSIZE];
 
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		ExtensionListBox->Enabled = true;
 		ExtensionListBox->Color = clWindow;
@@ -420,33 +432,40 @@ bool TDisplayForm::RefreshExtensionListBox(int ItemIndex)
 		return true;
 	}
 
-	ExtensionListBox->Clear();
+	int TopIndex = ExtensionListBox->TopIndex;
 	ExtensionListBox->Items->BeginUpdate();
+	ExtensionListBox->Clear();
+	ExtensionBlockClass ExtensionBlock;
 
-	for (Index = 0; DisplayList.Current()->ExtensionBlocks()->Get(Index, ExtensionBlock); Index++)
+	for (Index = 0; Display->ExtensionBlocks()->Get(Index, ExtensionBlock); Index++)
 		if (ExtensionBlock.GetText(Text, TEXTSIZE))
 			ExtensionListBox->Items->Add(Text);
 
 	if (Index == 0)
 		ExtensionListBox->Items->Add("No extension blocks");
 
-	ExtensionListBox->ItemIndex = ItemIndex;
+	if (ItemIndex > 0)
+		ExtensionListBox->TopIndex = TopIndex;
+
+	if (ItemIndex < Display->ExtensionBlocks()->GetCount())
+		ExtensionListBox->ItemIndex = ItemIndex;
+
 	ExtensionListBox->Items->EndUpdate();
 	return true;
 }
 //---------------------------------------------------------------------------
 bool TDisplayForm::RefreshExtensionButtons()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		ExtensionLastItemIndex = ExtensionListBox->ItemIndex;
-		ExtensionAddButton->Enabled = DisplayList.Current()->ExtensionBlocks()->AddPossible();
-		ExtensionEditButton->Enabled = DisplayList.Current()->ExtensionBlocks()->EditPossible(ExtensionListBox->ItemIndex);
-		ExtensionDeleteButton->Enabled = DisplayList.Current()->ExtensionBlocks()->DeletePossible(ExtensionListBox->ItemIndex);
-		ExtensionDeleteAllButton->Enabled = DisplayList.Current()->ExtensionBlocks()->DeleteAllPossible();
-		ExtensionResetButton->Enabled = DisplayList.Current()->ExtensionBlocks()->UndoPossible();
-		ExtensionUpButton->Enabled = DisplayList.Current()->ExtensionBlocks()->ExchangePossible(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex - 1);
-		ExtensionDownButton->Enabled = DisplayList.Current()->ExtensionBlocks()->ExchangePossible(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex + 1);
+		ExtensionAddButton->Enabled = Display->ExtensionBlocks()->AddPossible();
+		ExtensionEditButton->Enabled = Display->ExtensionBlocks()->EditPossible(ExtensionListBox->ItemIndex);
+		ExtensionDeleteButton->Enabled = Display->ExtensionBlocks()->DeletePossible(ExtensionListBox->ItemIndex);
+		ExtensionDeleteAllButton->Enabled = Display->ExtensionBlocks()->DeleteAllPossible();
+		ExtensionResetButton->Enabled = Display->ExtensionBlocks()->UndoPossible();
+		ExtensionUpButton->Enabled = Display->ExtensionBlocks()->ExchangePossible(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex - 1);
+		ExtensionDownButton->Enabled = Display->ExtensionBlocks()->ExchangePossible(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex + 1);
 	}
 	else
 	{
@@ -464,7 +483,7 @@ bool TDisplayForm::RefreshExtensionButtons()
 //---------------------------------------------------------------------------
 bool TDisplayForm::RefreshImportExportButtons()
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
+	if (Display->DisplayDeletePossible())
 	{
 		DisplayImportButton->Enabled = true;
 		DisplayExportButton->Enabled = true;
@@ -499,44 +518,44 @@ bool TDisplayForm::ScaleControls()
 	DisplayEditButton->Width = ButtonWidth;
 	DisplayEditButton->Height = ButtonHeight;
 	DisplayEditButton->Top = DisplayComboBox->Top;
-	Common::FixButtonCaption(DisplayEditButton, Canvas->TextWidth(DisplayEditButton->Caption));
+	FixButtonCaption(DisplayEditButton, Canvas->TextWidth(DisplayEditButton->Caption));
 
 	DisplayCopyButton->Width = ButtonWidth;
 	DisplayCopyButton->Height = ButtonHeight;
 	DisplayCopyButton->Top = DisplayEditButton->Top;
-	Common::FixButtonCaption(DisplayCopyButton, Canvas->TextWidth(DisplayCopyButton->Caption));
+	FixButtonCaption(DisplayCopyButton, Canvas->TextWidth(DisplayCopyButton->Caption));
 
 	DisplayPasteButton->Width = ButtonWidth;
 	DisplayPasteButton->Height = ButtonHeight;
 	DisplayPasteButton->Top = DisplayCopyButton->Top;
-	Common::FixButtonCaption(DisplayPasteButton, Canvas->TextWidth(DisplayPasteButton->Caption));
+	FixButtonCaption(DisplayPasteButton, Canvas->TextWidth(DisplayPasteButton->Caption));
 
 	DisplayDeleteButton->Width = ButtonWidth;
 	DisplayDeleteButton->Height = ButtonHeight;
 	DisplayDeleteButton->Top = DisplayPasteButton->Top;
-	Common::FixButtonCaption(DisplayDeleteButton, Canvas->TextWidth(DisplayDeleteButton->Caption));
+	FixButtonCaption(DisplayDeleteButton, Canvas->TextWidth(DisplayDeleteButton->Caption));
 
 	EstablishedAllButton->Width = ButtonWidth;
 	EstablishedAllButton->Height = ButtonHeight;
 	EstablishedAllButton->Left = PaddingWidth + ButtonLeft;
-	Common::FixButtonCaption(EstablishedAllButton, Canvas->TextWidth(EstablishedAllButton->Caption));
+	FixButtonCaption(EstablishedAllButton, Canvas->TextWidth(EstablishedAllButton->Caption));
 
 	EstablishedNoneButton->Width = ButtonWidth;
 	EstablishedNoneButton->Height = ButtonHeight;
 	EstablishedNoneButton->Left = EstablishedAllButton->Left + EstablishedAllButton->Width;
-	Common::FixButtonCaption(EstablishedNoneButton, Canvas->TextWidth(EstablishedNoneButton->Caption));
+	FixButtonCaption(EstablishedNoneButton, Canvas->TextWidth(EstablishedNoneButton->Caption));
 
 	EstablishedResetButton->Width = ButtonWidth;
 	EstablishedResetButton->Height = ButtonHeight;
 	EstablishedResetButton->Left = EstablishedNoneButton->Left + EstablishedNoneButton->Width;
-	Common::FixButtonCaption(EstablishedResetButton, Canvas->TextWidth(EstablishedResetButton->Caption));
+	FixButtonCaption(EstablishedResetButton, Canvas->TextWidth(EstablishedResetButton->Caption));
 
 	EstablishedGroupBox->Width = EstablishedResetButton->Left + EstablishedResetButton->Width + ButtonRight + PaddingWidth;
 	EstablishedGroupBox->Left = DisplayComboBox->Left;
 	EstablishedGroupBox->Top = DisplayComboBox->Top + DisplayComboBox->Height + GroupBoxTop;
 
 	DetailedListBox->Width = ListBoxWidth;
-	DetailedListBox->Height = Text.tmHeight * 4 + 4;
+	DetailedListBox->Height = Text.tmHeight * DetailedRows + 4;
 	DetailedListBox->ItemHeight = Text.tmHeight;
 	DetailedListBox->Left = PaddingWidth;
 	DetailedListBox->Top = PaddingTop;
@@ -545,45 +564,45 @@ bool TDisplayForm::ScaleControls()
 	DetailedAddButton->Height = ButtonHeight;
 	DetailedAddButton->Left = DetailedListBox->Left + ButtonLeft;
 	DetailedAddButton->Top = DetailedListBox->Top + DetailedListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(DetailedAddButton, Canvas->TextWidth(DetailedAddButton->Caption));
+	FixButtonCaption(DetailedAddButton, Canvas->TextWidth(DetailedAddButton->Caption));
 
 	DetailedEditButton->Width = ButtonWidth;
 	DetailedEditButton->Height = ButtonHeight;
 	DetailedEditButton->Left = DetailedAddButton->Left + DetailedAddButton->Width;
 	DetailedEditButton->Top = DetailedAddButton->Top;
-	Common::FixButtonCaption(DetailedEditButton, Canvas->TextWidth(DetailedEditButton->Caption));
+	FixButtonCaption(DetailedEditButton, Canvas->TextWidth(DetailedEditButton->Caption));
 
 	DetailedDeleteButton->Width = ButtonWidth;
 	DetailedDeleteButton->Height = ButtonHeight;
 	DetailedDeleteButton->Left = DetailedEditButton->Left + DetailedEditButton->Width;
 	DetailedDeleteButton->Top = DetailedEditButton->Top;
-	Common::FixButtonCaption(DetailedDeleteButton, Canvas->TextWidth(DetailedDeleteButton->Caption));
+	FixButtonCaption(DetailedDeleteButton, Canvas->TextWidth(DetailedDeleteButton->Caption));
 
 	DetailedDeleteAllButton->Width = LongButtonWidth;
 	DetailedDeleteAllButton->Height = LongButtonHeight;
 	DetailedDeleteAllButton->Left = DetailedDeleteButton->Left + DetailedDeleteButton->Width;
 	DetailedDeleteAllButton->Top = DetailedDeleteButton->Top;
-	Common::FixButtonCaption(DetailedDeleteAllButton, Canvas->TextWidth(DetailedDeleteAllButton->Caption));
+	FixButtonCaption(DetailedDeleteAllButton, Canvas->TextWidth(DetailedDeleteAllButton->Caption));
 
 	DetailedResetButton->Width = ButtonWidth;
 	DetailedResetButton->Height = ButtonHeight;
 	DetailedResetButton->Left = DetailedDeleteAllButton->Left + DetailedDeleteAllButton->Width;
 	DetailedResetButton->Top = DetailedDeleteAllButton->Top;
-	Common::FixButtonCaption(DetailedResetButton, Canvas->TextWidth(DetailedResetButton->Caption));
+	FixButtonCaption(DetailedResetButton, Canvas->TextWidth(DetailedResetButton->Caption));
 
 	DetailedUpButton->Width = ArrowButtonWidth;
 	DetailedUpButton->Height = ArrowButtonHeight;
 	DetailedUpButton->Top = DetailedResetButton->Top;
 	DetailedUpButton->Enabled = false;
 	DetailedUpButton->NumGlyphs = NumGlyphs;
-	DetailedUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	DetailedUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	DetailedDownButton->Width = ArrowButtonWidth;
 	DetailedDownButton->Height = ArrowButtonHeight;
 	DetailedDownButton->Top = DetailedUpButton->Top;
 	DetailedDownButton->Enabled = false;
 	DetailedDownButton->NumGlyphs = NumGlyphs;
-	DetailedDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	DetailedDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	DetailedDownButton->Left = DetailedListBox->Left + DetailedListBox->Width - ButtonRight - DetailedDownButton->Width;
 	DetailedUpButton->Left = DetailedDownButton->Left - DetailedUpButton->Width;
@@ -594,7 +613,7 @@ bool TDisplayForm::ScaleControls()
 	DetailedGroupBox->Top = EstablishedGroupBox->Top;
 
 	StandardListBox->Width = DetailedListBox->Width;
-	StandardListBox->Height = Text.tmHeight * 8 + 4;
+	StandardListBox->Height = Text.tmHeight * StandardRows + 4;
 	StandardListBox->ItemHeight = Text.tmHeight;
 	StandardListBox->Left = PaddingWidth;
 	StandardListBox->Top = PaddingTop;
@@ -603,45 +622,45 @@ bool TDisplayForm::ScaleControls()
 	StandardAddButton->Height = ButtonHeight;
 	StandardAddButton->Left = StandardListBox->Left + ButtonLeft;
 	StandardAddButton->Top = StandardListBox->Top + StandardListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(StandardAddButton, Canvas->TextWidth(StandardAddButton->Caption));
+	FixButtonCaption(StandardAddButton, Canvas->TextWidth(StandardAddButton->Caption));
 
 	StandardEditButton->Width = ButtonWidth;
 	StandardEditButton->Height = ButtonHeight;
 	StandardEditButton->Left = StandardAddButton->Left + StandardAddButton->Width;
 	StandardEditButton->Top = StandardAddButton->Top;
-	Common::FixButtonCaption(StandardEditButton, Canvas->TextWidth(StandardEditButton->Caption));
+	FixButtonCaption(StandardEditButton, Canvas->TextWidth(StandardEditButton->Caption));
 
 	StandardDeleteButton->Width = ButtonWidth;
 	StandardDeleteButton->Height = ButtonHeight;
 	StandardDeleteButton->Left = StandardEditButton->Left + StandardEditButton->Width;
 	StandardDeleteButton->Top = StandardEditButton->Top;
-	Common::FixButtonCaption(StandardDeleteButton, Canvas->TextWidth(StandardDeleteButton->Caption));
+	FixButtonCaption(StandardDeleteButton, Canvas->TextWidth(StandardDeleteButton->Caption));
 
 	StandardDeleteAllButton->Width = LongButtonWidth;
 	StandardDeleteAllButton->Height = LongButtonHeight;
 	StandardDeleteAllButton->Left = StandardDeleteButton->Left + StandardDeleteButton->Width;
 	StandardDeleteAllButton->Top = StandardDeleteButton->Top;
-	Common::FixButtonCaption(StandardDeleteAllButton, Canvas->TextWidth(StandardDeleteAllButton->Caption));
+	FixButtonCaption(StandardDeleteAllButton, Canvas->TextWidth(StandardDeleteAllButton->Caption));
 
 	StandardResetButton->Width = ButtonWidth;
 	StandardResetButton->Height = ButtonHeight;
 	StandardResetButton->Left = StandardDeleteAllButton->Left + StandardDeleteAllButton->Width;
 	StandardResetButton->Top = StandardDeleteAllButton->Top;
-	Common::FixButtonCaption(StandardResetButton, Canvas->TextWidth(StandardResetButton->Caption));
+	FixButtonCaption(StandardResetButton, Canvas->TextWidth(StandardResetButton->Caption));
 
 	StandardUpButton->Width = ArrowButtonWidth;
 	StandardUpButton->Height = ArrowButtonHeight;
 	StandardUpButton->Top = StandardResetButton->Top;
 	StandardUpButton->Enabled = false;
 	StandardUpButton->NumGlyphs = NumGlyphs;
-	StandardUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	StandardUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	StandardDownButton->Width = ArrowButtonWidth;
 	StandardDownButton->Height = ArrowButtonHeight;
 	StandardDownButton->Top = StandardUpButton->Top;
 	StandardDownButton->Enabled = false;
 	StandardDownButton->NumGlyphs = NumGlyphs;
-	StandardDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	StandardDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	StandardDownButton->Left = StandardListBox->Left + StandardListBox->Width - ButtonRight - StandardDownButton->Width;
 	StandardUpButton->Left = StandardDownButton->Left - StandardUpButton->Width;
@@ -652,7 +671,7 @@ bool TDisplayForm::ScaleControls()
 	StandardGroupBox->Top = DetailedGroupBox->Top + DetailedGroupBox->Height + GroupBoxBottom + GroupBoxTop;
 
 	ExtensionListBox->Width = StandardListBox->Width;
-	ExtensionListBox->Height = Text.tmHeight * 3 + 4;
+	ExtensionListBox->Height = Text.tmHeight * ExtensionRows + 4;
 	ExtensionListBox->ItemHeight = Text.tmHeight;
 	ExtensionListBox->Left = PaddingWidth;
 	ExtensionListBox->Top = PaddingTop;
@@ -661,45 +680,45 @@ bool TDisplayForm::ScaleControls()
 	ExtensionAddButton->Height = ButtonHeight;
 	ExtensionAddButton->Left = ExtensionListBox->Left + ButtonLeft;
 	ExtensionAddButton->Top = ExtensionListBox->Top + ExtensionListBox->Height + Scale + ButtonTop;
-	Common::FixButtonCaption(ExtensionAddButton, Canvas->TextWidth(ExtensionAddButton->Caption));
+	FixButtonCaption(ExtensionAddButton, Canvas->TextWidth(ExtensionAddButton->Caption));
 
 	ExtensionEditButton->Width = ButtonWidth;
 	ExtensionEditButton->Height = ButtonHeight;
 	ExtensionEditButton->Left = ExtensionAddButton->Left + ExtensionAddButton->Width;
 	ExtensionEditButton->Top = ExtensionAddButton->Top;
-	Common::FixButtonCaption(ExtensionEditButton, Canvas->TextWidth(ExtensionEditButton->Caption));
+	FixButtonCaption(ExtensionEditButton, Canvas->TextWidth(ExtensionEditButton->Caption));
 
 	ExtensionDeleteButton->Width = ButtonWidth;
 	ExtensionDeleteButton->Height = ButtonHeight;
 	ExtensionDeleteButton->Left = ExtensionEditButton->Left + ExtensionEditButton->Width;
 	ExtensionDeleteButton->Top = ExtensionEditButton->Top;
-	Common::FixButtonCaption(ExtensionDeleteButton, Canvas->TextWidth(ExtensionDeleteButton->Caption));
+	FixButtonCaption(ExtensionDeleteButton, Canvas->TextWidth(ExtensionDeleteButton->Caption));
 
 	ExtensionDeleteAllButton->Width = LongButtonWidth;
 	ExtensionDeleteAllButton->Height = LongButtonHeight;
 	ExtensionDeleteAllButton->Left = ExtensionDeleteButton->Left + ExtensionDeleteButton->Width;
 	ExtensionDeleteAllButton->Top = ExtensionDeleteButton->Top;
-	Common::FixButtonCaption(ExtensionDeleteAllButton, Canvas->TextWidth(ExtensionDeleteAllButton->Caption));
+	FixButtonCaption(ExtensionDeleteAllButton, Canvas->TextWidth(ExtensionDeleteAllButton->Caption));
 
 	ExtensionResetButton->Width = ButtonWidth;
 	ExtensionResetButton->Height = ButtonHeight;
 	ExtensionResetButton->Left = ExtensionDeleteAllButton->Left + ExtensionDeleteAllButton->Width;
 	ExtensionResetButton->Top = ExtensionDeleteAllButton->Top;
-	Common::FixButtonCaption(ExtensionResetButton, Canvas->TextWidth(ExtensionResetButton->Caption));
+	FixButtonCaption(ExtensionResetButton, Canvas->TextWidth(ExtensionResetButton->Caption));
 
 	ExtensionUpButton->Width = ArrowButtonWidth;
 	ExtensionUpButton->Height = ArrowButtonHeight;
 	ExtensionUpButton->Top = ExtensionResetButton->Top;
 	ExtensionUpButton->Enabled = false;
 	ExtensionUpButton->NumGlyphs = NumGlyphs;
-	ExtensionUpButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_UP));
+	ExtensionUpButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_UP));
 
 	ExtensionDownButton->Width = ArrowButtonWidth;
 	ExtensionDownButton->Height = ArrowButtonHeight;
 	ExtensionDownButton->Top = ExtensionUpButton->Top;
 	ExtensionDownButton->Enabled = false;
 	ExtensionDownButton->NumGlyphs = NumGlyphs;
-	ExtensionDownButton->Glyph->LoadFromResourceID(0, Common::GetScaledResourceID(ARROW_DOWN));
+	ExtensionDownButton->Glyph->LoadFromResourceID(0, GetScaledResourceID(ARROW_DOWN));
 
 	ExtensionDownButton->Left = ExtensionListBox->Left + ExtensionListBox->Width - ButtonRight - ExtensionDownButton->Width;
 	ExtensionUpButton->Left = ExtensionDownButton->Left - ExtensionUpButton->Width;
@@ -812,23 +831,23 @@ bool TDisplayForm::ScaleControls()
 	DisplayImportButton->Height = FormButtonHeight;
 	DisplayImportButton->Left = EstablishedGroupBox->Left + ButtonLeft;
 	DisplayImportButton->Top = EstablishedGroupBox->Top + EstablishedGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(DisplayImportButton, Canvas->TextWidth(DisplayImportButton->Caption));
+	FixButtonCaption(DisplayImportButton, Canvas->TextWidth(DisplayImportButton->Caption));
 
 	DisplayExportButton->Width = (EstablishedGroupBox->Width - Scale) / 2 - ButtonLeft - ButtonRight;
 	DisplayExportButton->Height = FormButtonHeight;
 	DisplayExportButton->Left = DisplayImportButton->Left + DisplayImportButton->Width + ButtonRight + Scale + ButtonLeft;
 	DisplayExportButton->Top = DisplayImportButton->Top;
-	Common::FixButtonCaption(DisplayExportButton, Canvas->TextWidth(DisplayExportButton->Caption));
+	FixButtonCaption(DisplayExportButton, Canvas->TextWidth(DisplayExportButton->Caption));
 
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = ExtensionGroupBox->Top + ExtensionGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = ExtensionGroupBox->Left + ExtensionGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;
@@ -841,19 +860,19 @@ bool TDisplayForm::ScaleControls()
 void __fastcall TDisplayForm::FormCreate(TObject *Sender)
 {
 	if (!DisplayList.Load())
-		FatalError("Failed to load displays from the registry.");
+		FatalError("Failed to load displays from the registry.\nTry running as administrator.");
 
 	if (DisplayList.GetCount() == 0)
-		FatalError("No displays found in the registry.");
+		FatalError("No displays found in the registry.\nRun restart.exe or reboot to redetect displays.");
 
-	DisplayList.Sort();
-	DisplayList.SetCurrent(0);
+	Display = DisplayList.Get(0);
 	ScaleControls();
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::FormShow(TObject *Sender)
 {
-	InitDisplayComboBox();
+	RefreshDisplayComboBox();
+	DisplayComboBox->ItemIndex = 0;
 	Refresh(NULL, -1);
 }
 //---------------------------------------------------------------------------
@@ -862,7 +881,7 @@ void __fastcall TDisplayForm::DisplayComboBoxChange(TObject *Sender)
 	if (Refreshing)
 		return;
 
-	DisplayList.SetCurrent(DisplayComboBox->ItemIndex);
+	Display = DisplayList.Get(DisplayComboBox->ItemIndex);
 	Refresh(NULL, -1);
 }
 //---------------------------------------------------------------------------
@@ -871,13 +890,13 @@ void __fastcall TDisplayForm::DisplayEditButtonClick(TObject *Sender)
 	PropertiesClass Properties;
 	TPropertiesForm *PropertiesForm = new TPropertiesForm(this);
 
-	DisplayList.Current()->GetProperties(Properties);
+	Display->GetProperties(Properties);
 	PropertiesForm->Connect(Properties);
 
 	if (PropertiesForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->SetProperties(Properties);
-		InitDisplayComboBox();
+		Display->SetProperties(Properties);
+		RefreshDisplayComboBox();
 		RefreshDisplayButtons();
 		RefreshDetailedListBox(-1);
 		RefreshDetailedButtons();
@@ -888,25 +907,25 @@ void __fastcall TDisplayForm::DisplayEditButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DisplayCopyButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DisplayCopy();
+	Display->DisplayCopy();
 	RefreshDisplayButtons();
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DisplayPasteButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DisplayPaste();
-	InitDisplayComboBox();
+	Display->DisplayPaste();
+	RefreshDisplayComboBox();
 	Refresh(NULL, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DisplayDeleteButtonClick(TObject *Sender)
 {
-	if (DisplayList.Current()->DisplayDeletePossible())
-		DisplayList.Current()->DisplayDelete();
+	if (Display->DisplayDeletePossible())
+		Display->DisplayDelete();
 	else
-		DisplayList.Current()->DisplayRestore();
+		Display->DisplayRestore();
 
-	InitDisplayComboBox();
+	RefreshDisplayComboBox();
 	Refresh(NULL, -1);
 }
 //---------------------------------------------------------------------------
@@ -916,31 +935,31 @@ void __fastcall TDisplayForm::EstablishedCheckBoxClick(TObject *Sender)
 		return;
 
 	TCheckBox *CheckBox = (TCheckBox *)Sender;
-	DisplayList.Current()->EstablishedResolutions()->Set(CheckBox->Tag, CheckBox->Checked);
+	Display->EstablishedResolutions()->Set(CheckBox->Tag, CheckBox->Checked);
 	Refresh(EstablishedGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::EstablishedAllButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->EstablishedResolutions()->All();
+	Display->EstablishedResolutions()->All();
 	Refresh(EstablishedGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::EstablishedNoneButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->EstablishedResolutions()->None();
+	Display->EstablishedResolutions()->None();
 	Refresh(EstablishedGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::EstablishedResetButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->EstablishedResolutions()->Undo();
+	Display->EstablishedResolutions()->Undo();
 	Refresh(EstablishedGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedListBoxDrawItem(TWinControl *Control, int Index, TRect &Rect, TOwnerDrawState State)
 {
-	Common::ListBoxDrawItem(DetailedListBox, Rect, State, DetailedListBox->Items->Strings[Index].c_str(), DisplayList.Current()->DetailedResolutions()->EditPossible(Index), false);
+	ListBoxDrawItem(DetailedListBox, Rect, State, DetailedListBox->Items->Strings[Index].c_str(), Display->DetailedResolutions()->EditPossible(Index), false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -958,7 +977,7 @@ void __fastcall TDisplayForm::DetailedListBoxDoubleClick(TObject *Sender)
 	DetailedListBox->ItemIndex = DetailedLastClickedItemIndex;
 	RefreshDetailedButtons();
 
-	if (DisplayList.Current()->DetailedResolutions()->EditPossible(DetailedListBox->ItemIndex))
+	if (Display->DetailedResolutions()->EditPossible(DetailedListBox->ItemIndex))
 		DetailedEditButtonClick(DetailedListBox);
 
 	DetailedLastItemIndex = -1;
@@ -974,13 +993,13 @@ void __fastcall TDisplayForm::DetailedAddButtonClick(TObject *Sender)
 	DetailedResolutionClass DetailedResolution;
 	TDetailedResolutionForm *DetailedResolutionForm = new TDetailedResolutionForm(this);
 
-	DisplayList.Current()->GetNative(DetailedResolution);
+	Display->GetNative(DetailedResolution);
 	DetailedResolutionForm->Connect(DetailedResolution);
 
 	if (DetailedResolutionForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->DetailedResolutions()->Add(DetailedResolution);
-		Refresh(DetailedGroupBox, DisplayList.Current()->DetailedResolutions()->GetCount() - 1);
+		Display->DetailedResolutions()->Add(DetailedResolution);
+		Refresh(DetailedGroupBox, Display->DetailedResolutions()->GetCount() - 1);
 	}
 
 	delete DetailedResolutionForm;
@@ -991,12 +1010,12 @@ void __fastcall TDisplayForm::DetailedEditButtonClick(TObject *Sender)
 	DetailedResolutionClass DetailedResolution;
 	TDetailedResolutionForm *DetailedResolutionForm = new TDetailedResolutionForm(this);
 
-	DisplayList.Current()->DetailedResolutions()->Get(DetailedListBox->ItemIndex, DetailedResolution);
+	Display->DetailedResolutions()->Get(DetailedListBox->ItemIndex, DetailedResolution);
 	DetailedResolutionForm->Connect(DetailedResolution);
 
 	if (DetailedResolutionForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->DetailedResolutions()->Set(DetailedListBox->ItemIndex, DetailedResolution);
+		Display->DetailedResolutions()->Set(DetailedListBox->ItemIndex, DetailedResolution);
 		Refresh(DetailedGroupBox, DetailedListBox->ItemIndex);
 	}
 
@@ -1005,35 +1024,31 @@ void __fastcall TDisplayForm::DetailedEditButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedDeleteButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DetailedResolutions()->Delete(DetailedListBox->ItemIndex);
-
-	if (DetailedListBox->ItemIndex >= DisplayList.Current()->DetailedResolutions()->GetCount())
-		DetailedListBox->ItemIndex = -1;
-
+	Display->DetailedResolutions()->Delete(DetailedListBox->ItemIndex);
 	Refresh(DetailedGroupBox, DetailedListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedDeleteAllButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DetailedResolutions()->DeleteAll();
+	Display->DetailedResolutions()->DeleteAll();
 	Refresh(DetailedGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedResetButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DetailedResolutions()->Undo();
+	Display->DetailedResolutions()->Undo();
 	Refresh(DetailedGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedUpButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DetailedResolutions()->Exchange(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex - 1);
+	Display->DetailedResolutions()->Exchange(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex - 1);
 	Refresh(DetailedGroupBox, DetailedListBox->ItemIndex - 1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::DetailedDownButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->DetailedResolutions()->Exchange(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex + 1);
+	Display->DetailedResolutions()->Exchange(DetailedListBox->ItemIndex, DetailedListBox->ItemIndex + 1);
 	Refresh(DetailedGroupBox, DetailedListBox->ItemIndex + 1);
 }
 //---------------------------------------------------------------------------
@@ -1042,10 +1057,10 @@ void __fastcall TDisplayForm::StandardListBoxDrawItem(TWinControl *Control, int 
 	StandardResolutionClass StandardResolution;
 	bool Supported = false;
 
-	if (DisplayList.Current()->StandardResolutions()->Get(Index, StandardResolution))
+	if (Display->StandardResolutions()->Get(Index, StandardResolution))
 		Supported = StandardResolution.IsSupported();
 
-	Common::ListBoxDrawItem(StandardListBox, Rect, State, StandardListBox->Items->Strings[Index].c_str(), Supported, false);
+	ListBoxDrawItem(StandardListBox, Rect, State, StandardListBox->Items->Strings[Index].c_str(), Supported, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::StandardListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -1063,7 +1078,7 @@ void __fastcall TDisplayForm::StandardListBoxDoubleClick(TObject *Sender)
 	StandardListBox->ItemIndex = StandardLastClickedItemIndex;
 	RefreshStandardButtons();
 
-	if (DisplayList.Current()->StandardResolutions()->EditPossible(StandardListBox->ItemIndex))
+	if (Display->StandardResolutions()->EditPossible(StandardListBox->ItemIndex))
 		StandardEditButtonClick(StandardListBox);
 
 	StandardLastItemIndex = -1;
@@ -1083,8 +1098,8 @@ void __fastcall TDisplayForm::StandardAddButtonClick(TObject *Sender)
 
 	if (StandardResolutionForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->StandardResolutions()->Add(StandardResolution);
-		Refresh(StandardGroupBox, DisplayList.Current()->StandardResolutions()->GetCount() - 1);
+		Display->StandardResolutions()->Add(StandardResolution);
+		Refresh(StandardGroupBox, Display->StandardResolutions()->GetCount() - 1);
 	}
 
 	delete StandardResolutionForm;
@@ -1095,12 +1110,12 @@ void __fastcall TDisplayForm::StandardEditButtonClick(TObject *Sender)
 	StandardResolutionClass StandardResolution;
 	TStandardResolutionForm *StandardResolutionForm = new TStandardResolutionForm(this);
 
-	DisplayList.Current()->StandardResolutions()->Get(StandardListBox->ItemIndex, StandardResolution);
+	Display->StandardResolutions()->Get(StandardListBox->ItemIndex, StandardResolution);
 	StandardResolutionForm->Connect(StandardResolution);
 
 	if (StandardResolutionForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->StandardResolutions()->Set(StandardListBox->ItemIndex, StandardResolution);
+		Display->StandardResolutions()->Set(StandardListBox->ItemIndex, StandardResolution);
 		Refresh(StandardGroupBox, StandardListBox->ItemIndex);
 	}
 
@@ -1109,35 +1124,31 @@ void __fastcall TDisplayForm::StandardEditButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::StandardDeleteButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->StandardResolutions()->Delete(StandardListBox->ItemIndex);
-
-	if (StandardListBox->ItemIndex >= DisplayList.Current()->StandardResolutions()->GetCount())
-		StandardListBox->ItemIndex = -1;
-
+	Display->StandardResolutions()->Delete(StandardListBox->ItemIndex);
 	Refresh(StandardGroupBox, StandardListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::StandardDeleteAllButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->StandardResolutions()->DeleteAll();
+	Display->StandardResolutions()->DeleteAll();
 	Refresh(StandardGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::StandardResetButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->StandardResolutions()->Undo();
+	Display->StandardResolutions()->Undo();
 	Refresh(StandardGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::StandardUpButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->StandardResolutions()->Exchange(StandardListBox->ItemIndex, StandardListBox->ItemIndex - 1);
+	Display->StandardResolutions()->Exchange(StandardListBox->ItemIndex, StandardListBox->ItemIndex - 1);
 	Refresh(StandardGroupBox, StandardListBox->ItemIndex - 1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::StandardDownButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->StandardResolutions()->Exchange(StandardListBox->ItemIndex, StandardListBox->ItemIndex + 1);
+	Display->StandardResolutions()->Exchange(StandardListBox->ItemIndex, StandardListBox->ItemIndex + 1);
 	Refresh(StandardGroupBox, StandardListBox->ItemIndex + 1);
 }
 //---------------------------------------------------------------------------
@@ -1146,10 +1157,10 @@ void __fastcall TDisplayForm::ExtensionListBoxDrawItem(TWinControl *Control, int
 	ExtensionBlockClass ExtensionBlock;
 	bool Supported = false;
 
-	if (DisplayList.Current()->ExtensionBlocks()->Get(Index, ExtensionBlock))
+	if (Display->ExtensionBlocks()->Get(Index, ExtensionBlock))
 		Supported = ExtensionBlock.IsSupported();
 
-	Common::ListBoxDrawItem(ExtensionListBox, Rect, State, ExtensionListBox->Items->Strings[Index].c_str(), Supported, false);
+	ListBoxDrawItem(ExtensionListBox, Rect, State, ExtensionListBox->Items->Strings[Index].c_str(), Supported, false);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::ExtensionListBoxClick(TObject *Sender, TMouseButton Button, TShiftState Shift, int X, int Y)
@@ -1167,7 +1178,7 @@ void __fastcall TDisplayForm::ExtensionListBoxDoubleClick(TObject *Sender)
 	ExtensionListBox->ItemIndex = ExtensionLastClickedItemIndex;
 	RefreshExtensionButtons();
 
-	if (DisplayList.Current()->ExtensionBlocks()->EditPossible(ExtensionListBox->ItemIndex))
+	if (Display->ExtensionBlocks()->EditPossible(ExtensionListBox->ItemIndex))
 		ExtensionEditButtonClick(ExtensionListBox);
 
 	ExtensionLastItemIndex = -1;
@@ -1185,14 +1196,14 @@ void __fastcall TDisplayForm::ExtensionAddButtonClick(TObject *Sender)
 	PropertiesClass Properties;
 	TExtensionBlockForm *ExtensionBlockForm = new TExtensionBlockForm(this);
 
-	DisplayList.Current()->GetNative(NativeResolution);
-	DisplayList.Current()->GetProperties(Properties);
+	Display->GetNative(NativeResolution);
+	Display->GetProperties(Properties);
 	ExtensionBlockForm->Connect(ExtensionBlock, NativeResolution, Properties);
 
 	if (ExtensionBlockForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->ExtensionBlocks()->Add(ExtensionBlock);
-		Refresh(ExtensionGroupBox, DisplayList.Current()->ExtensionBlocks()->GetCount() - 1);
+		Display->ExtensionBlocks()->Add(ExtensionBlock);
+		Refresh(ExtensionGroupBox, Display->ExtensionBlocks()->GetCount() - 1);
 	}
 
 	delete ExtensionBlockForm;
@@ -1205,14 +1216,14 @@ void __fastcall TDisplayForm::ExtensionEditButtonClick(TObject *Sender)
 	PropertiesClass Properties;
 	TExtensionBlockForm *ExtensionBlockForm = new TExtensionBlockForm(this);
 
-	DisplayList.Current()->ExtensionBlocks()->Get(ExtensionListBox->ItemIndex, ExtensionBlock);
-	DisplayList.Current()->GetNative(NativeResolution);
-	DisplayList.Current()->GetProperties(Properties);
+	Display->ExtensionBlocks()->Get(ExtensionListBox->ItemIndex, ExtensionBlock);
+	Display->GetNative(NativeResolution);
+	Display->GetProperties(Properties);
 	ExtensionBlockForm->Connect(ExtensionBlock, NativeResolution, Properties);
 
 	if (ExtensionBlockForm->ShowModal() == mrOk)
 	{
-		DisplayList.Current()->ExtensionBlocks()->Set(ExtensionListBox->ItemIndex, ExtensionBlock);
+		Display->ExtensionBlocks()->Set(ExtensionListBox->ItemIndex, ExtensionBlock);
 		Refresh(ExtensionGroupBox, ExtensionListBox->ItemIndex);
 	}
 
@@ -1221,35 +1232,31 @@ void __fastcall TDisplayForm::ExtensionEditButtonClick(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::ExtensionDeleteButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->ExtensionBlocks()->Delete(ExtensionListBox->ItemIndex);
-
-	if (ExtensionListBox->ItemIndex >= DisplayList.Current()->ExtensionBlocks()->GetCount())
-		ExtensionListBox->ItemIndex = -1;
-
+	Display->ExtensionBlocks()->Delete(ExtensionListBox->ItemIndex);
 	Refresh(ExtensionGroupBox, ExtensionListBox->ItemIndex);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::ExtensionDeleteAllButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->ExtensionBlocks()->DeleteAll();
+	Display->ExtensionBlocks()->DeleteAll();
 	Refresh(ExtensionGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::ExtensionResetButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->ExtensionBlocks()->Undo();
+	Display->ExtensionBlocks()->Undo();
 	Refresh(ExtensionGroupBox, -1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::ExtensionUpButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->ExtensionBlocks()->Exchange(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex - 1);
+	Display->ExtensionBlocks()->Exchange(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex - 1);
 	Refresh(ExtensionGroupBox, ExtensionListBox->ItemIndex - 1);
 }
 //---------------------------------------------------------------------------
 void __fastcall TDisplayForm::ExtensionDownButtonClick(TObject *Sender)
 {
-	DisplayList.Current()->ExtensionBlocks()->Exchange(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex + 1);
+	Display->ExtensionBlocks()->Exchange(ExtensionListBox->ItemIndex, ExtensionListBox->ItemIndex + 1);
 	Refresh(ExtensionGroupBox, ExtensionListBox->ItemIndex + 1);
 }
 //---------------------------------------------------------------------------
@@ -1299,10 +1306,10 @@ void __fastcall TDisplayForm::DisplayImportButtonClick(TObject *Sender)
 
 	if (GetOpenFileName(&OpenFileName))
 	{
-		if (!DisplayList.Current()->Import(FileName, Complete))
+		if (!Display->Import(FileName, Complete))
 			Application->MessageBox("Failed to import file.", "Import", MB_ICONERROR);
 
-		InitDisplayComboBox();
+		RefreshDisplayComboBox();
 		Refresh(NULL, -1);
 	}
 }
@@ -1339,7 +1346,7 @@ void __fastcall TDisplayForm::DisplayExportButtonClick(TObject *Sender)
 	{
 		Name[SaveFileName.nFileExtension - SaveFileName.nFileOffset - 1] = 0;
 
-		if (!DisplayList.Current()->Export(FileName, SaveFileName.nFilterIndex, Name))
+		if (!Display->Export(FileName, SaveFileName.nFilterIndex, Name))
 			Application->MessageBox("Failed to write file.", "Export", MB_ICONERROR);
 	}
 }

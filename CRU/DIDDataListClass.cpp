@@ -1,13 +1,12 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "DIDDataListClass.h"
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
 DIDDataListClass::DIDDataListClass(int Slots) : ListClass(Slots, 121)
 {
+	Version = 1;
 }
 //---------------------------------------------------------------------------
 const char *DIDDataListClass::SlotTypeText[] =
@@ -21,19 +20,31 @@ const char *DIDDataListClass::SlotTypeText[] =
 	"Type 3 resolutions",
 	"Type 4 resolutions",
 	"VESA resolutions",
-	"CEA resolutions",
+	"CTA resolutions",
 	"Range limits",
 	"Serial number",
 	"ASCII string",
 	"Display device data",
 	"Power sequencing",
-	"Transfer characteristics",
+	"Gamma curves",
 	"Display interface",
-	"Stereo display interface",
+	"Stereo display",
 	"Type 5 resolutions",
 	"Tiled display topology",
 	"Type 6 resolutions",
 	"Vendor-specific data",
+	"Product identification",
+	"Display parameters",
+	"Detailed resolutions",
+	"Type 8 resolutions",
+	"Type 9 resolutions",
+	"Dynamic range limits",
+	"Display interface",
+	"Stereo display",
+	"Tiled display topology",
+	"ContainerID",
+	"Vendor-specific data",
+	"CTA data blocks",
 	"Other",
 };
 //---------------------------------------------------------------------------
@@ -175,6 +186,45 @@ int DIDDataListClass::GetSlotType(int Slot)
 
 		case 127:
 			return DID_VENDOR_SPECIFIC_DATA;
+
+		case 32:
+			return DID2_PRODUCT_IDENTIFICATION;
+
+		case 33:
+			return DID2_DISPLAY_PARAMETERS;
+
+		case 34:
+			return DID2_DETAILED_RESOLUTIONS;
+
+		case 35:
+			return DID2_TYPE_8_RESOLUTIONS;
+
+		case 36:
+			return DID2_TYPE_9_RESOLUTIONS;
+
+		case 37:
+			return DID2_DYNAMIC_RANGE_LIMITS;
+
+		case 38:
+			return DID2_DISPLAY_INTERFACE_FEATURES;
+
+		case 39:
+			return DID2_STEREO_DISPLAY_INTERFACE;
+
+		case 40:
+			if (Size < 25)
+				return DID_OTHER;
+
+			return DID2_TILED_DISPLAY_TOPOLOGY;
+
+		case 41:
+			return DID2_CONTAINERID;
+
+		case 126:
+			return DID2_VENDOR_SPECIFIC_DATA;
+
+		case 129:
+			return DID_CEA_DATA_BLOCKS;
 	}
 
 	return DID_OTHER;
@@ -240,10 +290,14 @@ bool DIDDataListClass::GetSlotTypeText(int Slot, char *Text, int TextSize)
 	Byte = &SlotData[Slot * SlotSize];
 	Type = GetSlotType(Slot);
 
-	if (Type == DID_OTHER)
-		std::snprintf(Text, TextSize, "%s (%d)", SlotTypeText[Type], Byte[0]);
-	else
+	if (Type >= DID_PRODUCT_IDENTIFICATION && Type <= DID_VENDOR_SPECIFIC_DATA)
+		std::snprintf(Text, TextSize, "%s%s", SlotTypeText[Type], Version != 1 ? " (1.x)" : "");
+	else if (Type >= DID2_PRODUCT_IDENTIFICATION && Type <= DID2_VENDOR_SPECIFIC_DATA)
+		std::snprintf(Text, TextSize, "%s%s", SlotTypeText[Type], Version != 2 ? " (2.x)" : "");
+	else if (Type == DID_CEA_DATA_BLOCKS)
 		std::snprintf(Text, TextSize, "%s", SlotTypeText[Type]);
+	else
+		std::snprintf(Text, TextSize, "%s (%d)", SlotTypeText[Type], Byte[0]);
 
 	return true;
 }
@@ -261,10 +315,12 @@ bool DIDDataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 	Byte = &SlotData[Slot * SlotSize];
 	Type = GetSlotType(Slot);
 	Size = GetSlotSize(Slot);
+	Text[0] = 0;
 
 	switch (Type)
 	{
 		case DID_DETAILED_RESOLUTIONS:
+		case DID2_DETAILED_RESOLUTIONS:
 			Slots = (Size - 3) / 20;
 			std::snprintf(Text, TextSize, "%d resolution%s", Slots, Slots != 1 ? "s" : "");
 			break;
@@ -289,7 +345,22 @@ bool DIDDataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 			std::snprintf(Text, TextSize, "%d resolution%s", Slots, Slots != 1 ? "s" : "");
 			break;
 
+		case DID2_TYPE_8_RESOLUTIONS:
+			if (Byte[1] & 8)
+				Slots = (Size - 3) / 2;
+			else
+				Slots = Size - 3;
+
+			std::snprintf(Text, TextSize, "%d resolution%s", Slots, Slots != 1 ? "s" : "");
+			break;
+
+		case DID2_TYPE_9_RESOLUTIONS:
+			Slots = (Size - 3) / 6;
+			std::snprintf(Text, TextSize, "%d resolution%s", Slots, Slots != 1 ? "s" : "");
+			break;
+
 		case DID_TILED_DISPLAY_TOPOLOGY:
+		case DID2_TILED_DISPLAY_TOPOLOGY:
 		{
 			int HTiles = ((Byte[4] >> 4) & 15) + ((Byte[6] >> 2) & 48) + 1;
 			int VTiles = (Byte[4] & 15) + (Byte[6] & 48) + 1;
@@ -322,13 +393,38 @@ bool DIDDataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 				std::snprintf(Text, TextSize, "%dx%d (%d,%d)", HTiles, VTiles, HLocation, VLocation);
 
 			break;
-        }
+		}
 
-		default:
-			Text[0] = 0;
+		case DID_VENDOR_SPECIFIC_DATA:
+			if (Size > 5)
+			{
+				if (IsUpper(Byte[3]) && IsUpper(Byte[4]) && IsUpper(Byte[5]))
+					std::snprintf(Text, TextSize, "ID: %c%c%c", Byte[3], Byte[4], Byte[5]);
+				else
+					std::snprintf(Text, TextSize, "ID: 0x%02X%02X%02X", Byte[3], Byte[4], Byte[5]);
+			}
+
+			break;
+
+		case DID2_VENDOR_SPECIFIC_DATA:
+			if (Size > 5)
+				std::snprintf(Text, TextSize, "ID: 0x%02X%02X%02X", Byte[3], Byte[4], Byte[5]);
+
+			break;
 	}
 
 	return true;
+}
+//---------------------------------------------------------------------------
+bool DIDDataListClass::SetVersion(int NewVersion)
+{
+	Version = NewVersion;
+	return true;
+}
+//---------------------------------------------------------------------------
+int DIDDataListClass::GetVersion()
+{
+	return Version;
 }
 //---------------------------------------------------------------------------
 bool DIDDataListClass::AddPossible()
@@ -355,6 +451,8 @@ bool DIDDataListClass::EditPossible(int Slot)
 	{
 		case DID_DETAILED_RESOLUTIONS:
 		case DID_TILED_DISPLAY_TOPOLOGY:
+		case DID2_DETAILED_RESOLUTIONS:
+		case DID2_TILED_DISPLAY_TOPOLOGY:
 			return true;
 	}
 

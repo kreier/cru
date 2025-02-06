@@ -12,7 +12,7 @@ private:
 	static const int MaxMode;
 	static const int MinFormat;
 	static const int MaxFormat;
-	static const int Modes[][17];
+	static const unsigned char Modes[][17];
 	static const int MinCode;
 	static const int MaxCode;
 	static const int MinNative;

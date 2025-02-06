@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "FreeSyncRangeClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -33,7 +34,6 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TFreeSyncRangeForm(TComponent *Owner);
 	bool Connect(FreeSyncRangeClass &);
-	TColor GetTextColor(bool);
 	bool Refresh(void *);
 	bool RefreshRangeLimitsTextBoxes();
 	bool ScaleControls();

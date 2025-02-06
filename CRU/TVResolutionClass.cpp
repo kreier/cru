@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "TVResolutionClass.h"
-#include <cstdio>
 //---------------------------------------------------------------------------
 const char *TVResolutionClass::AspectText[] =
 {
@@ -30,54 +29,13 @@ const char *TVResolutionClass::AspectText[] =
 	"",
 	"21:9",
 };
-/*
-const int TVResolutionClass::MinMode = 0;
-const int TVResolutionClass::MaxMode = 10;
-const int TVResolutionClass::MinFormat = 0;
-const int TVResolutionClass::MaxFormat = 15;
 
-const int TVResolutionClass::Modes[][17] =
-{
-	// 640x480
-	{1},
-
-	// 720x480
-	{3, 49, 57, 2, 48, 56},
-
-	// 720x576
-	{18, 43, 53, 17, 42, 52},
-
-	// 1280x720
-	{60, 61, 62, 19, 4, 41, 47, 65, 66, 67, 68, 69, 70, 71},
-
-	// 1680x720
-	{79, 80, 81, 82, 83, 84, 85},
-
-	// 1920x1080
-	{32, 33, 34, 31, 16, 64, 63, 72, 73, 74, 75, 76, 77, 78},
-
-	// 1920x1080i
-	{20, 5, 40, 46, 39},
-
-	// 2560x1080
-	{86, 87, 88, 89, 90, 91, 92},
-
-	// 3840x2160
-	{93, 94, 95, 96, 97, 103, 104, 105, 106, 107},
-
-	// 4096x2160
-	{98, 99, 100, 101, 102},
-
-	// Other resolution
-	{0},
-};
-*/
 const int TVResolutionClass::MinMode = 0;
 const int TVResolutionClass::MaxMode = 13;
 const int TVResolutionClass::MinFormat = 0;
 const int TVResolutionClass::MaxFormat = 15;
 
-const int TVResolutionClass::Modes[][17] =
+const unsigned char TVResolutionClass::Modes[][17] =
 {
 	// 640x480
 	{1},
@@ -554,7 +512,10 @@ bool TVResolutionClass::SetNative(bool Enabled)
 //---------------------------------------------------------------------------
 bool TVResolutionClass::NativePossible()
 {
-	return !IsValidCode() || Code >= MinNative && Code <= MaxNative;
+	if (!IsValidCode())
+		return true;
+
+	return Code >= MinNative && Code <= MaxNative;
 }
 //---------------------------------------------------------------------------
 bool TVResolutionClass::IsValid()

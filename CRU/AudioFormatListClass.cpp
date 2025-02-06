@@ -1,10 +1,9 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "AudioFormatListClass.h"
 #include "AudioFormatClass.h"
-#include <cstring>
 //---------------------------------------------------------------------------
 AudioFormatListClass::AudioFormatListClass(int Slots) : ListClass(Slots, 3)
 {
@@ -16,7 +15,6 @@ bool AudioFormatListClass::Read(const unsigned char *Data, int MaxSize)
 	int Size;
 	int Slots;
 	int Slot;
-	AudioFormatClass AudioFormat;
 
 	if (!Data)
 		return false;
@@ -33,6 +31,7 @@ bool AudioFormatListClass::Read(const unsigned char *Data, int MaxSize)
 		return false;
 
 	Slots = Size / SlotSize;
+	AudioFormatClass AudioFormat;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
 	{

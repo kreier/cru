@@ -2,8 +2,8 @@ object CommonForm: TCommonForm
   Left = 0
   Top = 0
   Caption = 'CommonForm'
-  ClientHeight = 411
-  ClientWidth = 852
+  ClientHeight = 480
+  ClientWidth = 640
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

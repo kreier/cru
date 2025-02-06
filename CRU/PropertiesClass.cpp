@@ -1,13 +1,24 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "PropertiesClass.h"
-#include <cctype>
-#include <cstdio>
-#include <cstring>
 //---------------------------------------------------------------------------
-const long long PropertiesClass::MinSerialID = 0;
+const char *PropertiesClass::ColorDepthText[] =
+{
+	"Undefined",
+	"18-bit (6 bpc)",
+	"24-bit (8 bpc)",
+	"30-bit (10 bpc)",
+	"36-bit (12 bpc)",
+	"42-bit (14 bpc)",
+	"48-bit (16 bpc)",
+};
+
+const int PropertiesClass::MinColorDepth = 0;
+const int PropertiesClass::MaxColorDepth = 6;
+
+const long long PropertiesClass::MinSerialID = 1;
 const long long PropertiesClass::MaxSerialID = 4294967295LL;
 
 const unsigned long PropertiesClass::MaxNameSize = 13;
@@ -28,9 +39,17 @@ const char *PropertiesClass::RegExtensions = "CRU_Extensions";
 //---------------------------------------------------------------------------
 PropertiesClass::PropertiesClass()
 {
-	ProductID[0] = 0;
+	Version = 0;
+
+	DeviceID[0] = 0;
 	ResetID[0] = 0;
-	SerialID = BLANK;
+	SerialID = DECIMAL_BLANK;
+
+	Digital = false;
+
+	ColorDepth = MinColorDepth;
+	YCbCr422 = false;
+	YCbCr444 = false;
 
 	Name[0] = 0;
 	IncludeName = true;
@@ -54,11 +73,29 @@ PropertiesClass::PropertiesClass()
 //---------------------------------------------------------------------------
 bool PropertiesClass::operator==(const PropertiesClass &Properties)
 {
-	if (std::strcmp(ProductID, Properties.ProductID) != 0)
+	if (Version != Properties.Version)
+		return false;
+
+	if (std::strcmp(DeviceID, Properties.DeviceID) != 0)
 		return false;
 
 	if (SerialID != Properties.SerialID)
 		return false;
+
+	if (Digital != Properties.Digital)
+		return false;
+
+	if (ColorFormatsSupported())
+	{
+		if (ColorDepth != Properties.ColorDepth)
+			return false;
+
+		if (YCbCr422 != Properties.YCbCr422)
+			return false;
+
+		if (YCbCr444 != Properties.YCbCr444)
+			return false;
+	}
 
 	if (std::strcmp(Name, Properties.Name) != 0)
 		return false;
@@ -70,9 +107,6 @@ bool PropertiesClass::operator==(const PropertiesClass &Properties)
 		return false;
 
 	if (IncludeSerialNumber != Properties.IncludeSerialNumber)
-		return false;
-
-	if (ExtRange != Properties.ExtRange)
 		return false;
 
 	if (MinVRate != Properties.MinVRate)
@@ -103,30 +137,34 @@ bool PropertiesClass::operator!=(const PropertiesClass &Properties)
 //---------------------------------------------------------------------------
 bool PropertiesClass::Read(const unsigned char *Data, bool Include)
 {
-	ReadProductID(Data);
+	ReadVersion(Data);
+	ReadDeviceID(Data);
 	ReadSerialID(Data);
+	ReadDigital(Data);
+	ReadColorFormats(Data);
 	ReadName(Data, Include);
 	ReadSerialNumber(Data, Include);
 	ReadRangeLimits(Data, Include);
-	ReadExtensions(Data, Include);
+	ReadExtensions(Data);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::ReadProductID(const unsigned char *Data)
+bool PropertiesClass::ReadVersion(const unsigned char *Data)
 {
-	ProductID[0] = 64 | ((Data[8] >> 2) & 31);
-	ProductID[1] = 64 | ((Data[8] << 3) & 24) | ((Data[9] >> 5) & 7);
-	ProductID[2] = 64 | (Data[9] & 31);
-	ProductID[3] = Data[11] >> 4;
-	ProductID[4] = Data[11] & 15;
-	ProductID[5] = Data[10] >> 4;
-	ProductID[6] = Data[10] & 15;
-	ProductID[3] += ProductID[3] < 10 ? 48 : 55;
-	ProductID[4] += ProductID[4] < 10 ? 48 : 55;
-	ProductID[5] += ProductID[5] < 10 ? 48 : 55;
-	ProductID[6] += ProductID[6] < 10 ? 48 : 55;
-	ProductID[7] = 0;
+	if (Data[18] == 1 && Data[19] == 4)
+		Version = 14;
+	else
+		Version = 13;
+
 	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::ReadDeviceID(const unsigned char *Data)
+{
+	DeviceID[0] = 64 | ((Data[8] >> 2) & 31);
+	DeviceID[1] = 64 | ((Data[8] << 3) & 24) | ((Data[9] >> 5) & 7);
+	DeviceID[2] = 64 | (Data[9] & 31);
+	return DataToHex(&Data[10], 2, &DeviceID[3], true);
 }
 //---------------------------------------------------------------------------
 bool PropertiesClass::ReadSerialID(const unsigned char *Data)
@@ -135,23 +173,55 @@ bool PropertiesClass::ReadSerialID(const unsigned char *Data)
 	SerialID += Data[13] << 8;
 	SerialID += Data[14] << 16;
 	SerialID += (long long)Data[15] << 24;
+
+	if (SerialID == 0)
+		SerialID = DECIMAL_BLANK;
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::ReadDigital(const unsigned char *Data)
+{
+	Digital = Data[20] & 128;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::ReadColorFormats(const unsigned char *Data)
+{
+	if (ColorFormatsSupported())
+	{
+		ColorDepth = (Data[20] & 112) >> 4;
+
+		if (ColorDepth < MinColorDepth || ColorDepth > MaxColorDepth)
+			ColorDepth = MinColorDepth;
+
+		YCbCr422 = Data[24] & 16;
+		YCbCr444 = Data[24] & 8;
+	}
+	else
+	{
+		ColorDepth = MinColorDepth;
+		YCbCr422 = false;
+		YCbCr444 = false;
+	}
+
 	return true;
 }
 //---------------------------------------------------------------------------
 bool PropertiesClass::ReadName(const unsigned char *Data, bool Include)
 {
 	int Slot;
-	const char *Byte;
+	const unsigned char *Byte;
 	unsigned long Index;
-	const char *Text;
+	const unsigned char *Text;
 
 	for (Slot = 0; Slot < 4; Slot++)
 	{
 		Byte = &Data[Slot * 18 + 54];
 
-		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == '\xFC')
+		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == 0xFC)
 		{
-			for (Index = 0, Text = &Byte[5]; Index < MaxNameSize && Text[Index] != 0 && Text[Index] != '\x0A'; Index++)
+			for (Index = 0, Text = &Byte[5]; Index < MaxNameSize && Text[Index] != 0 && Text[Index] != 0x0A; Index++)
 				Name[Index] = Text[Index];
 
 			Name[Index] = 0;
@@ -171,17 +241,17 @@ bool PropertiesClass::ReadName(const unsigned char *Data, bool Include)
 bool PropertiesClass::ReadSerialNumber(const unsigned char *Data, bool Include)
 {
 	int Slot;
-	const char *Byte;
+	const unsigned char *Byte;
 	unsigned long Index;
-	const char *Text;
+	const unsigned char *Text;
 
 	for (Slot = 0; Slot < 4; Slot++)
 	{
 		Byte = &Data[Slot * 18 + 54];
 
-		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == '\xFF')
+		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == 0xFF)
 		{
-			for (Index = 0, Text = &Byte[5]; Index < MaxSerialNumberSize && Text[Index] != 0 && Text[Index] != '\x0A'; Index++)
+			for (Index = 0, Text = &Byte[5]; Index < MaxSerialNumberSize && Text[Index] != 0 && Text[Index] != 0x0A; Index++)
 				SerialNumber[Index] = Text[Index];
 
 			SerialNumber[Index] = 0;
@@ -208,7 +278,7 @@ bool PropertiesClass::ReadRangeLimits(const unsigned char *Data, bool Include)
 	int OldMaxHRate = MaxHRate;
 	int OldMaxPClock = MaxPClock;
 
-	if (Data[18] == 1 && Data[19] >= 4)
+	if (Version >= 14)
 		ExtRange = 255;
 	else
 		ExtRange = 0;
@@ -280,7 +350,7 @@ bool PropertiesClass::ReadRangeLimits(const unsigned char *Data, bool Include)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::ReadExtensions(const unsigned char *Data, bool Include)
+bool PropertiesClass::ReadExtensions(const unsigned char *Data)
 {
 	if (Extensions == BLANK)
 		Extensions = Data[126];
@@ -290,28 +360,33 @@ bool PropertiesClass::ReadExtensions(const unsigned char *Data, bool Include)
 //---------------------------------------------------------------------------
 bool PropertiesClass::Write(unsigned char *Data)
 {
-	WriteProductID(Data);
+	WriteDeviceID(Data);
 	WriteSerialID(Data);
+	WriteColorFormats(Data);
 	WriteRangeLimits(Data);
 	WriteName(Data);
 	WriteSerialNumber(Data);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::WriteProductID(unsigned char *Data)
+bool PropertiesClass::WriteResetID(unsigned char *Data)
 {
-	if (!IsProductID())
+	if (!IsResetID())
 		return false;
 
-	Data[8] = ((ProductID[0] & 31) << 2) | ((ProductID[1] & 24) >> 3);
-	Data[9] = ((ProductID[1] & 7) << 5) | (ProductID[2] & 31);
-	Data[10] = 0;
-	Data[10] |= std::isdigit(ProductID[5]) ? ProductID[5] << 4 : (ProductID[5] - 7) << 4;
-	Data[10] |= std::isdigit(ProductID[6]) ? ProductID[6] & 15 : (ProductID[6] - 7) & 15;
-	Data[11] = 0;
-	Data[11] |= std::isdigit(ProductID[3]) ? ProductID[3] << 4 : (ProductID[3] - 7) << 4;
-	Data[11] |= std::isdigit(ProductID[4]) ? ProductID[4] & 15 : (ProductID[4] - 7) & 15;
-	return true;
+	Data[0] = ((ResetID[0] & 31) << 2) | ((ResetID[1] & 24) >> 3);
+	Data[1] = ((ResetID[1] & 7) << 5) | (ResetID[2] & 31);
+	return HexToData(&ResetID[3], &Data[2], 2, true);
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::WriteDeviceID(unsigned char *Data)
+{
+	if (!IsDeviceID())
+		return false;
+
+	Data[8] = ((DeviceID[0] & 31) << 2) | ((DeviceID[1] & 24) >> 3);
+	Data[9] = ((DeviceID[1] & 7) << 5) | (DeviceID[2] & 31);
+	return HexToData(&DeviceID[3], &Data[10], 2, true);
 }
 //---------------------------------------------------------------------------
 bool PropertiesClass::WriteSerialID(unsigned char *Data)
@@ -319,17 +394,42 @@ bool PropertiesClass::WriteSerialID(unsigned char *Data)
 	if (!IsValidSerialID())
 		return false;
 
-	Data[12] = SerialID & 255;
-	Data[13] = (SerialID >> 8) & 255;
-	Data[14] = (SerialID >> 16) & 255;
-	Data[15] = (SerialID >> 24) & 255;
+	if (SerialID == DECIMAL_BLANK)
+	{
+		Data[12] = 0;
+		Data[13] = 0;
+		Data[14] = 0;
+		Data[15] = 0;
+	}
+	else
+	{
+		Data[12] = SerialID & 255;
+		Data[13] = (SerialID >> 8) & 255;
+		Data[14] = (SerialID >> 16) & 255;
+		Data[15] = (SerialID >> 24) & 255;
+	}
+
+	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::WriteColorFormats(unsigned char *Data)
+{
+	if (ColorFormatsSupported())
+	{
+		Data[20] &= 143;
+		Data[20] |= ColorDepth << 4;
+		Data[24] &= 231;
+		Data[24] |= YCbCr422 ? 16 : 0;
+		Data[24] |= YCbCr444 ? 8 : 0;
+	}
+
 	return true;
 }
 //---------------------------------------------------------------------------
 bool PropertiesClass::WriteName(unsigned char *Data)
 {
 	int Slot;
-	char *Byte;
+	unsigned char *Byte;
 	unsigned long Index;
 
 	if (!IncludeName || !IsValidName() || Name[0] == 0)
@@ -339,19 +439,19 @@ bool PropertiesClass::WriteName(unsigned char *Data)
 	{
 		Byte = &Data[Slot * 18 + 54];
 
-		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == '\x10')
+		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == 0x10)
 		{
-			Byte[3] = '\xFC';
+			Byte[3] = 0xFC;
 			Byte[4] = 0;
 
-			for (Index = 0; Index < MaxNameSize && Name[Index] != 0 && Name[Index] != '\x0A'; Index++)
+			for (Index = 0; Index < MaxNameSize && Name[Index] != 0 && Name[Index] != 0x0A; Index++)
 				Byte[Index + 5] = Name[Index];
 
 			if (Index < MaxNameSize)
-				Byte[Index + 5] = '\x0A';
+				Byte[Index + 5] = 0x0A;
 
 			for (Index++; Index < MaxNameSize; Index++)
-				Byte[Index + 5] = '\x20';
+				Byte[Index + 5] = 0x20;
 
 			return true;
 		}
@@ -363,7 +463,7 @@ bool PropertiesClass::WriteName(unsigned char *Data)
 bool PropertiesClass::WriteSerialNumber(unsigned char *Data)
 {
 	int Slot;
-	char *Byte;
+	unsigned char *Byte;
 	unsigned long Index;
 
 	if (!IncludeSerialNumber || !IsValidSerialNumber() || SerialNumber[0] == 0)
@@ -373,19 +473,19 @@ bool PropertiesClass::WriteSerialNumber(unsigned char *Data)
 	{
 		Byte = &Data[Slot * 18 + 54];
 
-		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == '\x10')
+		if (Byte[0] == 0 && Byte[1] == 0 && Byte[2] == 0 && Byte[3] == 0x10)
 		{
-			Byte[3] = '\xFF';
+			Byte[3] = 0xFF;
 			Byte[4] = 0;
 
-			for (Index = 0; Index < MaxSerialNumberSize && SerialNumber[Index] != 0 && SerialNumber[Index] != '\x0A'; Index++)
+			for (Index = 0; Index < MaxSerialNumberSize && SerialNumber[Index] != 0 && SerialNumber[Index] != 0x0A; Index++)
 				Byte[Index + 5] = SerialNumber[Index];
 
 			if (Index < MaxSerialNumberSize)
-				Byte[Index + 5] = '\x0A';
+				Byte[Index + 5] = 0x0A;
 
 			for (Index++; Index < MaxSerialNumberSize; Index++)
-				Byte[Index + 5] = '\x20';
+				Byte[Index + 5] = 0x20;
 
 			return true;
 		}
@@ -465,7 +565,7 @@ bool PropertiesClass::LoadBackupData(HKEY Key)
 //---------------------------------------------------------------------------
 bool PropertiesClass::LoadOldBackupName(HKEY Key)
 {
-	char Buffer[256];
+	unsigned char Buffer[256];
 	unsigned long BufferSize = 256;
 	unsigned long Index;
 
@@ -475,7 +575,7 @@ bool PropertiesClass::LoadOldBackupName(HKEY Key)
 	if (BufferSize > MaxNameSize)
 		BufferSize = MaxNameSize;
 
-	for (Index = 0; Index < BufferSize && Buffer[Index] != 0 && Buffer[Index] != '\x0A'; Index++)
+	for (Index = 0; Index < BufferSize && Buffer[Index] != 0 && Buffer[Index] != 0x0A; Index++)
 		Name[Index] = Buffer[Index];
 
 	Name[Index] = 0;
@@ -484,7 +584,7 @@ bool PropertiesClass::LoadOldBackupName(HKEY Key)
 //---------------------------------------------------------------------------
 bool PropertiesClass::LoadBackupName(HKEY Key)
 {
-	char Buffer[256];
+	unsigned char Buffer[256];
 	unsigned long BufferSize = 256;
 	unsigned long Index;
 
@@ -499,7 +599,7 @@ bool PropertiesClass::LoadBackupName(HKEY Key)
 
 	IncludeName = Buffer[0];
 
-	for (Index = 1; Index < BufferSize && Buffer[Index] != 0 && Buffer[Index] != '\x0A'; Index++)
+	for (Index = 1; Index < BufferSize && Buffer[Index] != 0 && Buffer[Index] != 0x0A; Index++)
 		Name[Index - 1] = Buffer[Index];
 
 	Name[Index - 1] = 0;
@@ -508,7 +608,7 @@ bool PropertiesClass::LoadBackupName(HKEY Key)
 //---------------------------------------------------------------------------
 bool PropertiesClass::LoadBackupSerialNumber(HKEY Key)
 {
-	char Buffer[256];
+	unsigned char Buffer[256];
 	unsigned long BufferSize = 256;
 	unsigned long Index;
 
@@ -523,7 +623,7 @@ bool PropertiesClass::LoadBackupSerialNumber(HKEY Key)
 
 	IncludeSerialNumber = Buffer[0];
 
-	for (Index = 1; Index < BufferSize && Buffer[Index] != 0 && Buffer[Index] != '\x0A'; Index++)
+	for (Index = 1; Index < BufferSize && Buffer[Index] != 0 && Buffer[Index] != 0x0A; Index++)
 		SerialNumber[Index - 1] = Buffer[Index];
 
 	SerialNumber[Index - 1] = 0;
@@ -607,7 +707,7 @@ bool PropertiesClass::SaveOldBackupName(HKEY Key, int Slots)
 	{
 		if (!IncludeName || Count >= Slots)
 		{
-			if (RegSetValueEx(Key, "", 0, REG_SZ, Name, std::strlen(Name) + 1) != ERROR_SUCCESS)
+			if (RegSetValueEx(Key, "", 0, REG_SZ, (const unsigned char *)Name, std::strlen(Name) + 1) != ERROR_SUCCESS)
 				return false;
 
 			return true;
@@ -622,7 +722,7 @@ bool PropertiesClass::SaveOldBackupName(HKEY Key, int Slots)
 //---------------------------------------------------------------------------
 bool PropertiesClass::SaveBackupName(HKEY Key)
 {
-	char Buffer[256];
+	unsigned char Buffer[256];
 	unsigned long BufferSize;
 	unsigned long Index;
 
@@ -630,7 +730,7 @@ bool PropertiesClass::SaveBackupName(HKEY Key)
 	BufferSize = 1;
 
 	if (IsValidName() && Name[0] != 0)
-		for (Index = 0; Index < MaxNameSize && Name[Index] != 0 && Name[Index] != '\x0A'; Index++, BufferSize++)
+		for (Index = 0; Index < MaxNameSize && Name[Index] != 0 && Name[Index] != 0x0A; Index++, BufferSize++)
 			Buffer[BufferSize] = Name[Index];
 
 	if (RegSetValueEx(Key, RegName, 0, REG_BINARY, Buffer, BufferSize) != ERROR_SUCCESS)
@@ -641,7 +741,7 @@ bool PropertiesClass::SaveBackupName(HKEY Key)
 //---------------------------------------------------------------------------
 bool PropertiesClass::SaveBackupSerialNumber(HKEY Key)
 {
-	char Buffer[256];
+	unsigned char Buffer[256];
 	unsigned long BufferSize;
 	unsigned long Index;
 
@@ -649,7 +749,7 @@ bool PropertiesClass::SaveBackupSerialNumber(HKEY Key)
 	BufferSize = 1;
 
 	if (IsValidSerialNumber() && SerialNumber[0] != 0)
-		for (Index = 0; Index < MaxSerialNumberSize && SerialNumber[Index] != 0 && SerialNumber[Index] != '\x0A'; Index++, BufferSize++)
+		for (Index = 0; Index < MaxSerialNumberSize && SerialNumber[Index] != 0 && SerialNumber[Index] != 0x0A; Index++, BufferSize++)
 			Buffer[BufferSize] = SerialNumber[Index];
 
 	if (RegSetValueEx(Key, RegSerialNumber, 0, REG_BINARY, Buffer, BufferSize) != ERROR_SUCCESS)
@@ -717,6 +817,21 @@ bool PropertiesClass::CopyPossible(PropertiesClass Properties)
 	if (CopyPastePossible(Properties))
 		return true;
 
+	if (ColorFormatsSupported() != Properties.ColorFormatsSupported())
+		return true;
+
+	if (ColorFormatsSupported() && Properties.ColorFormatsSupported())
+	{
+		if (ColorDepth != Properties.ColorDepth)
+			return true;
+
+		if (YCbCr422 != Properties.YCbCr422)
+			return true;
+
+		if (YCbCr444 != Properties.YCbCr444)
+			return true;
+	}
+
 	if (Properties.IncludeRangeLimits)
 	{
 		if (MinVRate != Properties.MinVRate)
@@ -745,6 +860,18 @@ bool PropertiesClass::PastePossible(PropertiesClass Properties)
 {
 	if (CopyPastePossible(Properties))
 		return true;
+
+	if (ColorFormatsSupported() && Properties.ColorFormatsSupported())
+	{
+		if (ColorDepth != Properties.ColorDepth)
+			return true;
+
+		if (YCbCr422 != Properties.YCbCr422)
+			return true;
+
+		if (YCbCr444 != Properties.YCbCr444)
+			return true;
+	}
 
 	Properties.ExtRange = ExtRange;
 
@@ -792,6 +919,13 @@ bool PropertiesClass::Import(PropertiesClass Properties)
 //---------------------------------------------------------------------------
 bool PropertiesClass::PasteImport(PropertiesClass Properties)
 {
+	if (ColorFormatsSupported() && Properties.ColorFormatsSupported())
+	{
+		ColorDepth = Properties.ColorDepth;
+		YCbCr422 = Properties.YCbCr422;
+		YCbCr444 = Properties.YCbCr444;
+	}
+
 	IncludeName = Properties.IncludeName;
 	IncludeSerialNumber = Properties.IncludeSerialNumber;
 	Properties.ExtRange = ExtRange;
@@ -898,16 +1032,17 @@ bool PropertiesClass::GetText(int Slot, char *Text, int TextSize)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::GetProductID(char *Text, int TextSize)
+bool PropertiesClass::GetDeviceID(char *Text, int TextSize)
 {
-	std::snprintf(Text, TextSize, "%s", ProductID);
+	std::snprintf(Text, TextSize, "%s", DeviceID);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::SetProductID(const char *NewProductID)
+bool PropertiesClass::SetDeviceID(const char *NewDeviceID)
 {
-	std::snprintf(ProductID, sizeof ProductID, "%s", NewProductID);
-	std::strupr(ProductID);
+	std::snprintf(DeviceID, sizeof DeviceID, "%s", NewDeviceID);
+	Trim(DeviceID);
+	ToUpper(DeviceID);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -920,18 +1055,19 @@ bool PropertiesClass::SetResetID(const char *NewResetID)
 	}
 
 	std::snprintf(ResetID, sizeof ResetID, "%s", NewResetID);
-	std::strupr(ResetID);
+	Trim(ResetID);
+	ToUpper(ResetID);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::ResetProductIDPossible()
+bool PropertiesClass::ResetDeviceIDPossible()
 {
-	return std::strcmp(ProductID, ResetID) != 0;
+	return std::strcmp(DeviceID, ResetID) != 0;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::ResetProductID()
+bool PropertiesClass::ResetDeviceID()
 {
-	std::snprintf(ProductID, sizeof ProductID, "%s", ResetID);
+	std::snprintf(DeviceID, sizeof DeviceID, "%s", ResetID);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -943,6 +1079,65 @@ long long PropertiesClass::GetSerialID()
 bool PropertiesClass::SetSerialID(long long Value)
 {
 	SerialID = Value;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::ColorFormatsSupported()
+{
+	return Version >= 14 && Digital;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::GetColorDepthText(int Value, char *Text, int TextSize)
+{
+	if (Value < MinColorDepth || Value > MaxColorDepth)
+		return false;
+
+	std::snprintf(Text, TextSize, "%s", ColorDepthText[Value]);
+	return true;
+}
+//---------------------------------------------------------------------------
+int PropertiesClass::GetColorDepth()
+{
+	return ColorDepth;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::SetColorDepth(int Value)
+{
+	if (!ColorFormatsSupported())
+		return false;
+
+	if (ColorDepth < MinColorDepth || ColorDepth > MaxColorDepth)
+		return false;
+
+	ColorDepth = Value;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::GetYCbCr422()
+{
+	return YCbCr422;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::SetYCbCr422(bool Value)
+{
+	if (!ColorFormatsSupported())
+		return false;
+
+	YCbCr422 = Value;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::GetYCbCr444()
+{
+	return YCbCr444;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::SetYCbCr444(bool Value)
+{
+	if (!ColorFormatsSupported())
+		return false;
+
+	YCbCr444 = Value;
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -1097,7 +1292,7 @@ int PropertiesClass::GetExtensions()
 //---------------------------------------------------------------------------
 bool PropertiesClass::IsValid()
 {
-	if (IsProductID())
+	if (IsDeviceID())
 	if (IsValidSerialID())
 	if (IsValidName())
 	if (IsValidSerialNumber())
@@ -1107,35 +1302,52 @@ bool PropertiesClass::IsValid()
 	return false;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::IsProductID()
+bool PropertiesClass::IsResetID()
 {
-	if (std::strlen(ProductID) != 7)
+	if (std::strlen(ResetID) != 7)
 		return false;
 
-	if (ProductID[0] >= '@' && ProductID[0] <= '_')
-	if (ProductID[1] >= '@' && ProductID[1] <= '_')
-	if (ProductID[2] >= '@' && ProductID[2] <= '_')
-	if (isxdigit(ProductID[3]))
-	if (isxdigit(ProductID[4]))
-	if (isxdigit(ProductID[5]))
-	if (isxdigit(ProductID[6]))
+	if (ResetID[0] >= '@' && ResetID[0] <= '_')
+	if (ResetID[1] >= '@' && ResetID[1] <= '_')
+	if (ResetID[2] >= '@' && ResetID[2] <= '_')
+	if (IsHexDigit(ResetID[3]))
+	if (IsHexDigit(ResetID[4]))
+	if (IsHexDigit(ResetID[5]))
+	if (IsHexDigit(ResetID[6]))
 		return true;
 
 	return false;
 }
 //---------------------------------------------------------------------------
-bool PropertiesClass::IsValidProductID()
+bool PropertiesClass::IsDeviceID()
 {
-	if (std::strlen(ProductID) != 7)
+	if (std::strlen(DeviceID) != 7)
 		return false;
 
-	if (ProductID[0] >= 'A' && ProductID[0] <= 'Z')
-	if (ProductID[1] >= 'A' && ProductID[1] <= 'Z')
-	if (ProductID[2] >= 'A' && ProductID[2] <= 'Z')
-	if (isxdigit(ProductID[3]))
-	if (isxdigit(ProductID[4]))
-	if (isxdigit(ProductID[5]))
-	if (isxdigit(ProductID[6]))
+	if (DeviceID[0] >= '@' && DeviceID[0] <= '_')
+	if (DeviceID[1] >= '@' && DeviceID[1] <= '_')
+	if (DeviceID[2] >= '@' && DeviceID[2] <= '_')
+	if (IsHexDigit(DeviceID[3]))
+	if (IsHexDigit(DeviceID[4]))
+	if (IsHexDigit(DeviceID[5]))
+	if (IsHexDigit(DeviceID[6]))
+		return true;
+
+	return false;
+}
+//---------------------------------------------------------------------------
+bool PropertiesClass::IsValidDeviceID()
+{
+	if (std::strlen(DeviceID) != 7)
+		return false;
+
+	if (IsUpper(DeviceID[0]))
+	if (IsUpper(DeviceID[1]))
+	if (IsUpper(DeviceID[2]))
+	if (IsHexDigit(DeviceID[3]))
+	if (IsHexDigit(DeviceID[4]))
+	if (IsHexDigit(DeviceID[5]))
+	if (IsHexDigit(DeviceID[6]))
 		return true;
 
 	return false;
@@ -1143,6 +1355,9 @@ bool PropertiesClass::IsValidProductID()
 //---------------------------------------------------------------------------
 bool PropertiesClass::IsValidSerialID()
 {
+	if (SerialID == DECIMAL_BLANK)
+		return true;
+
 	return SerialID >= MinSerialID && SerialID <= MaxSerialID;
 }
 //---------------------------------------------------------------------------

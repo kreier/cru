@@ -2,10 +2,8 @@
 #ifndef EDIDListClassH
 #define EDIDListClassH
 //---------------------------------------------------------------------------
-#include <vector>
-//---------------------------------------------------------------------------
-#define MAX_EDID_BLOCKS                 4
-#define MAX_EDID_EXTENSION_BLOCKS       3
+#define MAX_EDID_BLOCKS                 8
+#define MAX_EDID_EXTENSION_BLOCKS       7
 //---------------------------------------------------------------------------
 class EDIDListClass
 {

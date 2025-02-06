@@ -59,7 +59,8 @@ object StandardResolutionForm: TStandardResolutionForm
       Width = 136
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
+      DropDownCount = 25
+      ItemHeight = 13
       TabOrder = 0
       OnChange = ModeComboBoxChange
     end

@@ -3,7 +3,6 @@
 #define DisplayListClassH
 //---------------------------------------------------------------------------
 #include "DisplayClass.h"
-#include <vector>
 //---------------------------------------------------------------------------
 class DisplayListClass
 {
@@ -17,15 +16,11 @@ public:
 	bool Load();
 	bool LoadDisplays();
 	bool LoadDisplay(const char *);
-	bool LoadDevice(const char *, const char *);
-	bool Add(DisplayClass *);
+	bool LoadInstance(const char *, const char *);
 	bool Save();
 	int GetCount();
-	bool Sort();
 	bool GetItemText(int, char *, int);
-	int GetCurrent();
-	bool SetCurrent(int);
-	DisplayClass *Current();
+	DisplayClass *Get(int);
 };
 //---------------------------------------------------------------------------
 #endif

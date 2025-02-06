@@ -1,9 +1,8 @@
 //---------------------------------------------------------------------------
-#include <vcl.h>
+#include "Common.h"
 #pragma hdrstop
 
 #include "SpeakerSetupFormClass.h"
-#include "Common.h"
 //---------------------------------------------------------------------------
 #pragma resource "*.dfm"
 TSpeakerSetupForm *SpeakerSetupForm;
@@ -46,6 +45,15 @@ bool TSpeakerSetupForm::RefreshSpeakerCheckBoxes()
 	SpeakerCheckBox8->Checked = SpeakerSetup->Get(8);
 	SpeakerCheckBox9->Checked = SpeakerSetup->Get(9);
 	SpeakerCheckBox10->Checked = SpeakerSetup->Get(10);
+	SpeakerCheckBox11->Checked = SpeakerSetup->Get(11);
+	SpeakerCheckBox12->Checked = SpeakerSetup->Get(12);
+	SpeakerCheckBox13->Checked = SpeakerSetup->Get(13);
+	SpeakerCheckBox14->Checked = SpeakerSetup->Get(14);
+	SpeakerCheckBox15->Checked = SpeakerSetup->Get(15);
+	SpeakerCheckBox16->Checked = SpeakerSetup->Get(16);
+	SpeakerCheckBox17->Checked = SpeakerSetup->Get(17);
+	SpeakerCheckBox18->Checked = SpeakerSetup->Get(18);
+	SpeakerCheckBox19->Checked = SpeakerSetup->Get(19);
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -118,29 +126,74 @@ bool TSpeakerSetupForm::ScaleControls()
 	SpeakerCheckBox10->Left = SpeakerCheckBox9->Left;
 	SpeakerCheckBox10->Top = SpeakerCheckBox9->Top + SpeakerCheckBox9->Height + CheckBoxSpacing;
 
+	SpeakerCheckBox11->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox11->Caption);
+	SpeakerCheckBox11->Height = CheckBoxHeight;
+	SpeakerCheckBox11->Left = SpeakerCheckBox10->Left;
+	SpeakerCheckBox11->Top = SpeakerCheckBox10->Top + SpeakerCheckBox10->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox12->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox12->Caption);
+	SpeakerCheckBox12->Height = CheckBoxHeight;
+	SpeakerCheckBox12->Left = SpeakerCheckBox11->Left;
+	SpeakerCheckBox12->Top = SpeakerCheckBox11->Top + SpeakerCheckBox11->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox13->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox13->Caption);
+	SpeakerCheckBox13->Height = CheckBoxHeight;
+	SpeakerCheckBox13->Left = SpeakerCheckBox12->Left;
+	SpeakerCheckBox13->Top = SpeakerCheckBox12->Top + SpeakerCheckBox12->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox14->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox14->Caption);
+	SpeakerCheckBox14->Height = CheckBoxHeight;
+	SpeakerCheckBox14->Left = SpeakerCheckBox13->Left;
+	SpeakerCheckBox14->Top = SpeakerCheckBox13->Top + SpeakerCheckBox13->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox15->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox15->Caption);
+	SpeakerCheckBox15->Height = CheckBoxHeight;
+	SpeakerCheckBox15->Left = SpeakerCheckBox14->Left;
+	SpeakerCheckBox15->Top = SpeakerCheckBox14->Top + SpeakerCheckBox14->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox16->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox16->Caption);
+	SpeakerCheckBox16->Height = CheckBoxHeight;
+	SpeakerCheckBox16->Left = SpeakerCheckBox15->Left;
+	SpeakerCheckBox16->Top = SpeakerCheckBox15->Top + SpeakerCheckBox15->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox17->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox17->Caption);
+	SpeakerCheckBox17->Height = CheckBoxHeight;
+	SpeakerCheckBox17->Left = SpeakerCheckBox16->Left;
+	SpeakerCheckBox17->Top = SpeakerCheckBox16->Top + SpeakerCheckBox16->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox18->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox18->Caption);
+	SpeakerCheckBox18->Height = CheckBoxHeight;
+	SpeakerCheckBox18->Left = SpeakerCheckBox17->Left;
+	SpeakerCheckBox18->Top = SpeakerCheckBox17->Top + SpeakerCheckBox17->Height + CheckBoxSpacing;
+
+	SpeakerCheckBox19->Width = CheckBoxWidth + Canvas->TextWidth(SpeakerCheckBox19->Caption);
+	SpeakerCheckBox19->Height = CheckBoxHeight;
+	SpeakerCheckBox19->Left = SpeakerCheckBox18->Left;
+	SpeakerCheckBox19->Top = SpeakerCheckBox18->Top + SpeakerCheckBox18->Height + CheckBoxSpacing;
+
 	Speaker20Button->Width = ButtonWidth;
 	Speaker20Button->Height = ButtonHeight;
 	Speaker20Button->Left = PaddingWidth + ButtonLeft;
-	Speaker20Button->Top = SpeakerCheckBox10->Top + SpeakerCheckBox10->Height + CheckBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(Speaker20Button, Canvas->TextWidth(Speaker20Button->Caption));
+	Speaker20Button->Top = SpeakerCheckBox19->Top + SpeakerCheckBox19->Height + CheckBoxBottom + Scale + ButtonTop;
+	FixButtonCaption(Speaker20Button, Canvas->TextWidth(Speaker20Button->Caption));
 
 	Speaker51Button->Width = (FormButtonsWidth - PaddingWidth * 2 - ButtonLeft - ButtonWidth * 2 - ButtonRight) / 2;
 	Speaker51Button->Height = ButtonHeight;
 	Speaker51Button->Left = Speaker20Button->Left + Speaker20Button->Width;
 	Speaker51Button->Top = Speaker20Button->Top;
-	Common::FixButtonCaption(Speaker51Button, Canvas->TextWidth(Speaker51Button->Caption));
+	FixButtonCaption(Speaker51Button, Canvas->TextWidth(Speaker51Button->Caption));
 
 	Speaker71Button->Width = (FormButtonsWidth - PaddingWidth * 2 - ButtonLeft - ButtonWidth * 2 - ButtonRight) / 2;
 	Speaker71Button->Height = ButtonHeight;
 	Speaker71Button->Left = Speaker51Button->Left + Speaker51Button->Width;
 	Speaker71Button->Top = Speaker51Button->Top;
-	Common::FixButtonCaption(Speaker71Button, Canvas->TextWidth(Speaker71Button->Caption));
+	FixButtonCaption(Speaker71Button, Canvas->TextWidth(Speaker71Button->Caption));
 
 	SpeakerResetButton->Width = ButtonWidth;
 	SpeakerResetButton->Height = ButtonHeight;
 	SpeakerResetButton->Left = Speaker71Button->Left + Speaker71Button->Width;
 	SpeakerResetButton->Top = Speaker71Button->Top;
-	Common::FixButtonCaption(SpeakerResetButton, Canvas->TextWidth(SpeakerResetButton->Caption));
+	FixButtonCaption(SpeakerResetButton, Canvas->TextWidth(SpeakerResetButton->Caption));
 
 	SpeakerGroupBox->Width = SpeakerResetButton->Left + SpeakerResetButton->Width + ButtonRight + PaddingWidth;
 	SpeakerGroupBox->Height = Speaker20Button->Top + Speaker20Button->Height + ButtonBottom + PaddingBottom;
@@ -150,12 +203,12 @@ bool TSpeakerSetupForm::ScaleControls()
 	FormOKButton->Width = FormButtonWidth;
 	FormOKButton->Height = FormButtonHeight;
 	FormOKButton->Top = SpeakerGroupBox->Top + SpeakerGroupBox->Height + GroupBoxBottom + Scale + ButtonTop;
-	Common::FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
+	FixButtonCaption(FormOKButton, Canvas->TextWidth(FormOKButton->Caption));
 
 	FormCancelButton->Width = FormButtonWidth;
 	FormCancelButton->Height = FormButtonHeight;
 	FormCancelButton->Top = FormOKButton->Top;
-	Common::FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
+	FixButtonCaption(FormCancelButton, Canvas->TextWidth(FormCancelButton->Caption));
 
 	FormCancelButton->Left = SpeakerGroupBox->Left + SpeakerGroupBox->Width - ButtonRight - FormCancelButton->Width;
 	FormOKButton->Left = FormCancelButton->Left - ButtonLeft - Scale - ButtonRight - FormOKButton->Width;

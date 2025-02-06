@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "CommonFormClass.h"
 #include "HDMIResolutionClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -34,7 +35,6 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall THDMIResolutionForm(TComponent *Owner);
 	bool Connect(HDMIResolutionClass &);
-	TColor GetTextColor(bool);
 	bool Refresh(void *);
 	bool InitModeComboBox();
 	bool InitFormatComboBox();

@@ -12,6 +12,7 @@ enum
 	ADD_CEA_FREESYNC,
 	ADD_CEA_COLORIMETRY,
 	ADD_CEA_VIDEO_CAPABILITY,
+	ADD_CEA_HDR_STATIC,
 };
 //---------------------------------------------------------------------------
 class AddCEADataClass
@@ -19,7 +20,6 @@ class AddCEADataClass
 private:
 	static const int MinType;
 	static const int MaxType;
-
 	static const int MinSize[];
 
 	int MaxSize;

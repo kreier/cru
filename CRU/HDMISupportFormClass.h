@@ -5,6 +5,7 @@
 #include "CommonFormClass.h"
 #include "HDMISupportClass.h"
 #include "ColorFormatListClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -112,8 +113,6 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall THDMISupportForm(TComponent *Owner);
 	bool Connect(HDMISupportClass &, ColorFormatListClass &);
-	TColor GetTextColor(bool);
-	TColor GetColor(bool);
 	bool Refresh(void *, int);
 	bool RefreshPhysicalAddressTextBox();
 	bool RefreshColorFormatsCaption();

@@ -6,6 +6,7 @@
 #include "ExtensionBlockClass.h"
 #include "DetailedResolutionClass.h"
 #include "PropertiesClass.h"
+
 #include <Classes.hpp>
 #include <Controls.hpp>
 #include <StdCtrls.hpp>
@@ -113,6 +114,9 @@ __published:	// IDE-managed Components
 	void __fastcall DIDDataUpButtonClick(TObject *Sender);
 	void __fastcall DIDDataDownButtonClick(TObject *Sender);
 private:	// User declarations
+	static const int DetailedRows = 6;
+	static const int CEADataRows = 12;
+	static const int StandardRows = CEADataRows;
 	ExtensionBlockClass *ExtensionBlock;
 	DetailedResolutionClass NativeResolution;
 	PropertiesClass Properties;
@@ -161,12 +165,14 @@ public:		// User declarations
 	bool CEADataEditColorimetry(int);
 	bool CEADataAddVideoCapability();
 	bool CEADataEditVideoCapability(int);
+	bool CEADataAddHDRStaticMetadata();
+	bool CEADataEditHDRStaticMetadata(int);
 	bool CEADataAdd(int);
 	bool CEADataEdit(int);
-	bool DIDDataAddDetailedResolutions();
-	bool DIDDataEditDetailedResolutions(int);
-	bool DIDDataAddTiledDisplayTopology();
-	bool DIDDataEditTiledDisplayTopology(int);
+	bool DIDDataAddDetailedResolutions(int);
+	bool DIDDataEditDetailedResolutions(int, int);
+	bool DIDDataAddTiledDisplayTopology(int);
+	bool DIDDataEditTiledDisplayTopology(int, int);
 	bool DIDDataAdd(int);
 	bool DIDDataEdit(int);
 };
