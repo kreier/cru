@@ -4,9 +4,19 @@
 ![GitHub License](https://img.shields.io/github/license/kreier/cru)
 [![pages-build-deployment](https://github.com/kreier/cru/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/kreier/cru/actions/workflows/pages/pages-build-deployment)
 
-This is just a fork of the work [ToastyX](https://www.monitortests.com/forum/User-ToastyX) has been done to fix several problems with graphic cards, monitors, drivers and their communication since 2012. Please download the latest version 1.5.2 from 2022-09-01 directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
+This is just a fork of the work from [ToastyX](https://www.monitortests.com/forum/User-ToastyX). Since 2012 [his utility](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) fixes several problems with graphic cards, monitors, drivers and their communication. Please download the latest version 1.5.2 from 2022-09-01 directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
+
+Custom Resolution Utility (CRU) is an **EDID editor** that focuses on custom resolutions. CRU shows you how the monitor defines resolutions and other capabilities and gives you the power to change it. Add custom resolutions, remove unwanted resolutions, edit FreeSync ranges, and more. CRU creates software EDID overrides in the registry and does not modify the hardware.
 
 [![Patreon support](docs/patreon.png)](https://www.patreon.com/ToastyX)
+
+## Compatibility issues:
+
+**NVIDIA and DSC - ToastyX Wrote:**
+```
+NVIDIA's driver currently ignores EDID overrides when Display Stream Compression (DSC) is active.
+Please report this issue to NVIDIA.
+```
 
 ## Example
 
@@ -169,9 +179,29 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Audio formats: added "Auro-Cx" and "MPEG-D USAC" from CTA-861.6
 * Colorimetry: added "sRGB" and "Default RGB" from [CTA-861.6](https://shop.cta.tech/products/cta-861-6)
 
+### 2021-01-18 Changes in 1.5.1:
 
+- Audio formats: added new formats from CTA-861-G/H
+- Colorimetry: added ICtCp from CTA-861-H
+- DisplayID 2.0 detailed resolutions: fix "Reset" button resetting to 6 Hz when adding a new resolution
+- Tiled display topology: split vendor and product IDs to accommodate OUIs (2.0) and non-letter IDs (1.3)
+- List boxes now retain scroll position after editing
 
-
+### 2021-01-01 Changes in 1.5:
+- Added DisplayPort YCbCr color formats and maximum color depth (use the "Edit..." button at the top)
+- Added HDMI 2.1 features including maximum FRL rate, variable refresh rate, and display stream compression
+- New and improved timing options for detailed resolutions:
+    - "LCD standard" has been split into "Automatic (PC)" and "Automatic (HDTV)" to better accommodate different display standards.
+    - The main difference is how they handle resolutions greater than 1920x1080 @ 60 Hz and 21:9 resolutions. "PC" favors CVT-RB, while "HDTV" favors CTA-861.
+    - "LCD native" has been split into "Native (PC)" and "Native (HDTV)" for the same reason.
+    - "LCD reduced" has been eliminated because it was too arbitrary and only worked for certain resolutions. Try "Exact reduced" for an alternative.
+    - "CRT standard" is now "Automatic (CRT)" and includes 4:3/5:4 VESA DMT resolutions. Use "CVT standard" for the old behavior.
+    - Added "Exact" and "Exact reduced" to calculate exact integer refresh rates.
+    - Added common display standards: CVT, CVT-RB, CVT-RB2, and GTF (previously "Old standard")
+- Detailed resolutions can now calculate frequencies for all possible pixel clocks (up to 167772.16 MHz for DisplayID 1.3)
+- CEA-861 extension blocks are now called CTA-861 to reflect the standard's new name
+- Added support for DisplayID 2.0 extension blocks
+- Export now saves the original unmodified EDID if no changes were made
 
 ### 2019-10-30 Changes in 1.4.2:
 
