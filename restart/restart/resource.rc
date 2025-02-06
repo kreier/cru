@@ -1,0 +1,30 @@
+/* Includes *****************************************************************/
+
+#include "common.h"
+#include "resource.h"
+
+/* Dialogs ******************************************************************/
+
+IDD_RESTART DIALOG 0, 0, 99, 80
+CAPTION TITLE
+FONT 9, _T("Segoe UI")
+STYLE DS_CENTER | DS_MODALFRAME | WS_SYSMENU
+BEGIN
+	CTEXT		_T("Graphics driver restarted."), IDC_STATIC, 0, 8, 99, 8
+	PUSHBUTTON	_T("Restart again"), IDC_RESTART, 11, 24, 77, 14
+	PUSHBUTTON	_T("Recovery mode [F8]"), IDC_RECOVERY, 11, 40, 77, 14
+	PUSHBUTTON	_T("Exit"), IDC_EXIT, 11, 56, 77, 14
+END
+
+IDD_RECOVERY DIALOG 0, 0, 99, 80
+CAPTION TITLE
+FONT 9, _T("Segoe UI")
+STYLE DS_CENTER | DS_MODALFRAME | WS_SYSMENU
+BEGIN
+	CTEXT		_T("Recovery mode activated."), IDC_STATIC, 0, 8, 99, 8
+	PUSHBUTTON	_T("Restart driver"), IDC_RESTART, 11, 24, 77, 14
+	PUSHBUTTON	_T("Recovery mode [F8]"), IDC_RECOVERY, 11, 40, 77, 14, WS_DISABLED
+	PUSHBUTTON	_T("Exit"), IDC_EXIT, 11, 56, 77, 14
+END
+
+/****************************************************************************/

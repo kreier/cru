@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="reset-all.c">
+    <ClCompile Include="edid-installer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="registry.c">
@@ -23,16 +23,24 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="manifest.xml">
-      <Filter>Resource Files</Filter>
-    </Manifest>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="registry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="registry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dialog.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="manifest.xml">
+      <Filter>Resource Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

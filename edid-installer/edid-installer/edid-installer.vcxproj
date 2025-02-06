@@ -11,20 +11,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{ADEA86A0-D54B-4A6C-80B8-36DC7F9E7851}</ProjectGuid>
-    <RootNamespace>resetall</RootNamespace>
+    <ProjectGuid>{E828E923-94B8-4559-BDF3-BCEB5988B7E1}</ProjectGuid>
+    <RootNamespace>edidinstaller</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -70,17 +70,19 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="edid-installer.c" />
     <ClCompile Include="registry.c" />
-    <ClCompile Include="reset-all.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="manifest.xml">
-      <SubType>Designer</SubType>
-    </Manifest>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
     <ClInclude Include="registry.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dialog.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="manifest.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

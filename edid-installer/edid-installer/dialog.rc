@@ -1,0 +1,18 @@
+/* Includes ***************************************************************/
+
+#include "common.h"
+#include "resource.h"
+
+/* Dialog *****************************************************************/
+
+IDD_DIALOG DIALOG 0, 0, 88, 66
+CAPTION TITLE
+FONT 9, _T("Segoe UI")
+STYLE DS_CENTER | DS_MODALFRAME | WS_SYSMENU
+BEGIN
+	PUSHBUTTON	INSTALL_TITLE, IDC_INSTALL, 11, 10, 66, 14
+	PUSHBUTTON	RESET_TITLE, IDC_RESET, 11, 26, 66, 14
+	PUSHBUTTON	_T("Exit"), IDCANCEL, 11, 42, 66, 14
+END
+
+/**************************************************************************/
