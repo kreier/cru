@@ -396,7 +396,7 @@ bool CEADataListClass::GetSlotInfoText(int Slot, char *Text, int TextSize)
 
 		case CEA_FREESYNC:
 			if (Size > 7)
-				std::snprintf(Text, TextSize, "%d-%d Hz", Byte[6], Byte[7]);
+				std::snprintf(Text, TextSize, "%d-%d Hz", Byte[6], Size > 15 ? (Byte[15] & 3) << 8 | Byte[14] : Byte[7]);
 
 			break;
 

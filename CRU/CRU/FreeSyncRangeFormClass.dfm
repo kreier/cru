@@ -40,7 +40,7 @@ object FreeSyncRangeForm: TFreeSyncRangeForm
       Pen.Color = clWindowText
     end
     object HzLabel: TLabel
-      Left = 118
+      Left = 124
       Top = 22
       Width = 12
       Height = 13
@@ -59,9 +59,9 @@ object FreeSyncRangeForm: TFreeSyncRangeForm
     object MaxVRate: TEdit
       Left = 88
       Top = 19
-      Width = 24
+      Width = 30
       Height = 21
-      MaxLength = 3
+      MaxLength = 4
       TabOrder = 1
       OnChange = MaxVRateChange
       OnExit = MaxVRateExit

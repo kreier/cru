@@ -88,6 +88,7 @@ private:
 	static const long long MaxPClock[];
 	static const int PClockPrecision[];
 
+	static const bool BordersAvailable[];
 	static const bool InterlacedAvailable[];
 	static const bool PreferredAvailable[];
 
@@ -97,11 +98,13 @@ private:
 	static int CopyHFront;
 	static int CopyHSync;
 	static int CopyHBlank;
-	static bool CopyHPolarity;
 	static int CopyVActive;
 	static int CopyVFront;
 	static int CopyVSync;
 	static int CopyVBlank;
+	static int CopyHBorder;
+	static int CopyVBorder;
+	static bool CopyHPolarity;
 	static bool CopyVPolarity;
 	static int CopyStereo;
 	static long long CopyPClock;
@@ -117,13 +120,15 @@ private:
 	int HBack;
 	int HBlank;
 	int HTotal;
-	bool HPolarity;
 	int VActive;
 	int VFront;
 	int VSync;
 	int VBack;
 	int VBlank;
 	int VTotal;
+	int HBorder;
+	int VBorder;
+	bool HPolarity;
 	bool VPolarity;
 	int Stereo;
 	int LastRate;
@@ -148,11 +153,13 @@ private:
 	int ResetHFront;
 	int ResetHSync;
 	int ResetHBlank;
-	bool ResetHPolarity;
 	int ResetVActive;
 	int ResetVFront;
 	int ResetVSync;
 	int ResetVBlank;
+	int ResetHBorder;
+	int ResetVBorder;
+	bool ResetHPolarity;
 	bool ResetVPolarity;
 	int ResetStereo;
 	long long ResetPClock;
@@ -185,7 +192,6 @@ public:
 	int GetHBack();
 	int GetHBlank();
 	int GetHTotal();
-	bool GetHPolarity();
 	bool Positive(int);
 	int GetValue(int);
 	int GetVActive();
@@ -194,6 +200,7 @@ public:
 	int GetVBack();
 	int GetVBlank();
 	int GetVTotal();
+	bool GetHPolarity();
 	bool GetVPolarity();
 	bool GetVActiveLinesText(char *, int);
 	bool GetVFrontLinesText(char *, int);
@@ -221,13 +228,13 @@ public:
 	bool SetHBack(int);
 	bool SetHBlank(int);
 	bool SetHTotal(int);
-	bool SetHPolarity(bool);
 	bool SetVActive(int);
 	bool SetVFront(int);
 	bool SetVSync(int);
 	bool SetVBack(int);
 	bool SetVBlank(int);
 	bool SetVTotal(int);
+	bool SetHPolarity(bool);
 	bool SetVPolarity(bool);
 	bool SetLastRate(int);
 	bool SetVRate(long long);

@@ -8,11 +8,12 @@ class FreeSyncRangeClass : public ItemClass
 {
 private:
 	static const int MinVRange;
-	static const int MaxVRange;
+	static const int MaxVRange[];
 
 	int MinVRate;
 	int MaxVRate;
-	int Version[2];
+	int Version;
+	int Flags;
 	int OtherSize;
 	int MaxOtherSize;
 	unsigned char OtherData[24];

@@ -22,7 +22,12 @@ bool ExtensionBlockListClass::Read(const unsigned char *Data, int MaxSize)
 	if (!SetMaxSize(MaxSize - 2))
 		return false;
 
-	Slots = Data[0];
+    // Extension override
+	if (Data[0] >= 1 && Data[2] == 2 && Data[3] >= 3 && Data[4] >= 7 && Data[6] >> 5 == 7 && (Data[6] & 31) >= 2 && Data[7] == 0x78)
+		Slots = Data[8];
+	else
+		Slots = Data[0];
+
 	ExtensionBlockClass ExtensionBlock;
 
 	for (Slot = 0; Slot < Slots && SlotCount < MaxSlotCount; Slot++)
@@ -49,8 +54,19 @@ bool ExtensionBlockListClass::Write(unsigned char *Data, int MaxSize)
 		return false;
 
 	std::memset(Data, 0, MaxSize);
-	Data[0] = SlotCount;
 	std::memcpy(&Data[2], SlotData, DataSize);
+
+	// Extension override
+	if (SlotCount >= 1 && Data[2] == 2 && Data[3] >= 3 && Data[4] >= 7 && Data[6] >> 5 == 7 && (Data[6] & 31) >= 2 && Data[7] == 0x78)
+	{
+		Data[0] = 1;
+		Data[8] = SlotCount;
+	}
+	else
+	{
+		Data[0] = SlotCount;
+	}
+
 	return true;
 }
 //---------------------------------------------------------------------------

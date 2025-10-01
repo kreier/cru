@@ -3,7 +3,7 @@ object DisplayForm: TDisplayForm
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'Custom Resolution Utility 1.5.2 by ToastyX'
+  Caption = 'Custom Resolution Utility 1.5.3 by ToastyX'
   ClientHeight = 456
   ClientWidth = 496
   Color = clBtnFace

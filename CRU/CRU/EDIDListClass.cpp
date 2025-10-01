@@ -78,7 +78,7 @@ int EDIDListClass::GetCount()
 	return Count;
 }
 //---------------------------------------------------------------------------
-bool EDIDListClass::MatchFullActive(unsigned char *ActiveData)
+bool EDIDListClass::MatchCompleteActive(unsigned char *ActiveData)
 {
 	int Index;
 
@@ -94,7 +94,7 @@ bool EDIDListClass::MatchFullActive(unsigned char *ActiveData)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool EDIDListClass::MatchFullOverride(unsigned char *ActiveData, unsigned char *OverrideData)
+bool EDIDListClass::MatchCompleteOverride(unsigned char *ActiveData, unsigned char *OverrideData)
 {
 	int Index;
 
@@ -114,7 +114,7 @@ bool EDIDListClass::MatchFullOverride(unsigned char *ActiveData, unsigned char *
 	return false;
 }
 //---------------------------------------------------------------------------
-bool EDIDListClass::MatchPartialOverride(unsigned char *ActiveData, unsigned char *OverrideData)
+bool EDIDListClass::MatchIncompleteOverride(unsigned char *ActiveData, unsigned char *OverrideData)
 {
 	int Index;
 	int Block;
@@ -152,7 +152,7 @@ bool EDIDListClass::MatchPartialOverride(unsigned char *ActiveData, unsigned cha
 	return false;
 }
 //---------------------------------------------------------------------------
-bool EDIDListClass::MatchFirstActive(unsigned char *ActiveData)
+bool EDIDListClass::MatchIncompleteActive(unsigned char *ActiveData)
 {
 	int Index;
 

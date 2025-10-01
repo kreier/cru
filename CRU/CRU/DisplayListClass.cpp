@@ -32,16 +32,16 @@ bool DisplayListClass::Load()
 	if (EDIDList.GetCount() > 0)
 	{
 		for (Index = 0; Index < Count; Index++)
-			Items[Index]->MatchFullActive(EDIDList);
+			Items[Index]->MatchCompleteActive(EDIDList);
 
 		for (Index = 0; Index < Count; Index++)
-			Items[Index]->MatchFullOverride(EDIDList);
+			Items[Index]->MatchCompleteOverride(EDIDList);
 
 		for (Index = 0; Index < Count; Index++)
-			Items[Index]->MatchPartialOverride(EDIDList);
+			Items[Index]->MatchIncompleteOverride(EDIDList);
 
 		for (Index = 0; Index < Count; Index++)
-			Items[Index]->MatchFirstActive(EDIDList);
+			Items[Index]->MatchIncompleteActive(EDIDList);
 	}
 
 	for (Index = 0; Index < Count; Index++)

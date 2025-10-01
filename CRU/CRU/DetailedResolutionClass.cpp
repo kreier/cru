@@ -22,7 +22,7 @@ const char *DetailedResolutionClass::TimingText[] =
 	"CVT-RB standard",
 	"CVT-RB2 standard",
 	"GTF standard",
-	"Vertical total calculator",
+	"Vertical total calculator (QFT)",
 };
 
 bool (DetailedResolutionClass::*DetailedResolutionClass::TimingFunction[])() =
@@ -268,6 +268,7 @@ const long long DetailedResolutionClass::MinPClock[] = {1, 1, 1};
 const long long DetailedResolutionClass::MaxPClock[] = {65535, 16777216, 16777216};
 const int DetailedResolutionClass::PClockPrecision[] = {100, 100, 1000};
 
+const bool DetailedResolutionClass::BordersAvailable[] = {true, false, false};
 const bool DetailedResolutionClass::InterlacedAvailable[] = {true, true, true};
 const bool DetailedResolutionClass::PreferredAvailable[] = {false, true, true};
 
@@ -277,11 +278,13 @@ int DetailedResolutionClass::CopyHActive;
 int DetailedResolutionClass::CopyHFront;
 int DetailedResolutionClass::CopyHSync;
 int DetailedResolutionClass::CopyHBlank;
-bool DetailedResolutionClass::CopyHPolarity;
 int DetailedResolutionClass::CopyVActive;
 int DetailedResolutionClass::CopyVFront;
 int DetailedResolutionClass::CopyVSync;
 int DetailedResolutionClass::CopyVBlank;
+int DetailedResolutionClass::CopyHBorder;
+int DetailedResolutionClass::CopyVBorder;
+bool DetailedResolutionClass::CopyHPolarity;
 bool DetailedResolutionClass::CopyVPolarity;
 int DetailedResolutionClass::CopyStereo;
 long long DetailedResolutionClass::CopyPClock;
@@ -295,6 +298,8 @@ DetailedResolutionClass::DetailedResolutionClass(int NewType)
 	Last = 0;
 	HActive = 1024;
 	VActive = 768;
+	HBorder = 0;
+	VBorder = 0;
 	Stereo = 0;
 	LastRate = 0;
 	VRate = 60000;
@@ -324,11 +329,13 @@ bool DetailedResolutionClass::Read(const unsigned char *Data, int MaxSize)
 			HFront = ((Data[11] << 2) & 768) | Data[8];
 			HSync = ((Data[11] << 4) & 768) | Data[9];
 			HBlank = ((Data[4] << 8) & 3840) | Data[3];
-			HPolarity = Data[17] & 2;
 			VActive = ((Data[7] << 4) & 3840) | Data[5];
 			VFront = ((Data[11] << 2) & 48) | ((Data[10] >> 4) & 15);
 			VSync = ((Data[11] << 4) & 48) | (Data[10] & 15);
 			VBlank = ((Data[7] << 8) & 3840) | Data[6];
+			HBorder = Data[15];
+			VBorder = Data[16];
+			HPolarity = Data[17] & 2;
 			VPolarity = Data[17] & 4;
 			Stereo = Data[17] & 97;
 
@@ -360,11 +367,13 @@ bool DetailedResolutionClass::Read(const unsigned char *Data, int MaxSize)
 			HFront = (((Data[9] & 127) << 8) | Data[8]) + 1;
 			HSync = ((Data[11] << 8) | Data[10]) + 1;
 			HBlank = ((Data[7] << 8) | Data[6]) + 1;
-			HPolarity = Data[9] & 128;
 			VActive = ((Data[13] << 8) | Data[12]) + 1;
 			VFront = (((Data[17] & 127) << 8) | Data[16]) + 1;
 			VSync = ((Data[19] << 8) | Data[18]) + 1;
 			VBlank = ((Data[15] << 8) | Data[14]) + 1;
+			HBorder = 0;
+			VBorder = 0;
+			HPolarity = Data[9] & 128;
 			VPolarity = Data[17] & 128;
 			Stereo = Data[3] & 96;
 			ActualPClock = ((Data[2] << 16) | (Data[1] << 8) | Data[0]) + 1;
@@ -455,8 +464,8 @@ bool DetailedResolutionClass::Write(unsigned char *Data, int MaxSize)
 			Data[12] = (HActive >> 2) & 255;
 			Data[13] = (VActive >> 2) & 255;
 			Data[14] = (((HActive >> 2) & 3840) >> 4) | (((VActive >> 2) & 3840) >> 8);
-			Data[15] = 0;
-			Data[16] = 0;
+			Data[15] = HBorder;
+			Data[16] = VBorder;
 			Data[17] = (HPolarity ? 2 : 0) | (VPolarity ? 4 : 0) | 8 | 16 | Stereo | (Interlaced ? 128 : 0);
 
 			if (Interlaced)
@@ -508,7 +517,7 @@ bool DetailedResolutionClass::GetText(char *Text, int TextSize, const char *Dash
 	if (!IsValid())
 		return false;
 
-	std::snprintf(Text, TextSize, "%dx%d%s @ %lld.%03lld Hz (%lld.%0*lld MHz) [%s/%s]%s%s", HActive, VActive, Interlaced ? "i" : "", ActualVRate / 1000, ActualVRate % 1000, ActualPClock / PClockPrecision[Type], GetPClockDigits(), ActualPClock % PClockPrecision[Type], HPolarity ? "+" : Dash, VPolarity ? "+" : Dash, Stereo ? " (3D)" : "", Preferred ? "*" : "");
+	std::snprintf(Text, TextSize, "%dx%d%s%s @ %lld.%03lld Hz (%lld.%0*lld MHz) [%s/%s]%s%s", HActive - HBorder * 2, VActive - VBorder * Fields * 2, Interlaced ? "i" : "", HBorder || VBorder ? "*" : "", ActualVRate / 1000, ActualVRate % 1000, ActualPClock / PClockPrecision[Type], GetPClockDigits(), ActualPClock % PClockPrecision[Type], HPolarity ? "+" : Dash, VPolarity ? "+" : Dash, Stereo ? " (3D)" : "", Preferred ? "*" : "");
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -582,13 +591,15 @@ bool DetailedResolutionClass::CopyPossible()
 	if (CopyHFront == HFront)
 	if (CopyHSync == HSync)
 	if (CopyHBlank == HBlank)
-	if (CopyHPolarity == HPolarity)
 	if (CopyVActive == VActive)
 	if (CopyVFront == VFront)
 	if (CopyVSync == VSync)
 	if (CopyVBlank == VBlank)
+	if (CopyHBorder == HBorder)
+	if (CopyVBorder == VBorder)
+	if (CopyHPolarity == HPolarity)
 	if (CopyVPolarity == VPolarity)
-	if (CopyType == Type && CopyStereo == Stereo || CopyType != Type && !CopyStereo && !Stereo)
+	if (CopyType == Type ? CopyStereo == Stereo : !CopyStereo && !Stereo)
 	if (CopyPClock == ActualPClock * 1000 / PClockPrecision[Type])
 	if (CopyInterlaced == Interlaced)
 	if (CopyPreferred == Preferred)
@@ -608,11 +619,13 @@ bool DetailedResolutionClass::Copy()
 	CopyHFront = HFront;
 	CopyHSync = HSync;
 	CopyHBlank = HBlank;
-	CopyHPolarity = HPolarity;
 	CopyVActive = VActive;
 	CopyVFront = VFront;
 	CopyVSync = VSync;
 	CopyVBlank = VBlank;
+	CopyHBorder = HBorder;
+	CopyVBorder = VBorder;
+	CopyHPolarity = HPolarity;
 	CopyVPolarity = VPolarity;
 	CopyStereo = Stereo;
 	CopyPClock = ActualPClock * 1000 / PClockPrecision[Type];
@@ -657,11 +670,13 @@ bool DetailedResolutionClass::PastePossible()
 	if (HFront == CopyHFront)
 	if (HSync == CopyHSync)
 	if (HBlank == CopyHBlank)
-	if (HPolarity == CopyHPolarity)
 	if (GetValue(VActive) == GetValue(CopyVActive))
 	if (GetValue(VFront) == GetValue(CopyVFront))
 	if (GetValue(VSync) == GetValue(CopyVSync))
 	if (GetValue(VBlank) == GetValue(CopyVBlank))
+	if (HBorder == CopyHBorder || !BordersAvailable[Type])
+	if (VBorder == CopyVBorder || !BordersAvailable[Type])
+	if (HPolarity == CopyHPolarity)
 	if (VPolarity == CopyVPolarity)
 	if (Stereo == CopyStereo || !PasteStereoPossible())
 	if (ActualPClock == (CopyPClock * PClockPrecision[Type] + 999) / 1000)
@@ -682,7 +697,6 @@ bool DetailedResolutionClass::Paste()
 	HFront = CopyHFront;
 	HSync = CopyHSync;
 	HBlank = CopyHBlank;
-	HPolarity = CopyHPolarity;
 
 	if (CopyInterlaced && Type == 0)
 	{
@@ -699,6 +713,13 @@ bool DetailedResolutionClass::Paste()
 		VBlank = CopyVBlank;
 	}
 
+	if (BordersAvailable[Type])
+	{
+		HBorder = CopyHBorder;
+		VBorder = CopyVBorder;
+	}
+
+	HPolarity = CopyHPolarity;
 	VPolarity = CopyVPolarity;
 	Stereo = PasteStereoPossible() ? CopyStereo : Stereo;
 	ActualPClock = (CopyPClock * PClockPrecision[Type] + 999) / 1000;
@@ -715,11 +736,13 @@ bool DetailedResolutionClass::UpdateReset()
 	ResetHFront = HFront;
 	ResetHSync = HSync;
 	ResetHBlank = HBlank;
-	ResetHPolarity = HPolarity;
 	ResetVActive = VActive;
 	ResetVFront = VFront;
 	ResetVSync = VSync;
 	ResetVBlank = VBlank;
+	ResetHBorder = HBorder;
+	ResetVBorder = VBorder;
+	ResetHPolarity = HPolarity;
 	ResetVPolarity = VPolarity;
 	ResetStereo = Stereo;
 	ResetPClock = ActualPClock;
@@ -734,11 +757,13 @@ bool DetailedResolutionClass::ResetPossible()
 	if (HFront == ResetHFront)
 	if (HSync == ResetHSync)
 	if (HBlank == ResetHBlank)
-	if (HPolarity == ResetHPolarity)
 	if (VActive == ResetVActive)
 	if (VFront == ResetVFront)
 	if (VSync == ResetVSync)
 	if (VBlank == ResetVBlank)
+	if (HBorder == ResetHBorder)
+	if (VBorder == ResetVBorder)
+	if (HPolarity == ResetHPolarity)
 	if (VPolarity == ResetVPolarity)
 	if (Stereo == ResetStereo)
 	if (ActualPClock == ResetPClock)
@@ -756,11 +781,13 @@ bool DetailedResolutionClass::Reset()
 	HFront = ResetHFront;
 	HSync = ResetHSync;
 	HBlank = ResetHBlank;
-	HPolarity = ResetHPolarity;
 	VActive = ResetVActive;
 	VFront = ResetVFront;
 	VSync = ResetVSync;
 	VBlank = ResetVBlank;
+	HBorder = ResetHBorder;
+	VBorder = ResetVBorder;
+	HPolarity = ResetHPolarity;
 	VPolarity = ResetVPolarity;
 	Stereo = ResetStereo;
 	ActualPClock = ResetPClock;
@@ -806,11 +833,6 @@ int DetailedResolutionClass::GetHTotal()
 	return HTotal;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::GetHPolarity()
-{
-	return HPolarity;
-}
-//---------------------------------------------------------------------------
 bool DetailedResolutionClass::Positive(int Value)
 {
 	return Value != BLANK && Value != INVALID && Value >= 0;
@@ -852,6 +874,11 @@ int DetailedResolutionClass::GetVBlank()
 int DetailedResolutionClass::GetVTotal()
 {
 	return GetValue(VTotal);
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::GetHPolarity()
+{
+	return HPolarity;
 }
 //---------------------------------------------------------------------------
 bool DetailedResolutionClass::GetVPolarity()
@@ -1060,12 +1087,6 @@ bool DetailedResolutionClass::SetHTotal(int Value)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DetailedResolutionClass::SetHPolarity(bool Value)
-{
-	HPolarity = Value;
-	return true;
-}
-//---------------------------------------------------------------------------
 bool DetailedResolutionClass::SetVActive(int Value)
 {
 	if (Interlaced && Type == 0 && Positive(Value))
@@ -1138,6 +1159,12 @@ bool DetailedResolutionClass::SetVTotal(int Value)
 	Last = 2;
 	Update();
 	UpdateInterlaced();
+	return true;
+}
+//---------------------------------------------------------------------------
+bool DetailedResolutionClass::SetHPolarity(bool Value)
+{
+	HPolarity = Value;
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -1482,6 +1509,8 @@ bool DetailedResolutionClass::CalculateNative(bool Digital)
 		ActualPClock = ActualPClock / Multiple * Multiple;
 	}
 
+	HBorder = 0;
+	VBorder = 0;
 	Stereo = 0;
 	CalculateActualVRate();
 	CalculateActualHRate();

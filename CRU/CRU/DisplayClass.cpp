@@ -117,34 +117,34 @@ bool DisplayClass::Load(const char *NewDeviceID, const char *NewInstanceID)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DisplayClass::MatchFullActive(EDIDListClass &EDIDList)
+bool DisplayClass::MatchCompleteActive(EDIDListClass &EDIDList)
 {
 	if (Active && !Matched)
-		Matched = EDIDList.MatchFullActive(ActiveData);
+		Matched = EDIDList.MatchCompleteActive(ActiveData);
 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DisplayClass::MatchFullOverride(EDIDListClass &EDIDList)
+bool DisplayClass::MatchCompleteOverride(EDIDListClass &EDIDList)
 {
 	if (Active && Override && !Matched)
-		Matched = EDIDList.MatchFullOverride(ActiveData, OverrideData);
+		Matched = EDIDList.MatchCompleteOverride(ActiveData, OverrideData);
 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DisplayClass::MatchPartialOverride(EDIDListClass &EDIDList)
+bool DisplayClass::MatchIncompleteOverride(EDIDListClass &EDIDList)
 {
 	if (Active && Override && !Matched)
-		Matched = EDIDList.MatchPartialOverride(ActiveData, OverrideData);
+		Matched = EDIDList.MatchIncompleteOverride(ActiveData, OverrideData);
 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool DisplayClass::MatchFirstActive(EDIDListClass &EDIDList)
+bool DisplayClass::MatchIncompleteActive(EDIDListClass &EDIDList)
 {
 	if (Active && !Matched)
-		Matched = EDIDList.MatchFirstActive(ActiveData);
+		Matched = EDIDList.MatchIncompleteActive(ActiveData);
 
 	return true;
 }

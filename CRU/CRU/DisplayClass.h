@@ -43,10 +43,10 @@ public:
 	DisplayClass();
 	bool GetText(char *, int, bool);
 	bool Load(const char *, const char *);
-	bool MatchFullActive(EDIDListClass &);
-	bool MatchFullOverride(EDIDListClass &);
-	bool MatchPartialOverride(EDIDListClass &);
-	bool MatchFirstActive(EDIDListClass &);
+	bool MatchCompleteActive(EDIDListClass &);
+	bool MatchCompleteOverride(EDIDListClass &);
+	bool MatchIncompleteOverride(EDIDListClass &);
+	bool MatchIncompleteActive(EDIDListClass &);
 	bool Init();
 	bool LoadDriverName();
 	bool LoadActiveStatus();

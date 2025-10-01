@@ -21,10 +21,10 @@ public:
 	bool Add(unsigned char *);
 	bool Delete(int);
 	int GetCount();
-	bool MatchFullActive(unsigned char *);
-	bool MatchFullOverride(unsigned char *, unsigned char *);
-	bool MatchPartialOverride(unsigned char *, unsigned char *);
-	bool MatchFirstActive(unsigned char *);
+	bool MatchCompleteActive(unsigned char *);
+	bool MatchCompleteOverride(unsigned char *, unsigned char *);
+	bool MatchIncompleteOverride(unsigned char *, unsigned char *);
+	bool MatchIncompleteActive(unsigned char *);
 };
 //---------------------------------------------------------------------------
 #endif
