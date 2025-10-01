@@ -4,7 +4,7 @@
 ![GitHub License](https://img.shields.io/github/license/kreier/cru)
 [![pages-build-deployment](https://github.com/kreier/cru/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/kreier/cru/actions/workflows/pages/pages-build-deployment)
 
-This is just a fork of the work from [ToastyX](https://www.monitortests.com/forum/User-ToastyX). Since 2012 [his utility](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) fixes several problems with graphic cards, monitors, drivers and their communication. Please download the latest version 1.5.2 from 2022-09-01 directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
+This is just a fork of the work from [ToastyX](https://www.monitortests.com/forum/User-ToastyX). Since 2012 [his utility](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) fixes several problems with graphic cards, monitors, drivers and their communication. Please download the latest version 1.5.3 from 2025-04-28 directly from [https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU](https://www.monitortests.com/forum/Thread-Custom-Resolution-Utility-CRU) and consider supporting him [on Patreon](https://www.patreon.com/ToastyX).
 
 Custom Resolution Utility (CRU) is an **EDID editor** that focuses on custom resolutions. CRU shows you how the monitor defines resolutions and other capabilities and gives you the power to change it. Add custom resolutions, remove unwanted resolutions, edit FreeSync ranges, and more. CRU creates software EDID overrides in the registry and does not modify the hardware.
 
@@ -12,11 +12,38 @@ Custom Resolution Utility (CRU) is an **EDID editor** that focuses on custom res
 
 ## Compatibility issues:
 
-**NVIDIA and DSC - ToastyX Wrote:**
+### NVIDIA and DSC - ToastyX Wrote:
 ```
-NVIDIA's driver currently ignores EDID overrides when Display Stream Compression (DSC) is active.
-Please report this issue to NVIDIA.
+NVIDIA's driver currently ignores EDID overrides if Display Stream Compression (DSC) is active and
+the maximum resolution @ refresh rate combination exceeds the GPU's single-head pixel clock limit:
+
+GTX 1600-series: 1330 MHz
+RTX 2000-series: 1330 MHz
+RTX 3000-series: 1335 MHz
+RTX 4000-series: 1350 MHz
+RTX 5000-series: 1620 MHz
 ```
+Workarounds:
+
+1. SRE can add custom GPU-scaled resolutions but not custom refresh rates: https://www.monitortests.com/forum/Threa...Editor-SRE
+2. Use RegEdit to disable using multiple heads, but the pixel clock will be limited to the single-head limit:\
+Key: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\#### (usually 0000)\
+Value: "EnableTiledDisplay"=dword:00000000
+
+### NVIDIA and multiple displays - ToastyX Wrote:
+
+NVIDIA's driver currently has a bug that can cause Windows to hang during boot when an EDID override is present with multiple displays connected. Workaround using scripts: [https://www.monitortests.com/forum/Threa...wn-scripts](https://www.monitortests.com/forum/Thread-Workarounds-for-Nvidia-issues-using-CRU-and-a-couple-of-startup-shutdown-scripts)
+
+### Windows 11 with non-PnP displays - ToastyX Wrote:
+
+Windows 11 ignores EDID overrides for displays that don't have a valid EDID. This can happen if the EDID is corrupted on the monitor. This will appear as "PNP09FF - Generic Non-PnP Monitor" in CRU with no resolutions or extension blocks listed.
+
+Workarounds:
+1. Try another port on the monitor. Usually each type of port has a separate EDID, so only one might be corrupted.
+2. Use an EDID emulator such as this: [https://www.amazon.com/dp/B07YMS18T7/?tag=mtests-20#ad](https://www.amazon.com/dp/B07YMS18T7/?tag=mtests-20#ad)
+3. Use Windows 10 with CRU to add the resolutions you need.
+4. Advanced: try to fix the EDID on the monitor using EDWriter with an AMD GPU: [https://www.monitortests.com/forum/Threa...yID-Writer](https://www.monitortests.com/forum/Thread-EDID-DisplayID-Writer)
+
 
 ## Example
 
@@ -122,13 +149,13 @@ If you have an older Intel GPU, use the "Export..." button and choose "EXE file"
     * Use DisplayID to add resolutions greater than 4095x4095 or 655.35 MHz pixel clock. DisplayID 2.0 supports pixel clocks with three decimal places, but the driver or hardware might not support such precision.
     * Default extension blocks are placeholders for the monitor's original extension blocks. Extension blocks that can't be read will appear as default extension blocks. Note: NVIDIA does not support default extension blocks and will ignore all changes if a default extension block exists.
 * If you need to add an extension block manually, importing one of these files will provide a starting point:
-    * hdmi.dat - HDMI support only
-    * hdmi-audio.dat - HDMI support with audio
-    * hdmi-bitstream.dat - HDMI support with bitstreaming audio formats
-    * hdmi2.dat - HDMI 2.0 support only
-    * hdmi2-audio.dat - HDMI 2.0 support with audio
-    * hdmi2-bitstream.dat - HDMI 2.0 support with bitstreaming audio formats
-    * displayport-audio.dat - DisplayPort audio
+    * [hdmi.dat](https://www.monitortests.com/download/dat/hdmi.dat) - HDMI support only
+    * [hdmi-audio.dat](https://www.monitortests.com/download/dat/hdmi-audio.dat) - HDMI support with audio
+    * [hdmi-bitstream.dat](https://www.monitortests.com/download/dat/hdmi-bitstream.dat) - HDMI support with bitstreaming audio formats
+    * [hdmi2.dat](https://www.monitortests.com/download/dat/hdmi2.dat) - HDMI 2.0 support only
+    * [hdmi2-audio.dat](https://www.monitortests.com/download/dat/hdmi2-audio.dat) - HDMI 2.0 support with audio
+    * [hdmi2-bitstream.dat](https://www.monitortests.com/download/dat/hdmi2-bitstream.dat) - HDMI 2.0 support with bitstreaming audio formats
+    * [displayport-audio.dat](https://www.monitortests.com/download/dat/displayport-audio.dat) - DisplayPort audio
  
 ### Editing FreeSync/VRR ranges:
 
@@ -166,6 +193,12 @@ CRU can import all of the above formats and any reasonably formatted text file w
 * Older AMD/ATI GPUs have a design limitation that causes video acceleration to scramble the screen if the vertical blanking is below standard with the GPU's memory overclocked or with multiple monitors connected. Skype is known to trigger this problem. Either don't overclock the GPU's memory, or use the "Automatic PC/HDTV" or "CVT-RB standard" vertical blanking.
 
 ## Changelog
+
+### 2025-04-28 Changes in 1.5.3:
+
+* Added support for extension override data blocks (HF-EEODB). All extension blocks should now be readable with AMD and NVIDIA GPUs.
+* Added support for editing existing FreeSync version 3 data blocks with higher maximum range.
+* EDID detailed resolutions: preserve borders if present.
 
 ### 2022-09-01 Changes in 1.5.2:
 
